@@ -3,8 +3,9 @@ This module provides the `Regex` class, which includes methods
 to dynamically generate complex regex patterns for common use cases.
 """
 
+from .base.decorators import mypyc_attr
+
 from typing import Optional
-from mypy_extensions import mypyc_attr
 import regex as _rx
 import re as _re
 

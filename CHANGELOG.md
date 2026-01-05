@@ -15,6 +15,14 @@
 # <br><b>Changelog</b><br>
 
 
+<span id="v1-9-4" />
+
+## ... `v1.9.4`
+
+* Added a new base module `base.decorators` which contains custom decorators used throughout the library.
+* Made `mypy_extensions` an optional dependency by wrapping all uses of `mypy_extensions.mypyc_attr` in a custom decorator that acts as a no-op if `mypy_extensions` is not installed.
+
+
 <span id="v1-9-3" />
 
 ## 01.01.2026 `v1.9.3` Big Update 🚀

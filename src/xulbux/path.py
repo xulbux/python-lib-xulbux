@@ -3,9 +3,9 @@ This module provides the `Path` class, which includes methods to work with file 
 """
 
 from .base.exceptions import PathNotFoundError
+from .base.decorators import mypyc_attr
 
 from typing import Optional
-from mypy_extensions import mypyc_attr
 import tempfile as _tempfile
 import difflib as _difflib
 import shutil as _shutil

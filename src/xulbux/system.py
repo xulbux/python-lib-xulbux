@@ -4,12 +4,12 @@ methods to interact with the underlying operating system.
 """
 
 from .base.types import MissingLibsMsgs
+from .base.decorators import mypyc_attr
 
 from .format_codes import FormatCodes
 from .console import Console
 
 from typing import Optional
-from mypy_extensions import mypyc_attr
 import subprocess as _subprocess
 import platform as _platform
 import ctypes as _ctypes

@@ -2,7 +2,7 @@
 This module contains all custom exception classes used throughout the library.
 """
 
-from mypy_extensions import mypyc_attr
+from .decorators import mypyc_attr
 
 #
 ################################################## FILE ##################################################

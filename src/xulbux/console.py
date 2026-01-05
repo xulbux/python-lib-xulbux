@@ -4,6 +4,7 @@ which offer methods for logging and other actions within the console.
 """
 
 from .base.types import ArgConfigWithDefault, ArgResultRegular, ArgResultPositional, ProgressUpdater, AllTextChars, Rgba, Hexa
+from .base.decorators import mypyc_attr
 from .base.consts import COLOR, CHARS, ANSI
 
 from .format_codes import _PATTERNS as _FC_PATTERNS, FormatCodes
@@ -16,7 +17,6 @@ from prompt_toolkit.key_binding import KeyPressEvent, KeyBindings
 from prompt_toolkit.validation import ValidationError, Validator
 from prompt_toolkit.styles import Style
 from prompt_toolkit.keys import Keys
-from mypy_extensions import mypyc_attr
 from contextlib import contextmanager
 from io import StringIO
 import prompt_toolkit as _pt
