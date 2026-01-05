@@ -1,11 +1,21 @@
+__package_name__ = "xulbux"
 __version__ = "1.9.4"
+__description__ = "A Python library to simplify common programming tasks."
+__status__ = "Production/Stable"
+
+__url__ = "https://github.com/XulbuX/PythonLibraryXulbuX"
 
 __author__ = "XulbuX"
 __email__ = "xulbux.real@gmail.com"
 __license__ = "MIT"
-__copyright__ = "Copyright (c) 2024 XulbuX"
-__url__ = "https://github.com/XulbuX/PythonLibraryXulbuX"
-__description__ = "A Python library to simplify common programming tasks."
+__copyright__ = "Copyright (c) 2024-2026 XulbuX"
+
+__requires_python__ = ">=3.10.0"
+__dependencies__ = [
+    "keyboard>=0.13.5",
+    "prompt_toolkit>=3.0.41",
+    "regex>=2023.10.3",
+]
 
 __all__ = [
     "Code",
