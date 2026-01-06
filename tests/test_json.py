@@ -1,9 +1,9 @@
 from xulbux.base.exceptions import SameContentFileExistsError
 from xulbux.json import Json
 
+from pathlib import Path
 import pytest
 import json
-import os
 
 
 def create_test_json(tmp_path, filename, data):
@@ -133,8 +133,8 @@ def test_read_comment_only_json(tmp_path):
 def test_create_simple(tmp_path):
     file_path_str = str(tmp_path / "created.json")
     created_path = Json.create(file_path_str, SIMPLE_DATA)
-    assert os.path.exists(created_path)
-    assert file_path_str == created_path
+    assert isinstance(created_path, Path)
+    assert created_path.exists()
     with open(created_path, "r") as f:
         data = json.load(f)
     assert data == SIMPLE_DATA
@@ -155,7 +155,9 @@ def test_create_force_false_exists(tmp_path):
 
 
 def test_create_force_false_same_content(tmp_path):
+    from pathlib import Path
     file_path = Json.create(f"{tmp_path}/existing_same.json", SIMPLE_DATA, force=False)
+    assert isinstance(file_path, Path)
     with pytest.raises(SameContentFileExistsError):
         Json.create(file_path, SIMPLE_DATA, force=False)
 

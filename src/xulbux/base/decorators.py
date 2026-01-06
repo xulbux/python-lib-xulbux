@@ -16,10 +16,10 @@ def _noop_decorator(obj: T) -> T:
 def mypyc_attr(**kwargs: Any) -> Callable[[T], T]:
     """A custom decorator that wraps `mypy_extensions.mypyc_attr` when available,<br>
     or acts as a no-op decorator when `mypy_extensions` is not installed.\n
-    This allows the use of mypyc compilation hints for compiling without making
+    This allows the use of `mypyc` compilation hints for compiling without making
     `mypy_extensions` a required dependency.\n
-    ----------------------------------------------------------------------------------
-    - `**kwargs` -⠀arguments to pass to `mypy_extensions.mypyc_attr` if available"""
+    -----------------------------------------------------------------------------------------
+    - `**kwargs` -⠀keyword arguments to pass to `mypy_extensions.mypyc_attr` if available"""
     try:
         from mypy_extensions import mypyc_attr as _mypyc_attr
         return _mypyc_attr(**kwargs)

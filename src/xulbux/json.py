@@ -3,11 +3,12 @@ This module provides the `Json` class, which includes methods to read,
 create and update JSON files, with support for comments inside the JSON data.
 """
 
+from .file_sys import FileSys
 from .data import Data
 from .file import File
-from .path import Path
 
 from typing import Literal, Any, cast
+from pathlib import Path
 import json as _json
 
 
@@ -18,7 +19,7 @@ class Json:
     @classmethod
     def read(
         cls,
-        json_file: str,
+        json_file: Path | str,
         comment_start: str = ">>",
         comment_end: str = "<<",
         return_original: bool = False,
@@ -35,10 +36,9 @@ class Json:
         ------------------------------------------------------------------------------------
         For more detailed information about the comment handling,
         see the `Data.remove_comments()` method documentation."""
-        if not json_file.endswith(".json"):
-            json_file += ".json"
-        if (file_path := Path.extend_or_make(json_file, prefer_script_dir=True)) is None:
-            raise FileNotFoundError(f"Could not find JSON file: {json_file}")
+        if (json_path := Path(json_file) if isinstance(json_file, str) else json_file).suffix != ".json":
+            json_path = json_path.with_suffix(".json")
+        file_path = FileSys.extend_or_make_path(json_path, prefer_script_dir=True)
 
         with open(file_path, "r") as f:
             content = f.read()
@@ -46,22 +46,23 @@ class Json:
         try:
             data = _json.loads(content)
         except _json.JSONDecodeError as e:
-            raise ValueError(f"Error parsing JSON in '{file_path}':  {str(e)}")
+            fmt_error = "\n  ".join(str(e).splitlines())
+            raise ValueError(f"Error parsing JSON in {file_path!r}:\n  {fmt_error}") from e
 
         if not (processed_data := dict(Data.remove_comments(data, comment_start, comment_end))):
-            raise ValueError(f"The JSON file '{file_path}' is empty or contains only comments.")
+            raise ValueError(f"The JSON file {file_path!r} is empty or contains only comments.")
 
         return (processed_data, data) if return_original else processed_data
 
     @classmethod
     def create(
         cls,
-        json_file: str,
+        json_file: Path | str,
         data: dict,
         indent: int = 2,
         compactness: Literal[0, 1, 2] = 1,
         force: bool = False,
-    ) -> str:
+    ) -> Path:
         """Create a nicely formatted JSON file from a dictionary.\n
         ---------------------------------------------------------------------------
         - `json_file` -⠀the path (relative or absolute) to the JSON file to create
@@ -75,12 +76,19 @@ class Json:
         The method will throw a `FileExistsError` if a file with the same
         name already exists and a `SameContentFileExistsError` if a file
         with the same name and same content already exists."""
-        if not json_file.endswith(".json"):
-            json_file += ".json"
+        if (json_path := Path(json_file) if isinstance(json_file, str) else json_file).suffix != ".json":
+            json_path = json_path.with_suffix(".json")
 
+        file_path = FileSys.extend_or_make_path(json_path, prefer_script_dir=True)
         File.create(
-            file_path=(file_path := Path.extend_or_make(json_file, prefer_script_dir=True)),
-            content=Data.render(data=data, indent=indent, compactness=compactness, as_json=True),
+            file_path=file_path,
+            content=Data.render(
+                data=data,
+                indent=indent,
+                compactness=compactness,
+                as_json=True,
+                syntax_highlighting=False,
+            ),
             force=force,
         )
 
@@ -89,7 +97,7 @@ class Json:
     @classmethod
     def update(
         cls,
-        json_file: str,
+        json_file: Path | str,
         update_values: dict[str, Any],
         comment_start: str = ">>",
         comment_end: str = "<<",

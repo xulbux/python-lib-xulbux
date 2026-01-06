@@ -1,14 +1,12 @@
 from mypyc.build import mypycify
 from setuptools import setup
-import os
+from pathlib import Path
 
 
 def find_python_files(directory: str) -> list[str]:
     python_files: list[str] = []
-    for root, _, files in os.walk(directory):
-        for file in files:
-            if file.endswith(".py"):
-                python_files.append(os.path.join(root, file))
+    for file in Path(directory).rglob("*.py"):
+        python_files.append(str(file))
     return python_files
 
 

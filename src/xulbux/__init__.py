@@ -24,9 +24,9 @@ __all__ = [
     "Data",
     "EnvPath",
     "File",
+    "FileSys",
     "FormatCodes",
     "Json",
-    "Path",
     "Regex",
     "String",
     "System",
@@ -38,9 +38,9 @@ from .console import Console
 from .data import Data
 from .env_path import EnvPath
 from .file import File
+from .file_sys import FileSys
 from .format_codes import FormatCodes
 from .json import Json
-from .path import Path
 from .regex import Regex
 from .string import String
 from .system import System
