@@ -1,6 +1,6 @@
-from mypyc.build import mypycify
 from setuptools import setup
 from pathlib import Path
+import os
 
 
 def find_python_files(directory: str) -> list[str]:
@@ -10,9 +10,23 @@ def find_python_files(directory: str) -> list[str]:
     return python_files
 
 
-source_files = find_python_files("src/xulbux")
+# OPTIONALLY USE MYPYC COMPILATION
+ext_modules = []
+if os.environ.get("XULBUX_USE_MYPYC", "1") == "1":
+    try:
+        from mypyc.build import mypycify
+        print("\n\nCompiling with mypyc...\n")
+        source_files = find_python_files("src/xulbux")
+        ext_modules = mypycify(source_files)
+
+    except (ImportError, Exception) as e:
+        fmt_error = "\n  ".join(str(e).splitlines())
+        print(
+            f"[WARNING] mypyc compilation disabled (not available or failed):\n  {fmt_error}"
+            "\n\nInstalling as pure Python package...\n"
+        )
 
 setup(
     name="xulbux",
-    ext_modules=mypycify(source_files),
+    ext_modules=ext_modules,
 )
