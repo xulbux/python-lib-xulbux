@@ -6,6 +6,9 @@
 # TO CREATE A NEW RELEASE, TAG A COMMIT WITH THE FOLLOWING FORMAT:
 # git tag v1.X.Y
 # git push origin v1.X.Y
+# IF THE TAG v1.X.Y ALREADY EXISTS, RUN THE FOLLOWING COMMANDS FIRST:
+# git tag -d v1.X.Y
+# git push origin :refs/tags/v1.X.Y
 
 name: Build and Publish
 permissions:
@@ -33,7 +36,7 @@ jobs:
         env:
           CIBW_BUILD: cp310-* cp311-* cp312-* cp313-* cp314-*
           CIBW_SKIP: "*-musllinux_*"
-          CIBW_BEFORE_BUILD: pip install mypy>=1.19.0 mypy-extensions>=1.1.0 types-regex types-keyboard prompt_toolkit>=3.0.41
+          CIBW_BEFORE_BUILD: pip install setuptools>=80.0.0 wheel>=0.45.0 mypy>=1.19.0 mypy-extensions>=1.1.0 types-regex types-keyboard prompt_toolkit>=3.0.41
           CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
           CIBW_ENVIRONMENT: XULBUX_USE_MYPYC=1
 

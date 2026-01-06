@@ -1,8 +1,14 @@
 [build-system]
+# SAME BUILD-DEPS ALSO NEED TO BE SPECIFIED IN CIBW_BEFORE_BUILD IN .github/workflows/build-and-publish.yml
 requires = [
   "setuptools>=80.0.0",
   "wheel>=0.45.0",
-  # OTHER BUILD-DEPS SPECIFIED IN CIBW_BEFORE_BUILD IN .github/workflows/build-and-publish.yml
+  "mypy>=1.19.0",
+  "mypy-extensions>=1.1.0",
+  # TYPES FOR MyPy
+  "types-regex",
+  "types-keyboard",
+  "prompt_toolkit>=3.0.41",
 ]
 build-backend = "setuptools.build_meta"
 
