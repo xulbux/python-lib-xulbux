@@ -34,6 +34,7 @@ jobs:
           CIBW_BUILD: cp310-* cp311-* cp312-* cp313-* cp314-*
           CIBW_SKIP: "*-musllinux_*"
           CIBW_BEFORE_BUILD: pip install mypy>=1.19.0 mypy-extensions>=1.1.0 types-regex types-keyboard prompt_toolkit>=3.0.41
+          CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
           CIBW_ENVIRONMENT: XULBUX_USE_MYPYC=1
 
       - name: Verify wheels were built
