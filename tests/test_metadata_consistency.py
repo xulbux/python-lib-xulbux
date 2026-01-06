@@ -1,5 +1,4 @@
 from typing import Optional
-from datetime import datetime
 from pathlib import Path
 import subprocess
 import pytest
