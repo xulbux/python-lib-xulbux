@@ -3,6 +3,7 @@ This module contains all custom type definitions used throughout the library.
 """
 
 from typing import TYPE_CHECKING, Annotated, TypeAlias, TypedDict, Optional, Protocol, Union, Any
+from pathlib import Path
 
 # PREVENT CIRCULAR IMPORTS
 if TYPE_CHECKING:
@@ -25,6 +26,9 @@ FormattableString = Annotated[str, "String made to be formatted with the `.forma
 
 #
 ################################################## TypeAlias ##################################################
+
+PathsList: TypeAlias = Union[list[Path], list[str], list[Path | str]]
+"""Union of all supported list types for a list of paths."""
 
 DataStructure: TypeAlias = Union[list, tuple, set, frozenset, dict]
 """Union of supported data structures used in the `data` module."""

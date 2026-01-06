@@ -1,5 +1,7 @@
 from xulbux.env_path import EnvPath
 
+from pathlib import Path
+
 #
 ################################################## EnvPath TESTS ##################################################
 
@@ -9,10 +11,11 @@ def test_get_paths():
     paths_list = EnvPath.paths(as_list=True)
     assert paths
     assert paths_list
-    assert isinstance(paths, str)
+    assert isinstance(paths, Path)
     assert isinstance(paths_list, list)
     assert len(paths_list) > 0
-    assert isinstance(paths_list[0], str)
+    assert all(isinstance(path, Path) for path in paths_list)
+    assert isinstance(paths_list[0], Path)
 
 
 def test_add_path():

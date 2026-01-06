@@ -318,13 +318,13 @@ class Data:
             elif isinstance(current_data, IndexIterableTypes):
                 if i == len(path) - 1 and get_key:
                     if parent is None or not isinstance(parent, dict):
-                        raise ValueError(f"Cannot get key from a non-dict parent at path '{path[:i+1]}'")
+                        raise ValueError(f"Cannot get key from a non-dict parent at path '{path[:i + 1]}'")
                     return next(key for key, value in parent.items() if value is current_data)
                 parent = current_data
                 current_data = list(current_data)[path_idx]  # CONVERT TO LIST FOR INDEXING
 
             else:
-                raise TypeError(f"Unsupported type '{type(current_data)}' at path '{path[:i+1]}'")
+                raise TypeError(f"Unsupported type '{type(current_data)}' at path '{path[:i + 1]}'")
 
         return current_data
 

@@ -15,7 +15,10 @@ import io
 @pytest.fixture
 def mock_terminal_size(monkeypatch):
     TerminalSize = namedtuple("TerminalSize", ["columns", "lines"])
-    mock_get_terminal_size = lambda: TerminalSize(columns=80, lines=24)
+
+    def mock_get_terminal_size():
+        return TerminalSize(columns=80, lines=24)
+
     monkeypatch.setattr(console._os, "get_terminal_size", mock_get_terminal_size)
 
 

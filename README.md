@@ -122,6 +122,10 @@ from xulbux.color import rgba, hsla, hexa
       <td><code>EnvPath</code> class, which includes methods to work with the PATH environment variable.</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/XulbuX/PythonLibraryXulbuX/wiki/path"><img src="https://img.shields.io/badge/file__sys-B272FC?style=for-the-badge" alt="path"></a></td>
+      <td><code>FileSys</code> class, which includes methods to work with the file system and directories.</td>
+    </tr>
+    <tr>
       <td><a href="https://github.com/XulbuX/PythonLibraryXulbuX/wiki/file"><img src="https://img.shields.io/badge/file-B272FC?style=for-the-badge" alt="file"></a></td>
       <td><code>File</code> class, which includes methods to work with files and file paths.</td>
     </tr>
@@ -134,10 +138,6 @@ from xulbux.color import rgba, hsla, hexa
       <td><a href="https://github.com/XulbuX/PythonLibraryXulbuX/wiki/json"><img src="https://img.shields.io/badge/json-B272FC?style=for-the-badge" alt="json"></a></td>
       <td><code>Json</code> class, which includes methods to read, create and update JSON files,<br>
         with support for comments inside the JSON data.</td>
-    </tr>
-    <tr>
-      <td><a href="https://github.com/XulbuX/PythonLibraryXulbuX/wiki/path"><img src="https://img.shields.io/badge/path-B272FC?style=for-the-badge" alt="path"></a></td>
-      <td><code>Path</code> class, which includes methods to work with file and directory paths.</td>
     </tr>
     <tr>
       <td><a href="https://github.com/XulbuX/PythonLibraryXulbuX/wiki/regex"><img src="https://img.shields.io/badge/regex-B272FC?style=for-the-badge" alt="regex"></a></td>

@@ -3,9 +3,10 @@ This module provides the `EnvPath` class, which includes
 methods to work with the PATH environment variable.
 """
 
-from .path import Path
+from .file_sys import FileSys
 
-from typing import Optional
+from typing import Optional, cast
+from pathlib import Path
 import sys as _sys
 import os as _os
 
@@ -14,76 +15,82 @@ class EnvPath:
     """This class includes methods to work with the PATH environment variable."""
 
     @classmethod
-    def paths(cls, as_list: bool = False) -> str | list:
+    def paths(cls, as_list: bool = False) -> Path | list[Path]:
         """Get the PATH environment variable.\n
-        ------------------------------------------------------------------------------
-        - `as_list` -⠀if true, returns the paths as a list; otherwise, as a string"""
-        paths = _os.environ.get("PATH", "")
-        return paths.split(_os.pathsep) if as_list else paths
+        ------------------------------------------------------------------------------------------------
+        - `as_list` -⠀if true, returns the paths as a list of `Path`s; otherwise, as a single `Path`"""
+        paths_str = _os.environ.get("PATH", "")
+        if as_list:
+            return [Path(path) for path in paths_str.split(_os.pathsep) if path]
+        return Path(paths_str)
 
     @classmethod
-    def has_path(cls, path: Optional[str] = None, cwd: bool = False, base_dir: bool = False) -> bool:
+    def has_path(cls, path: Optional[Path | str] = None, cwd: bool = False, base_dir: bool = False) -> bool:
         """Check if a path is present in the PATH environment variable.\n
         ------------------------------------------------------------------------
         - `path` -⠀the path to check for
         - `cwd` -⠀if true, uses the current working directory as the path
         - `base_dir` -⠀if true, uses the script's base directory as the path"""
-        return _os.path.normpath(cls._get(path, cwd, base_dir)) \
-            in {_os.path.normpath(p) for p in cls.paths(as_list=True)}
+        check_path = cls._get(path, cwd, base_dir).resolve()
+        return check_path in {path.resolve() for path in cast(list[Path], cls.paths(as_list=True))}
 
     @classmethod
-    def add_path(cls, path: Optional[str] = None, cwd: bool = False, base_dir: bool = False) -> None:
+    def add_path(cls, path: Optional[Path | str] = None, cwd: bool = False, base_dir: bool = False) -> None:
         """Add a path to the PATH environment variable.\n
         ------------------------------------------------------------------------
         - `path` -⠀the path to add
         - `cwd` -⠀if true, uses the current working directory as the path
         - `base_dir` -⠀if true, uses the script's base directory as the path"""
-        if not cls.has_path(path := cls._get(path, cwd, base_dir)):
-            cls._persistent(path)
+        path_obj = cls._get(path, cwd, base_dir)
+        if not cls.has_path(path_obj):
+            cls._persistent(path_obj)
 
     @classmethod
-    def remove_path(cls, path: Optional[str] = None, cwd: bool = False, base_dir: bool = False) -> None:
+    def remove_path(cls, path: Optional[Path | str] = None, cwd: bool = False, base_dir: bool = False) -> None:
         """Remove a path from the PATH environment variable.\n
         ------------------------------------------------------------------------
         - `path` -⠀the path to remove
         - `cwd` -⠀if true, uses the current working directory as the path
         - `base_dir` -⠀if true, uses the script's base directory as the path"""
-        if cls.has_path(path := cls._get(path, cwd, base_dir)):
-            cls._persistent(path, remove=True)
+        path_obj = cls._get(path, cwd, base_dir)
+        if cls.has_path(path_obj):
+            cls._persistent(path_obj, remove=True)
 
     @staticmethod
-    def _get(path: Optional[str] = None, cwd: bool = False, base_dir: bool = False) -> str:
+    def _get(path: Optional[Path | str] = None, cwd: bool = False, base_dir: bool = False) -> Path:
         """Internal method to get the normalized `path`, CWD path or script directory path.\n
         --------------------------------------------------------------------------------------
         Raise an error if no path is provided and neither `cwd` or `base_dir` is true."""
         if cwd:
             if base_dir:
                 raise ValueError("Both 'cwd' and 'base_dir' cannot be True at the same time.")
-            path = Path.cwd
+            return FileSys.cwd
         elif base_dir:
-            path = Path.script_dir
+            return FileSys.script_dir
 
         if path is None:
             raise ValueError("No path provided.\nPlease provide a 'path' or set either 'cwd' or 'base_dir' to True.")
 
-        return _os.path.normpath(path)
+        return Path(path) if isinstance(path, str) else path
 
     @classmethod
-    def _persistent(cls, path: str, remove: bool = False) -> None:
+    def _persistent(cls, path: Path, remove: bool = False) -> None:
         """Internal method to add or remove a path from the PATH environment variable,
         persistently, across sessions, as well as the current session."""
-        current_paths = list(cls.paths(as_list=True))
-        path = _os.path.normpath(path)
+        current_paths = cast(list[Path], cls.paths(as_list=True))
+        path_resolved = path.resolve()
 
         if remove:
-            current_paths = [
-                path for path in current_paths \
-                if _os.path.normpath(path) != _os.path.normpath(path)
-            ]
+            # FILTER OUT THE PATH TO REMOVE
+            current_paths = [path for path in current_paths if path.resolve() != path_resolved]
         else:
-            current_paths.append(path)
+            # ADD THE NEW PATH IF NOT ALREADY PRESENT
+            if path_resolved not in {path.resolve() for path in current_paths}:
+                current_paths = [*current_paths, path_resolved]
 
-        _os.environ["PATH"] = new_path = _os.pathsep.join(sorted(set(filter(bool, current_paths))))
+        # CONVERT TO STRINGS ONLY FOR SETTING THE ENVIRONMENT VARIABLE
+        path_strings = [str(path) for path in current_paths]
+        _os.environ["PATH"] = new_path = _os.pathsep.join(dict.fromkeys(filter(bool, path_strings)))
 
         if _sys.platform == "win32":  # WINDOWS
             try:
@@ -95,20 +102,21 @@ class EnvPath:
                 raise RuntimeError("Failed to update PATH in registry:\n  " + str(e).replace("\n", "  \n"))
 
         else:  # UNIX-LIKE (LINUX/macOS)
-            shell_rc_file = _os.path.expanduser(
-                "~/.bashrc" if _os.path.exists(_os.path.expanduser("~/.bashrc")) \
-                else "~/.zshrc"
-            )
+            home_path = Path.home()
+            bashrc = home_path / ".bashrc"
+            zshrc = home_path / ".zshrc"
+            shell_rc_file = bashrc if bashrc.exists() else zshrc
 
             with open(shell_rc_file, "r+") as file:
                 content = file.read()
                 file.seek(0)
 
                 if remove:
-                    new_content = [line for line in content.splitlines() if not line.endswith(f':{path}"')]
+                    new_content = [line for line in content.splitlines() if not line.endswith(f':{path_resolved}"')]
                     file.write("\n".join(new_content))
                 else:
-                    file.write(f'{content.rstrip()}\n# Added by XulbuX\nexport PATH="{new_path}"\n')
+                    file.write(f"{content.rstrip()}\n# Added by 'xulbux'\n"
+                               f'export PATH="{new_path}"\n')
 
                 file.truncate()
 

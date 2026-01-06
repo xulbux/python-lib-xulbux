@@ -1,22 +1,22 @@
 from xulbux.base.exceptions import SameContentFileExistsError
 from xulbux.json import Json
 
+from pathlib import Path
 import pytest
 import json
-import os
 
 
 def create_test_json(tmp_path, filename, data):
     file_path = tmp_path / filename
-    with open(file_path, "w") as f:
-        json.dump(data, f, indent=2)
+    with open(file_path, "w") as file:
+        json.dump(data, file, indent=2)
     return file_path
 
 
 def create_test_json_string(tmp_path, filename, content):
     file_path = tmp_path / filename
-    with open(file_path, "w") as f:
-        f.write(content)
+    with open(file_path, "w") as file:
+        file.write(content)
     return file_path
 
 
@@ -133,18 +133,18 @@ def test_read_comment_only_json(tmp_path):
 def test_create_simple(tmp_path):
     file_path_str = str(tmp_path / "created.json")
     created_path = Json.create(file_path_str, SIMPLE_DATA)
-    assert os.path.exists(created_path)
-    assert file_path_str == created_path
-    with open(created_path, "r") as f:
-        data = json.load(f)
+    assert isinstance(created_path, Path)
+    assert created_path.exists()
+    with open(created_path, "r") as file:
+        data = json.load(file)
     assert data == SIMPLE_DATA
 
 
 def test_create_with_indent_compactness(tmp_path):
     file_path_str = str(tmp_path / "formatted.json")
     Json.create(file_path_str, SIMPLE_DATA, indent=4, compactness=0)
-    with open(file_path_str, "r") as f:
-        content = f.read()
+    with open(file_path_str, "r") as file:
+        content = file.read()
         assert '\n    "name":' in content
 
 
@@ -155,7 +155,9 @@ def test_create_force_false_exists(tmp_path):
 
 
 def test_create_force_false_same_content(tmp_path):
+    from pathlib import Path
     file_path = Json.create(f"{tmp_path}/existing_same.json", SIMPLE_DATA, force=False)
+    assert isinstance(file_path, Path)
     with pytest.raises(SameContentFileExistsError):
         Json.create(file_path, SIMPLE_DATA, force=False)
 
@@ -163,16 +165,16 @@ def test_create_force_false_same_content(tmp_path):
 def test_create_force_true_exists(tmp_path):
     file_path = create_test_json(tmp_path, "overwrite.json", {"a": 1})
     Json.create(str(file_path), {"b": 2}, force=True)
-    with open(file_path, "r") as f:
-        data = json.load(f)
+    with open(file_path, "r") as file:
+        data = json.load(file)
     assert data == {"b": 2}
 
 
 def test_update_existing_values(tmp_path):
     file_path = create_test_json(tmp_path, "update_test.json", UPDATE_DATA_START)
     Json.update(str(file_path), UPDATE_VALUES)
-    with open(file_path, "r") as f:
-        data = json.load(f)
+    with open(file_path, "r") as file:
+        data = json.load(file)
     assert data == UPDATE_DATA_END
 
 
@@ -192,14 +194,14 @@ def test_update_with_comments(tmp_path):
 def test_update_different_path_sep(tmp_path):
     file_path = create_test_json(tmp_path, "update_sep.json", {"a": {"b": 1}})
     Json.update(str(file_path), {"a/b": 2}, path_sep="/")
-    with open(file_path, "r") as f:
-        data = json.load(f)
+    with open(file_path, "r") as file:
+        data = json.load(file)
     assert data == {"a": {"b": 2}}
 
 
 def test_update_create_non_existent_path(tmp_path):
     file_path = create_test_json(tmp_path, "update_create.json", {"existing": 1})
     Json.update(str(file_path), {"new->nested->value": "created"})
-    with open(file_path, "r") as f:
-        data = json.load(f)
+    with open(file_path, "r") as file:
+        data = json.load(file)
     assert data == {"existing": 1, "new": {"nested": {"value": "created"}}}

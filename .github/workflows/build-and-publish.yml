@@ -1,7 +1,14 @@
 # THIS WORKFLOW WILL BUILD WHEELS FOR ALL MAJOR PLATFORMS AND UPLOAD THEM TO PYPI
 
+# TO BUILD AND INSTALL LOCALLY FOR TESTING, RUN THE FOLLOWING COMMAND:
+# pip install "/path/to/PythonLibraryXulbuX" --no-deps --no-cache-dir --force-reinstall --no-build-isolation
+
+# TO CREATE A NEW RELEASE, TAG A COMMIT WITH THE FOLLOWING FORMAT:
 # git tag v1.X.Y
 # git push origin v1.X.Y
+# IF THE TAG v1.X.Y ALREADY EXISTS, RUN THE FOLLOWING COMMANDS FIRST:
+# git tag -d v1.X.Y
+# git push origin :refs/tags/v1.X.Y
 
 name: Build and Publish
 permissions:
@@ -29,6 +36,19 @@ jobs:
         env:
           CIBW_BUILD: cp310-* cp311-* cp312-* cp313-* cp314-*
           CIBW_SKIP: "*-musllinux_*"
+          CIBW_BEFORE_BUILD: pip install setuptools>=80.0.0 wheel>=0.45.0 mypy>=1.19.0 mypy-extensions>=1.1.0 types-regex types-keyboard prompt_toolkit>=3.0.41
+          CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
+          CIBW_ENVIRONMENT: XULBUX_USE_MYPYC=1
+
+      - name: Verify wheels were built
+        run: |
+          ls -la ./wheelhouse/
+          if [ -z "$(ls -A ./wheelhouse/)" ]; then
+            echo "[ERROR] No wheels were built!"
+            exit 1
+          fi
+          echo "[SUCCESS] Built $(ls ./wheelhouse/*.whl | wc -l) wheels."
+        shell: bash
 
       - uses: actions/upload-artifact@v6
         with:
@@ -50,6 +70,7 @@ jobs:
           path: dist/*.tar.gz
 
   upload_pypi:
+    name: Upload to PyPI
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')

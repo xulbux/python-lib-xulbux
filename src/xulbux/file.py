@@ -6,7 +6,7 @@ methods to work with files and file paths.
 from .base.exceptions import SameContentFileExistsError
 from .string import String
 
-import os as _os
+from pathlib import Path
 
 
 class File:
@@ -15,11 +15,11 @@ class File:
     @classmethod
     def rename_extension(
         cls,
-        file_path: str,
+        file_path: Path | str,
         new_extension: str,
         full_extension: bool = False,
         camel_case_filename: bool = False,
-    ) -> str:
+    ) -> Path:
         """Rename the extension of a file.\n
         ----------------------------------------------------------------------------
         - `file_path` -⠀the path to the file whose extension should be changed
@@ -28,8 +28,8 @@ class File:
           or just the last part of it (e.g. `.gz`)
         - `camel_case_filename` -⠀whether to convert the filename to CamelCase
           in addition to changing the files extension"""
-        normalized_file = _os.path.normpath(file_path)
-        directory, filename_with_ext = _os.path.split(normalized_file)
+        path = Path(file_path)
+        filename_with_ext = path.name
 
         if full_extension:
             try:
@@ -38,17 +38,17 @@ class File:
             except ValueError:
                 filename = filename_with_ext
         else:
-            filename, _ = _os.path.splitext(filename_with_ext)
+            filename = path.stem
 
         if camel_case_filename:
             filename = String.to_camel_case(filename)
         if new_extension and not new_extension.startswith("."):
             new_extension = "." + new_extension
 
-        return _os.path.join(directory, f"{filename}{new_extension}")
+        return path.parent / f"{filename}{new_extension}"
 
     @classmethod
-    def create(cls, file_path: str, content: str = "", force: bool = False) -> str:
+    def create(cls, file_path: Path | str, content: str = "", force: bool = False) -> Path:
         """Create a file with ot without content.\n
         ------------------------------------------------------------------
         - `file_path` -⠀the path where the file should be created
@@ -59,14 +59,16 @@ class File:
         The method will throw a `FileExistsError` if a file with the same
         name already exists and a `SameContentFileExistsError` if a file
         with the same name and same content already exists."""
-        if _os.path.exists(file_path) and not force:
-            with open(file_path, "r", encoding="utf-8") as existing_file:
+        path = Path(file_path)
+
+        if path.exists() and not force:
+            with open(path, "r", encoding="utf-8") as existing_file:
                 existing_content = existing_file.read()
                 if existing_content == content:
                     raise SameContentFileExistsError("Already created this file. (nothing changed)")
             raise FileExistsError("File already exists.")
 
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(content)
+        with open(path, "w", encoding="utf-8") as file:
+            file.write(content)
 
-        return _os.path.abspath(file_path)
+        return path.resolve()

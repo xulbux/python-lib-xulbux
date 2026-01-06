@@ -104,7 +104,7 @@ class Code:
                 return True
 
         js_score = 0.0
-        funcs_pattern = r"(" + "|".join(_rx.escape(f) for f in funcs) + r")" + Regex.brackets("()")
+        funcs_pattern = r"(" + "|".join(_rx.escape(func) for func in funcs) + r")" + Regex.brackets("()")
         js_indicators: list[tuple[str, float]] = [
             (r"\b(var|let|const)\s+[\w_$]+", 2.0),  # JS VARIABLE DECLARATIONS
             (r"\$[\w_$]+\s*=", 2.0),  # jQuery-STYLE VARIABLES

@@ -1,0 +1,266 @@
+"""
+This module provides the `FileSys` class, which includes
+methods to work with the file system and directories.
+"""
+
+from .base.types import PathsList
+from .base.exceptions import PathNotFoundError
+from .base.decorators import mypyc_attr
+
+from typing import Optional
+from pathlib import Path
+import tempfile as _tempfile
+import difflib as _difflib
+import shutil as _shutil
+import sys as _sys
+import os as _os
+
+
+@mypyc_attr(native_class=False)
+class _FileSysMeta(type):
+
+    @property
+    def cwd(cls) -> Path:
+        """The path to the current working directory."""
+        return Path.cwd()
+
+    @property
+    def home(cls) -> Path:
+        """The path to the user's home directory."""
+        return Path.home()
+
+    @property
+    def script_dir(cls) -> Path:
+        """The path to the directory of the current script."""
+        if getattr(_sys, "frozen", False):
+            base_path = Path(_sys.executable).parent
+        else:
+            main_module = _sys.modules["__main__"]
+            if hasattr(main_module, "__file__") and main_module.__file__ is not None:
+                base_path = Path(main_module.__file__).resolve().parent
+            elif (hasattr(main_module, "__spec__") and main_module.__spec__ and main_module.__spec__.origin is not None):
+                base_path = Path(main_module.__spec__.origin).resolve().parent
+            else:
+                raise RuntimeError("Can only get base directory if accessed from a file.")
+        return base_path
+
+
+class FileSys(metaclass=_FileSysMeta):
+    """This class provides methods to work with file and directory paths."""
+
+    @classmethod
+    def extend_path(
+        cls,
+        rel_path: Path | str,
+        search_in: Optional[Path | str | PathsList] = None,
+        fuzzy_match: bool = False,
+        raise_error: bool = False,
+    ) -> Optional[Path]:
+        """Tries to resolve and extend a relative path to an absolute path.\n
+        -------------------------------------------------------------------------------------------
+        - `rel_path` -⠀the relative path to extend
+        - `search_in` -⠀a directory or a list of directories to search in,
+          in addition to the predefined directories (see exact procedure below)
+        - `fuzzy_match` -⠀if true, it will try to find the closest matching file/folder
+          names in the `search_in` directories, allowing for typos in `rel_path` and `search_in`
+        - `raise_error` -⠀if true, raises a `PathNotFoundError` if
+          the path couldn't be found (otherwise it returns `None`)\n
+        -------------------------------------------------------------------------------------------
+        If the `rel_path` couldn't be located in predefined directories,
+        it will be searched in the `search_in` directory/s.<br>
+        If the `rel_path` is still not found, it returns `None` or
+        raises a `PathNotFoundError` if `raise_error` is true."""
+        search_dirs: list[Path] = []
+        path: Path
+
+        if isinstance(rel_path, str):
+            if rel_path == "":
+                if raise_error:
+                    raise PathNotFoundError("Given 'rel_path' is an empty string.")
+                return None
+            else:
+                path = Path(rel_path)
+        else:
+            path = rel_path
+
+        if path.is_absolute():
+            return path
+
+        if search_in is not None:
+            if isinstance(search_in, (str, Path)):
+                search_dirs.extend([Path(search_in)])
+            elif isinstance(search_in, list):
+                search_dirs.extend([Path(path) for path in search_in])
+            else:
+                raise TypeError(
+                    f"The 'search_in' parameter must be a string, Path, or a list of strings/Paths, got {type(search_in)}"
+                )
+
+        return _ExtendPathHelper(
+            cls,
+            rel_path=path,
+            search_dirs=search_dirs,
+            fuzzy_match=fuzzy_match,
+            raise_error=raise_error,
+        )()
+
+    @classmethod
+    def extend_or_make_path(
+        cls,
+        rel_path: Path | str,
+        search_in: Optional[Path | str | list[Path | str]] = None,
+        prefer_script_dir: bool = True,
+        fuzzy_match: bool = False,
+    ) -> Path:
+        """Tries to locate and extend a relative path to an absolute path, and if the `rel_path`
+        couldn't be located, it generates a path, as if it was located.\n
+        -------------------------------------------------------------------------------------------
+        - `rel_path` -⠀the relative path to extend or make
+        - `search_in` -⠀a directory or a list of directories to search in,
+          in addition to the predefined directories (see exact procedure below)
+        - `prefer_script_dir` -⠀if true, the script directory is preferred
+          when making a new path (otherwise the CWD is preferred)
+        - `fuzzy_match` -⠀if true, it will try to find the closest matching file/folder
+          names in the `search_in` directories, allowing for typos in `rel_path` and `search_in`\n
+        -------------------------------------------------------------------------------------------
+        If the `rel_path` couldn't be located in predefined directories,
+        it will be searched in the `search_in` directory/s.<br>
+        If the `rel_path` is still not found, it will makes a path
+        that points to where the `rel_path` would be in the script directory,
+        even though the `rel_path` doesn't exist there.<br>
+        If `prefer_script_dir` is false, it will instead make a path
+        that points to where the `rel_path` would be in the CWD."""
+        try:
+            result = cls.extend_path(
+                rel_path=rel_path,
+                search_in=search_in,
+                raise_error=True,
+                fuzzy_match=fuzzy_match,
+            )
+            return result if result is not None else Path()
+
+        except PathNotFoundError:
+            path = Path(str(rel_path))
+            base_dir = cls.script_dir if prefer_script_dir else Path.cwd()
+            return base_dir / path
+
+    @classmethod
+    def remove(cls, path: Path | str, only_content: bool = False) -> None:
+        """Removes the directory or the directory's content at the specified path.\n
+        -----------------------------------------------------------------------------
+        - `path` -⠀the path to the directory or file to remove
+        - `only_content` -⠀if true, only the content of the directory is removed
+          and the directory itself is kept"""
+        if not (path_obj := Path(path)).exists():
+            return None
+
+        if not only_content:
+            if path_obj.is_file() or path_obj.is_symlink():
+                path_obj.unlink()
+            elif path_obj.is_dir():
+                _shutil.rmtree(path_obj)
+
+        elif path_obj.is_dir():
+            for item in path_obj.iterdir():
+                try:
+                    if item.is_file() or item.is_symlink():
+                        item.unlink()
+                    elif item.is_dir():
+                        _shutil.rmtree(item)
+                except Exception as e:
+                    fmt_error = "\n  ".join(str(e).splitlines())
+                    raise Exception(f"Failed to delete {item!r}:\n  {fmt_error}") from e
+
+
+class _ExtendPathHelper:
+    """Internal, callable helper class to extend a relative path to an absolute path."""
+
+    def __init__(
+        self,
+        cls: type[FileSys],
+        rel_path: Path,
+        search_dirs: list[Path],
+        fuzzy_match: bool,
+        raise_error: bool,
+    ):
+        self.cls = cls
+        self.rel_path = rel_path
+        self.search_dirs = search_dirs
+        self.fuzzy_match = fuzzy_match
+        self.raise_error = raise_error
+
+    def __call__(self) -> Optional[Path]:
+        """Execute the path extension logic."""
+        expanded_path = self.expand_env_vars(self.rel_path)
+
+        if expanded_path.is_absolute():
+            # ADD ROOT TO SEARCH DIRS
+            if expanded_path.drive:
+                self.search_dirs.extend([Path(expanded_path.drive + _os.sep)])
+            else:
+                self.search_dirs.extend([Path(_os.sep)])
+            # REMOVE ROOT FROM PATH PARTS FOR SEARCHING
+            expanded_path = Path(*expanded_path.parts[1:])
+        else:
+            # ADD PREDEFINED SEARCH DIRS
+            self.search_dirs.extend([
+                self.cls.cwd,
+                self.cls.home,
+                self.cls.script_dir,
+                Path(_tempfile.gettempdir()),
+            ])
+
+        return self.search_in_dirs(expanded_path)
+
+    @staticmethod
+    def expand_env_vars(path: Path) -> Path:
+        """Expand all environment variables in the given path."""
+        if "%" not in (str_path := str(path)):
+            return path
+
+        for i in range(1, len(parts := str_path.split("%")), 2):
+            if parts[i].upper() in _os.environ:
+                parts[i] = _os.environ[parts[i].upper()]
+
+        return Path("".join(parts))
+
+    def search_in_dirs(self, path: Path) -> Optional[Path]:
+        """Search for the path in all configured directories."""
+        for search_dir in self.search_dirs:
+            if (full_path := search_dir / path).exists():
+                return full_path
+            elif self.fuzzy_match:
+                if (match := self.find_path( \
+                    base_dir=search_dir,
+                    target_path=path,
+                    fuzzy_match=self.fuzzy_match,
+                )) is not None:
+                    return match
+
+        if self.raise_error:
+            raise PathNotFoundError(f"Path {self.rel_path!r} not found in specified directories.")
+        return None
+
+    def find_path(self, base_dir: Path, target_path: Path, fuzzy_match: bool) -> Optional[Path]:
+        """Find a path by traversing the given parts from the base directory,
+        optionally using closest matches for each part."""
+        current_path: Path = base_dir
+
+        for part in target_path.parts:
+            if current_path.is_file():
+                return current_path
+            elif (closest_match := self.get_closest_match(current_path, part) if fuzzy_match else part) is None:
+                return None
+            current_path = current_path / closest_match
+
+        return current_path if current_path.exists() and current_path != base_dir else None
+
+    @staticmethod
+    def get_closest_match(dir: Path, path_part: str) -> Optional[str]:
+        """Internal method to get the closest matching file or folder name
+        in the given directory for the given path part."""
+        try:
+            items = [item.name for item in dir.iterdir()]
+            return matches[0] if (matches := _difflib.get_close_matches(path_part, items, n=1, cutoff=0.6)) else None
+        except Exception:
+            return None
