@@ -15,15 +15,15 @@ ext_modules = []
 if os.environ.get("XULBUX_USE_MYPYC", "1") == "1":
     try:
         from mypyc.build import mypycify
-        print("\n\nCompiling with mypyc...\n")
+        print("\nCompiling with mypyc...\n")
         source_files = find_python_files("src/xulbux")
         ext_modules = mypycify(source_files)
 
     except (ImportError, Exception) as e:
         fmt_error = "\n  ".join(str(e).splitlines())
         print(
-            f"[WARNING] mypyc compilation disabled (not available or failed):\n  {fmt_error}"
-            "\n\nInstalling as pure Python package...\n"
+            f"\n[WARNING] mypyc compilation disabled (not available or failed):\n  {fmt_error}\n"
+            "\nInstalling as pure Python package...\n"
         )
 
 setup(

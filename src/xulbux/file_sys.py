@@ -53,24 +53,38 @@ class FileSys(metaclass=_FileSysMeta):
         cls,
         rel_path: Path | str,
         search_in: Optional[Path | str | PathsList] = None,
+        fuzzy_match: bool = False,
         raise_error: bool = False,
-        use_closest_match: bool = False,
     ) -> Optional[Path]:
         """Tries to resolve and extend a relative path to an absolute path.\n
         -------------------------------------------------------------------------------------------
         - `rel_path` -⠀the relative path to extend
         - `search_in` -⠀a directory or a list of directories to search in,
           in addition to the predefined directories (see exact procedure below)
+        - `fuzzy_match` -⠀if true, it will try to find the closest matching file/folder
+          names in the `search_in` directories, allowing for typos in `rel_path` and `search_in`
         - `raise_error` -⠀if true, raises a `PathNotFoundError` if
-          the path couldn't be found (otherwise it returns `None`)
-        - `use_closest_match` -⠀if true, it will try to find the closest matching file/folder
-          names in the `search_in` directories, allowing for typos in `rel_path` and `search_in`\n
+          the path couldn't be found (otherwise it returns `None`)\n
         -------------------------------------------------------------------------------------------
         If the `rel_path` couldn't be located in predefined directories,
         it will be searched in the `search_in` directory/s.<br>
         If the `rel_path` is still not found, it returns `None` or
         raises a `PathNotFoundError` if `raise_error` is true."""
         search_dirs: list[Path] = []
+        path: Path
+
+        if isinstance(rel_path, str):
+            if rel_path == "":
+                if raise_error:
+                    raise PathNotFoundError("Given 'rel_path' is an empty string.")
+                return None
+            else:
+                path = Path(rel_path)
+        else:
+            path = rel_path
+
+        if path.is_absolute():
+            return path
 
         if search_in is not None:
             if isinstance(search_in, (str, Path)):
@@ -82,45 +96,13 @@ class FileSys(metaclass=_FileSysMeta):
                     f"The 'search_in' parameter must be a string, Path, or a list of strings/Paths, got {type(search_in)}"
                 )
 
-        # CONVERT rel_path TO PATH
-        path = Path(str(rel_path)) if rel_path else None
-
-        if not path or str(path) == "":
-            if raise_error:
-                raise PathNotFoundError("Path is empty.")
-            else:
-                return None
-
-        # IF ALREADY ABSOLUTE, RETURN IT
-        if path.is_absolute():
-            return path
-
-        # EXPAND ENVIRONMENT VARIABLES AND NORMALIZE
-        path = Path(cls._expand_env_path(str(path)))
-
-        if path.is_absolute():
-            # SPLIT DRIVE AND PATH ON WINDOWS
-            if path.drive:
-                search_dirs.extend([Path(path.drive + _os.sep)])
-                path = Path(*path.parts[1:])  # REMOVE DRIVE FROM PARTS
-            else:
-                search_dirs.extend([Path(_os.sep)])
-                path = Path(*path.parts[1:])  # REMOVE ROOT FROM PARTS
-        else:
-            search_dirs.extend([Path.cwd(), cls.script_dir, Path.home(), Path(_tempfile.gettempdir())])
-
-        for search_dir in search_dirs:
-            full_path = search_dir / path
-            if full_path.exists():
-                return full_path
-            if use_closest_match:
-                if (match := cls._find_path(search_dir, path.parts, use_closest_match)):
-                    return match
-
-        if raise_error:
-            raise PathNotFoundError(f"Path {rel_path!r} not found in specified directories.")
-        else:
-            return None
+        return _ExtendPathHelper(
+            cls,
+            rel_path=path,
+            search_dirs=search_dirs,
+            fuzzy_match=fuzzy_match,
+            raise_error=raise_error,
+        )()
 
     @classmethod
     def extend_or_make_path(
@@ -128,7 +110,7 @@ class FileSys(metaclass=_FileSysMeta):
         rel_path: Path | str,
         search_in: Optional[Path | str | list[Path | str]] = None,
         prefer_script_dir: bool = True,
-        use_closest_match: bool = False,
+        fuzzy_match: bool = False,
     ) -> Path:
         """Tries to locate and extend a relative path to an absolute path, and if the `rel_path`
         couldn't be located, it generates a path, as if it was located.\n
@@ -138,7 +120,7 @@ class FileSys(metaclass=_FileSysMeta):
           in addition to the predefined directories (see exact procedure below)
         - `prefer_script_dir` -⠀if true, the script directory is preferred
           when making a new path (otherwise the CWD is preferred)
-        - `use_closest_match` -⠀if true, it will try to find the closest matching file/folder
+        - `fuzzy_match` -⠀if true, it will try to find the closest matching file/folder
           names in the `search_in` directories, allowing for typos in `rel_path` and `search_in`\n
         -------------------------------------------------------------------------------------------
         If the `rel_path` couldn't be located in predefined directories,
@@ -153,7 +135,7 @@ class FileSys(metaclass=_FileSysMeta):
                 rel_path=rel_path,
                 search_in=search_in,
                 raise_error=True,
-                use_closest_match=use_closest_match,
+                fuzzy_match=fuzzy_match,
             )
             return result if result is not None else Path()
 
@@ -189,35 +171,92 @@ class FileSys(metaclass=_FileSysMeta):
                     fmt_error = "\n  ".join(str(e).splitlines())
                     raise Exception(f"Failed to delete {item!r}:\n  {fmt_error}") from e
 
-    @staticmethod
-    def _expand_env_path(path_str: str) -> str:
-        """Internal method that expands all environment variables in the given path string."""
-        if "%" not in path_str:
-            return path_str
 
-        for i in range(1, len(parts := path_str.split("%")), 2):
+class _ExtendPathHelper:
+    """Internal, callable helper class to extend a relative path to an absolute path."""
+
+    def __init__(
+        self,
+        cls: type[FileSys],
+        rel_path: Path,
+        search_dirs: list[Path],
+        fuzzy_match: bool,
+        raise_error: bool,
+    ):
+        self.cls = cls
+        self.rel_path = rel_path
+        self.search_dirs = search_dirs
+        self.fuzzy_match = fuzzy_match
+        self.raise_error = raise_error
+
+    def __call__(self) -> Optional[Path]:
+        """Execute the path extension logic."""
+        expanded_path = self.expand_env_vars(self.rel_path)
+
+        if expanded_path.is_absolute():
+            # ADD ROOT TO SEARCH DIRS
+            if expanded_path.drive:
+                self.search_dirs.extend([Path(expanded_path.drive + _os.sep)])
+            else:
+                self.search_dirs.extend([Path(_os.sep)])
+            # REMOVE ROOT FROM PATH PARTS FOR SEARCHING
+            expanded_path = Path(*expanded_path.parts[1:])
+        else:
+            # ADD PREDEFINED SEARCH DIRS
+            self.search_dirs.extend([
+                self.cls.cwd,
+                self.cls.home,
+                self.cls.script_dir,
+                Path(_tempfile.gettempdir()),
+            ])
+
+        return self.search_in_dirs(expanded_path)
+
+    @staticmethod
+    def expand_env_vars(path: Path) -> Path:
+        """Expand all environment variables in the given path."""
+        if "%" not in (str_path := str(path)):
+            return path
+
+        for i in range(1, len(parts := str_path.split("%")), 2):
             if parts[i].upper() in _os.environ:
                 parts[i] = _os.environ[parts[i].upper()]
 
-        return "".join(parts)
+        return Path("".join(parts))
 
-    @classmethod
-    def _find_path(cls, start_dir: Path, path_parts: tuple[str, ...], use_closest_match: bool) -> Optional[Path]:
-        """Internal method to find a path by traversing the given parts from
-        the start directory, optionally using closest matches for each part."""
-        current_path: Path = start_dir
+    def search_in_dirs(self, path: Path) -> Optional[Path]:
+        """Search for the path in all configured directories."""
+        for search_dir in self.search_dirs:
+            if (full_path := search_dir / path).exists():
+                return full_path
+            elif self.fuzzy_match:
+                if (match := self.find_path( \
+                    base_dir=search_dir,
+                    target_path=path,
+                    fuzzy_match=self.fuzzy_match,
+                )) is not None:
+                    return match
 
-        for part in path_parts:
+        if self.raise_error:
+            raise PathNotFoundError(f"Path {self.rel_path!r} not found in specified directories.")
+        return None
+
+    def find_path(self, base_dir: Path, target_path: Path, fuzzy_match: bool) -> Optional[Path]:
+        """Find a path by traversing the given parts from the base directory,
+        optionally using closest matches for each part."""
+        current_path: Path = base_dir
+
+        for part in target_path.parts:
             if current_path.is_file():
                 return current_path
-            if (closest_match := cls._get_closest_match(current_path, part) if use_closest_match else part) is None:
+            elif (closest_match := self.get_closest_match(current_path, part) if fuzzy_match else part) is None:
                 return None
             current_path = current_path / closest_match
 
-        return current_path if current_path.exists() and current_path != start_dir else None
+        return current_path if current_path.exists() and current_path != base_dir else None
 
     @staticmethod
-    def _get_closest_match(dir: Path, path_part: str) -> Optional[str]:
+    def get_closest_match(dir: Path, path_part: str) -> Optional[str]:
         """Internal method to get the closest matching file or folder name
         in the given directory for the given path part."""
         try:

@@ -82,7 +82,7 @@ def test_extend(setup_test_environment):
 
     # EMPTY PATH
     assert FileSys.extend_path("") is None
-    with pytest.raises(PathNotFoundError, match="Path is empty."):
+    with pytest.raises(PathNotFoundError, match="Given 'rel_path' is an empty string."):
         FileSys.extend_path("", raise_error=True)
 
     # FOUND IN STANDARD LOCATIONS
@@ -98,18 +98,18 @@ def test_extend(setup_test_environment):
 
     # NOT FOUND
     assert FileSys.extend_path("non_existent_file.xyz") is None
-    with pytest.raises(PathNotFoundError, match="'non_existent_file.xyz' not found"):
+    with pytest.raises( \
+        PathNotFoundError,
+        match=r"Path [A-Za-z]*Path\('non_existent_file\.xyz'\) not found in specified directories\.",
+    ):
         FileSys.extend_path("non_existent_file.xyz", raise_error=True)
 
     # CLOSEST MATCH
     expected_typo = env["search_in"] / "TypoDir" / "file_in_typo.txt"
-    assert str(FileSys.extend_path("TypoDir/file_in_typo.txt", search_in=search_dir,
-                                   use_closest_match=False)) == str(expected_typo)
-    assert str(FileSys.extend_path("TypoDir/file_in_typo.txt", search_in=search_dir,
-                                   use_closest_match=True)) == str(expected_typo)
-    assert str(FileSys.extend_path("TypoDir/file_in_typx.txt", search_in=search_dir,
-                                   use_closest_match=True)) == str(expected_typo)
-    assert FileSys.extend_path("CompletelyWrong/no_file_here.dat", search_in=search_dir, use_closest_match=True) is None
+    assert str(FileSys.extend_path("TypoDir/file_in_typo.txt", search_in=search_dir, fuzzy_match=False)) == str(expected_typo)
+    assert str(FileSys.extend_path("TypoDir/file_in_typo.txt", search_in=search_dir, fuzzy_match=True)) == str(expected_typo)
+    assert str(FileSys.extend_path("TypoDir/file_in_typx.txt", search_in=search_dir, fuzzy_match=True)) == str(expected_typo)
+    assert FileSys.extend_path("CompletelyWrong/no_file_here.dat", search_in=search_dir, fuzzy_match=True) is None
 
 
 def test_extend_or_make(setup_test_environment):
@@ -134,12 +134,12 @@ def test_extend_or_make(setup_test_environment):
     # USES CLOSEST MATCH WHEN FINDING
     expected_typo = env["search_in"] / "TypoDir" / "file_in_typo.txt"
     assert str(FileSys.extend_or_make_path("TypoDir/file_in_typx.txt", search_in=search_dir,
-                                           use_closest_match=True)) == str(expected_typo)
+                                           fuzzy_match=True)) == str(expected_typo)
 
     # MAKES PATH WHEN CLOSEST MATCH FAILS
     rel_path_wrong = "VeryWrong/made_up.file"
     expected_made = env["script_dir"] / rel_path_wrong
-    assert str(FileSys.extend_or_make_path(rel_path_wrong, search_in=search_dir, use_closest_match=True)) == str(expected_made)
+    assert str(FileSys.extend_or_make_path(rel_path_wrong, search_in=search_dir, fuzzy_match=True)) == str(expected_made)
 
 
 def test_remove(tmp_path):

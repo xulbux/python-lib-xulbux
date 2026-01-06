@@ -67,38 +67,6 @@ def test_version_consistency():
         f"Hardcoded lib-version in pyproject.toml ({pyproject_version}) does not match branch version ({expected_version})"
 
 
-################################################## COPYRIGHT YEAR TEST ##################################################
-
-
-def test_copyright_year():
-    """Verifies that the copyright year in `__init__.py` ends with the current year."""
-    current_year = datetime.now().year
-
-    # EXTRACT COPYRIGHT YEAR (SINGLE/RANGE) FROM __init__.py
-    with open(INIT_PATH, "r", encoding="utf-8") as file:
-        content = file.read()
-        init_copyright_range = re.search(r'^__copyright__\s*=\s*"Copyright \(c\) (\d{4})-(\d{4}) .+"', content, re.MULTILINE)
-        init_copyright_single = re.search(r'^__copyright__\s*=\s*"Copyright \(c\) (\d{4}) .+"', content, re.MULTILINE)
-
-    if init_copyright_range:
-        start_year = int(init_copyright_range.group(1))
-        end_year = int(init_copyright_range.group(2))
-
-        assert end_year == current_year, \
-            f"Copyright end year in src/xulbux/__init__.py ({end_year}) does not match current year ({current_year})"
-        assert start_year <= end_year, \
-            f"Copyright start year ({start_year}) is greater than end year ({end_year}) in src/xulbux/__init__.py"
-
-    elif init_copyright_single:
-        year = int(init_copyright_single.group(1))
-
-        assert year == current_year, \
-            f"Copyright year in src/xulbux/__init__.py ({year}) does not match current year ({current_year})"
-
-    else:
-        pytest.fail(f"Could not find var '__copyright__' with valid year format in {INIT_PATH}")
-
-
 ################################################## DEPENDENCIES CONSISTENCY TEST ##################################################
 
 

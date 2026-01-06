@@ -1,5 +1,9 @@
 # THIS WORKFLOW WILL BUILD WHEELS FOR ALL MAJOR PLATFORMS AND UPLOAD THEM TO PYPI
 
+# TO BUILD AND INSTALL LOCALLY FOR TESTING, RUN THE FOLLOWING COMMAND:
+# pip install "/path/to/PythonLibraryXulbuX" --no-deps --no-cache-dir --force-reinstall --no-build-isolation
+
+# TO CREATE A NEW RELEASE, TAG A COMMIT WITH THE FOLLOWING FORMAT:
 # git tag v1.X.Y
 # git push origin v1.X.Y
 

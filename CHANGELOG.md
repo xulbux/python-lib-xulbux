@@ -17,7 +17,7 @@
 
 <span id="v1-9-4" />
 
-## ... `v1.9.4`
+## 06.01.2026 `v1.9.4`
 
 * Added a new base module `base.decorators` which contains custom decorators used throughout the library.
 * Made `mypy_extensions` an optional dependency by wrapping all uses of `mypy_extensions.mypyc_attr` in a custom decorator that acts as a no-op if `mypy_extensions` is not installed.
@@ -29,6 +29,7 @@
 * Renamed most `FileSys` methods to better describe their functionality:
   - `Path.extend()` is now `FileSys.extend_path()`
   - `Path.extend_or_make()` is now `FileSys.extend_or_make_path()`
+* Renamed the param `use_closest_match` in `FileSys.extend_path()` and `FileSys.extend_or_make_path()` to `fuzzy_match`, since that name is more commonly used for that functionality.
 * Updated all library methods that work with paths to accept `pathlib.Path` objects additionally to strings, as path inputs.
 * Also, all library methods that return paths now return `pathlib.Path` objects instead of strings.
 

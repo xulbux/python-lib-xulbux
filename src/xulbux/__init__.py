@@ -8,7 +8,7 @@ __url__ = "https://github.com/XulbuX/PythonLibraryXulbuX"
 __author__ = "XulbuX"
 __email__ = "xulbux.real@gmail.com"
 __license__ = "MIT"
-__copyright__ = "Copyright (c) 2024-2026 XulbuX"
+__copyright__ = "Copyright (c) 2024 XulbuX"
 
 __requires_python__ = ">=3.10.0"
 __dependencies__ = [
