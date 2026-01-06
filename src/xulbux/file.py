@@ -68,7 +68,7 @@ class File:
                     raise SameContentFileExistsError("Already created this file. (nothing changed)")
             raise FileExistsError("File already exists.")
 
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
+        with open(path, "w", encoding="utf-8") as file:
+            file.write(content)
 
         return path.resolve()

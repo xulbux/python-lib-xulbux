@@ -47,14 +47,14 @@ def test_version_consistency():
     expected_version = branch_match.group(1)
 
     # EXTRACT VERSION FROM __init__.py
-    with open(INIT_PATH, "r", encoding="utf-8") as f:
-        init_content = f.read()
+    with open(INIT_PATH, "r", encoding="utf-8") as file:
+        init_content = file.read()
         init_version_match = re.search(r'^__version__\s*=\s*"([^"]+)"', init_content, re.MULTILINE)
     init_version = init_version_match.group(1) if init_version_match else None
 
     # EXTRACT VERSION FROM pyproject.toml
-    with open(PYPROJECT_PATH, "r", encoding="utf-8") as f:
-        pyproject_data = toml.load(f)
+    with open(PYPROJECT_PATH, "r", encoding="utf-8") as file:
+        pyproject_data = toml.load(file)
     pyproject_version = pyproject_data.get("project", {}).get("version", "")
 
     assert init_version is not None, f"Could not find var '__version__' in {INIT_PATH}"
@@ -75,8 +75,8 @@ def test_copyright_year():
     current_year = datetime.now().year
 
     # EXTRACT COPYRIGHT YEAR (SINGLE/RANGE) FROM __init__.py
-    with open(INIT_PATH, "r", encoding="utf-8") as f:
-        content = f.read()
+    with open(INIT_PATH, "r", encoding="utf-8") as file:
+        content = file.read()
         init_copyright_range = re.search(r'^__copyright__\s*=\s*"Copyright \(c\) (\d{4})-(\d{4}) .+"', content, re.MULTILINE)
         init_copyright_single = re.search(r'^__copyright__\s*=\s*"Copyright \(c\) (\d{4}) .+"', content, re.MULTILINE)
 
@@ -105,13 +105,13 @@ def test_copyright_year():
 def test_dependencies_consistency():
     """Verifies that dependencies in `pyproject.toml` match `__dependencies__` in `__init__.py`."""
     # EXTRACT DEPENDENCIES FROM __init__.py
-    with open(INIT_PATH, "r", encoding="utf-8") as f:
-        init_content = f.read()
+    with open(INIT_PATH, "r", encoding="utf-8") as file:
+        init_content = file.read()
     init_deps = re.search(r'__dependencies__\s*=\s*\[(.*?)\]', init_content, re.DOTALL)
 
     # EXTRACT DEPENDENCIES FROM pyproject.toml
-    with open(PYPROJECT_PATH, "r", encoding="utf-8") as f:
-        pyproject_data = toml.load(f)
+    with open(PYPROJECT_PATH, "r", encoding="utf-8") as file:
+        pyproject_data = toml.load(file)
     pyproject_deps = pyproject_data.get("project", {}).get("dependencies", [])
 
     assert init_deps is not None, f"Could not find var '__dependencies__' in {INIT_PATH}"
@@ -135,14 +135,14 @@ def test_dependencies_consistency():
 def test_description_consistency():
     """Verifies that the description in `pyproject.toml` matches `__description__` in `__init__.py`."""
     # EXTRACT DESCRIPTION FROM __init__.py
-    with open(INIT_PATH, "r", encoding="utf-8") as f:
-        init_content = f.read()
+    with open(INIT_PATH, "r", encoding="utf-8") as file:
+        init_content = file.read()
         init_desc_match = re.search(r'^__description__\s*=\s*"([^"]+)"', init_content, re.MULTILINE)
     init_desc = init_desc_match.group(1) if init_desc_match else None
 
     # EXTRACT DESCRIPTION FROM pyproject.toml
-    with open(PYPROJECT_PATH, "r", encoding="utf-8") as f:
-        pyproject_data = toml.load(f)
+    with open(PYPROJECT_PATH, "r", encoding="utf-8") as file:
+        pyproject_data = toml.load(file)
     pyproject_desc = pyproject_data.get("project", {}).get("description", "")
 
     assert init_desc is not None, f"Could not find var '__description__' in {INIT_PATH}"

@@ -693,7 +693,7 @@ class _ReplaceKeysHelper:
         """Build the final output string based on processed formats and resets."""
         # CHECK IF ALL FORMATS WERE VALID
         has_single_valid_ansi = len(self.ansi_formats) == 1 and self.ansi_formats[0].count(f"{ANSI.CHAR}{ANSI.START}") >= 1
-        all_formats_valid = all(f.startswith(f"{ANSI.CHAR}{ANSI.START}") for f in self.ansi_formats)
+        all_formats_valid = all(ansi_format.startswith(f"{ANSI.CHAR}{ANSI.START}") for ansi_format in self.ansi_formats)
 
         if not has_single_valid_ansi and not all_formats_valid:
             return match.group(0)

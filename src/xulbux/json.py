@@ -40,8 +40,8 @@ class Json:
             json_path = json_path.with_suffix(".json")
         file_path = FileSys.extend_or_make_path(json_path, prefer_script_dir=True)
 
-        with open(file_path, "r") as f:
-            content = f.read()
+        with open(file_path, "r") as file:
+            content = file.read()
 
         try:
             data = _json.loads(content)

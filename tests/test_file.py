@@ -50,8 +50,8 @@ def test_create_new_file(tmp_path):
     assert isinstance(abs_path, Path)
     assert file_path.exists()
     assert abs_path.resolve() == file_path.resolve()
-    with open(file_path, "r", encoding="utf-8") as f:
-        assert f.read() == ""
+    with open(file_path, "r", encoding="utf-8") as file:
+        assert file.read() == ""
 
 
 def test_create_file_with_content(tmp_path):
@@ -61,14 +61,14 @@ def test_create_file_with_content(tmp_path):
     assert isinstance(abs_path, Path)
     assert file_path.exists()
     assert abs_path.resolve() == file_path.resolve()
-    with open(file_path, "r", encoding="utf-8") as f:
-        assert f.read() == content
+    with open(file_path, "r", encoding="utf-8") as file:
+        assert file.read() == content
 
 
 def test_create_file_exists_error(tmp_path):
     file_path = tmp_path / "existing_file.txt"
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write("Initial content")
+    with open(file_path, "w", encoding="utf-8") as file:
+        file.write("Initial content")
     with pytest.raises(FileExistsError):
         File.create(str(file_path), content="New content", force=False)
 
@@ -93,8 +93,8 @@ def test_create_file_force_overwrite_different_content(tmp_path):
     assert isinstance(abs_path, Path)
     assert file_path.exists()
     assert abs_path.resolve() == file_path.resolve()
-    with open(file_path, "r", encoding="utf-8") as f:
-        assert f.read() == new_content
+    with open(file_path, "r", encoding="utf-8") as file:
+        assert file.read() == new_content
 
 
 def test_create_file_force_overwrite_same_content(tmp_path):
@@ -108,8 +108,8 @@ def test_create_file_force_overwrite_same_content(tmp_path):
     assert isinstance(abs_path, Path)
     assert file_path.exists()
     assert abs_path.resolve() == file_path.resolve()
-    with open(file_path, "r", encoding="utf-8") as f:
-        assert f.read() == content
+    with open(file_path, "r", encoding="utf-8") as file:
+        assert file.read() == content
 
 
 def test_create_file_in_subdirectory(tmp_path):
@@ -125,5 +125,5 @@ def test_create_file_in_subdirectory(tmp_path):
     assert isinstance(abs_path, Path)
     assert file_path.exists()
     assert abs_path.resolve() == file_path.resolve()
-    with open(file_path, "r", encoding="utf-8") as f:
-        assert f.read() == content
+    with open(file_path, "r", encoding="utf-8") as file:
+        assert file.read() == content

@@ -1,6 +1,7 @@
 from xulbux.base.exceptions import PathNotFoundError
 from xulbux.file_sys import FileSys
 
+from pathlib import Path
 import tempfile
 import pytest
 import sys
@@ -16,8 +17,8 @@ def setup_test_environment(tmp_path, monkeypatch):
     mock_temp = tmp_path / "mock_temp"
     mock_search_in = tmp_path / "mock_search_in"
 
-    for p in [mock_cwd, mock_script_dir, mock_home, mock_temp, mock_search_in]:
-        p.mkdir()
+    for path in [mock_cwd, mock_script_dir, mock_home, mock_temp, mock_search_in]:
+        path.mkdir()
 
     (mock_cwd / "file_in_cwd.txt").touch()
     (mock_script_dir / "subdir").mkdir()
@@ -30,7 +31,8 @@ def setup_test_environment(tmp_path, monkeypatch):
     abs_file = mock_cwd / "absolute_file.txt"
     abs_file.touch()
 
-    monkeypatch.setattr(os, "getcwd", lambda: str(mock_cwd))
+    monkeypatch.setattr(Path, "cwd", staticmethod(lambda: mock_cwd))
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: mock_home))
     monkeypatch.setattr(sys.modules["__main__"], "__file__", str(mock_script_dir / "mock_script.py"))
     monkeypatch.setattr(os.path, "expanduser", lambda path: str(mock_home) if path == "~" else path)
     monkeypatch.setattr(tempfile, "gettempdir", lambda: str(mock_temp))
@@ -49,21 +51,18 @@ def setup_test_environment(tmp_path, monkeypatch):
 
 
 def test_path_cwd(setup_test_environment):
-    from pathlib import Path as Path
     cwd_output = FileSys.cwd
     assert isinstance(cwd_output, Path)
     assert str(cwd_output) == str(setup_test_environment["cwd"])
 
 
 def test_path_script_dir(setup_test_environment):
-    from pathlib import Path as Path
     script_dir_output = FileSys.script_dir
     assert isinstance(script_dir_output, Path)
     assert str(script_dir_output) == str(setup_test_environment["script_dir"])
 
 
 def test_path_home():
-    from pathlib import Path as Path
     home = FileSys.home
     assert isinstance(home, Path)
     assert len(str(home)) > 0
@@ -72,7 +71,6 @@ def test_path_home():
 
 
 def test_extend(setup_test_environment):
-    from pathlib import Path as Path
     env = setup_test_environment
     search_dir = str(env["search_in"])
     search_dirs = [str(env["cwd"]), search_dir]
@@ -115,7 +113,6 @@ def test_extend(setup_test_environment):
 
 
 def test_extend_or_make(setup_test_environment):
-    from pathlib import Path as Path
     env = setup_test_environment
     search_dir = str(env["search_in"])
 

@@ -76,7 +76,7 @@ class FileSys(metaclass=_FileSysMeta):
             if isinstance(search_in, (str, Path)):
                 search_dirs.extend([Path(search_in)])
             elif isinstance(search_in, list):
-                search_dirs.extend([Path(p) for p in search_in])
+                search_dirs.extend([Path(path) for path in search_in])
             else:
                 raise TypeError(
                     f"The 'search_in' parameter must be a string, Path, or a list of strings/Paths, got {type(search_in)}"

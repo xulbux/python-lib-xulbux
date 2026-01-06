@@ -85,11 +85,11 @@ class EnvPath:
             current_paths = [path for path in current_paths if path.resolve() != path_resolved]
         else:
             # ADD THE NEW PATH IF NOT ALREADY PRESENT
-            if path_resolved not in {p.resolve() for p in current_paths}:
+            if path_resolved not in {path.resolve() for path in current_paths}:
                 current_paths = [*current_paths, path_resolved]
 
         # CONVERT TO STRINGS ONLY FOR SETTING THE ENVIRONMENT VARIABLE
-        path_strings = [str(p) for p in current_paths]
+        path_strings = [str(path) for path in current_paths]
         _os.environ["PATH"] = new_path = _os.pathsep.join(dict.fromkeys(filter(bool, path_strings)))
 
         if _sys.platform == "win32":  # WINDOWS
