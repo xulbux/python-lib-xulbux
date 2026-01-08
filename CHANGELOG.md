@@ -15,6 +15,24 @@
 # <br><b>Changelog</b><br>
 
 
+<span id="v1-9-5" />
+
+## ... `v1.9.5`
+
+* Add new class property `Console.encoding`, which returns the encoding used by the console (*e.g.* `utf-8`*,* `cp1252`*, …*).
+* Add multiple new class properties to the `System` class:
+  - `is_linux` Whether the current OS is Linux or not.
+  - `is_mac` Whether the current OS is macOS or not.
+  - `is_unix` Whether the current OS is a Unix-like OS (Linux, macOS, BSD, …) or not.
+  - `hostname` The network hostname of the current machine.
+  - `username` The current user's username.
+  - `os_name` The name of the operating system (*e.g.* `Windows`*,* `Linux`*, …*).
+  - `os_version` The version of the operating system.
+  - `architecture` The CPU architecture (*e.g.* `x86_64`*,* `ARM`*, …*).
+  - `cpu_count` The number of CPU cores available.
+  - `python_version` The Python version string (*e.g.* `3.10.4`).
+
+
 <span id="v1-9-4" />
 
 ## 06.01.2026 `v1.9.4`

@@ -257,6 +257,15 @@ class _ConsoleMeta(type):
         return _sys.stdout.isatty()
 
     @property
+    def encoding(cls) -> str:
+        """The encoding used by the console (e.g. `utf-8`, `cp1252`, …)."""
+        try:
+            encoding = _sys.stdout.encoding
+            return encoding if encoding is not None else "utf-8"
+        except (AttributeError, Exception):
+            return "utf-8"
+
+    @property
     def supports_color(cls) -> bool:
         """Whether the terminal supports ANSI color codes or not."""
         if not cls.is_tty:

@@ -81,6 +81,13 @@ def test_console_is_tty():
     assert isinstance(result, bool)
 
 
+def test_console_encoding():
+    encoding = Console.encoding
+    assert isinstance(encoding, str)
+    assert encoding != ""
+    assert encoding.lower() in ["utf-8", "cp1252", "ascii", "latin-1", "iso-8859-1"] or "-" in encoding
+
+
 def test_console_supports_color():
     result = Console.supports_color
     assert isinstance(result, bool)
