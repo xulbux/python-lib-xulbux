@@ -31,6 +31,7 @@
   - `architecture` The CPU architecture (*e.g.* `x86_64`*,* `ARM`*, …*).
   - `cpu_count` The number of CPU cores available.
   - `python_version` The Python version string (*e.g.* `3.10.4`).
+* Created a new TypeAlias `FindArgConfig` which specifies the argument-finding configuration of a single argument for CLI argument parsing.
 
 
 <span id="v1-9-4" />

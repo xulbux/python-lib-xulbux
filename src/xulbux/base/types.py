@@ -2,7 +2,7 @@
 This module contains all custom type definitions used throughout the library.
 """
 
-from typing import TYPE_CHECKING, Annotated, TypeAlias, TypedDict, Optional, Protocol, Union, Any
+from typing import TYPE_CHECKING, Annotated, TypeAlias, TypedDict, Optional, Protocol, Literal, Union, Any
 from pathlib import Path
 
 # PREVENT CIRCULAR IMPORTS
@@ -69,6 +69,9 @@ AnyHsla: TypeAlias = Any
 """Generic type alias for HSLA color values in any supported format (type checking disabled)."""
 AnyHexa: TypeAlias = Any
 """Generic type alias for hexadecimal color values in any supported format (type checking disabled)."""
+
+FindArgConfig: TypeAlias = Union[set[str], "ArgConfigWithDefault", Literal["before", "after"]]
+"""Type alias for the argument-finding configuration of a single argument for CLI argument parsing."""
 
 #
 ################################################## Sentinel ##################################################

@@ -3,7 +3,7 @@ This module provides the `Console`, `ProgressBar`, and `Spinner` classes
 which offer methods for logging and other actions within the console.
 """
 
-from .base.types import ArgConfigWithDefault, ArgResultRegular, ArgResultPositional, ProgressUpdater, AllTextChars, Rgba, Hexa
+from .base.types import ArgConfigWithDefault, ArgResultRegular, ArgResultPositional, ProgressUpdater, AllTextChars, FindArgConfig, Rgba, Hexa
 from .base.decorators import mypyc_attr
 from .base.consts import COLOR, CHARS, ANSI
 
@@ -291,7 +291,7 @@ class Console(metaclass=_ConsoleMeta):
     def get_args(
         cls,
         allow_spaces: bool = False,
-        **find_args: set[str] | ArgConfigWithDefault | Literal["before", "after"],
+        **find_args: FindArgConfig,
     ) -> Args:
         """Will search for the specified arguments in the command line
         arguments and return the results as a special `Args` object.\n
