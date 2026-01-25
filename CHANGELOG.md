@@ -17,7 +17,7 @@
 
 <span id="v1-9-5" />
 
-## ... `v1.9.5`
+## 25.01.2026 `v1.9.5`
 
 * Add new class property `Console.encoding`, which returns the encoding used by the console (*e.g.* `utf-8`*,* `cp1252`*, …*).
 * Add multiple new class properties to the `System` class:
