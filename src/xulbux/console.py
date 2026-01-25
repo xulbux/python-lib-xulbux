@@ -3,7 +3,7 @@ This module provides the `Console`, `ProgressBar`, and `Spinner` classes
 which offer methods for logging and other actions within the console.
 """
 
-from .base.types import ProgressUpdater, AllTextChars, ArgParseConfigs, ArgParseConfigs, ArgData, Rgba, Hexa
+from .base.types import ProgressUpdater, AllTextChars, ArgParseConfigs, ArgParseConfig, ArgData, Rgba, Hexa
 from .base.decorators import mypyc_attr
 from .base.consts import COLOR, CHARS, ANSI
 
@@ -1047,77 +1047,85 @@ class _ConsoleArgsParseHelper:
 
         self.args = _sys.argv[1:]
         self.args_len = len(self.args)
+        self.pos_before_configured = False
+        self.pos_after_configured = False
         self.first_flag_pos: Optional[int] = None
         self.last_flag_pos: Optional[int] = None
 
     def __call__(self) -> ParsedArgs:
-        self.parse_configuration()
+        self.parse_arg_configs()
         self.find_flag_positions()
         self.process_flagged_args()
         self.process_positional_args()
 
         return ParsedArgs(**self.parsed_args)
 
-    def parse_configuration(self) -> None:
+    def parse_arg_configs(self) -> None:
         """Parse the `arg_parse_configs` configuration and build lookup structures."""
-        positional_before_configured, positional_after_configured = False, False
-
         for alias, config in self.arg_parse_configs.items():
             if not alias.isidentifier():
                 raise ValueError(f"Invalid argument alias '{alias}'.\n"
                                  "Aliases must be valid Python identifiers.")
 
-            flags: Optional[set[str]] = None
-
-            if isinstance(config, str):
-                # HANDLE POSITIONAL ARGUMENT COLLECTION
-                if config == "before":
-                    if positional_before_configured:
-                        raise ValueError("Only one alias can use the value 'before' for positional argument collection.")
-                    positional_before_configured = True
-                elif config == "after":
-                    if positional_after_configured:
-                        raise ValueError("Only one alias can use the value 'after' for positional argument collection.")
-                    positional_after_configured = True
-                else:
-                    raise ValueError(
-                        f"Invalid positional argument type '{config}' under alias '{alias}'.\n"
-                        "Must be either 'before' or 'after'."
-                    )
-                self.positional_configs[alias] = config
-                self.parsed_args[alias] = ParsedArgData(exists=False, values=[], is_pos=True)
-            elif isinstance(config, set):
-                if not (flags := config):
-                    raise ValueError(
-                        f"The flag set under alias '{alias}' is empty.\n"
-                        "The set must contain at least one flag to search for."
-                    )
-                self.parsed_args[alias] = ParsedArgData(exists=False, values=[], is_pos=False)
-            elif isinstance(config, dict):
-                if not (flags := config.get("flags")):
-                    raise ValueError(
-                        f"No flags provided under alias '{alias}'.\n"
-                        "The 'flags'-key set must contain at least one flag to search for."
-                    )
-                self.parsed_args[alias] = ParsedArgData(
-                    exists=False,
-                    values=[default] if (default := config.get("default")) is not None else [],
-                    is_pos=False,
-                )
-            else:
-                raise TypeError(
-                    f"Invalid configuration type under alias '{alias}'.\n"
-                    "Must be a set, dict, literal 'before' or literal 'after'."
-                )
-
-            # BUILD FLAG LOOKUP FOR NON-POSITIONAL ARGUMENTS
-            if flags is not None:
+            # PARSE ARG CONFIG & BUILD FLAG LOOKUP FOR NON-POSITIONAL ARGS
+            if (flags := self._parse_arg_config(alias, config)) is not None:
                 for flag in flags:
                     if flag in self.arg_lookup:
                         raise ValueError(
                             f"Duplicate flag '{flag}' found. It's assigned to both '{self.arg_lookup[flag]}' and '{alias}'."
                         )
                     self.arg_lookup[flag] = alias
+
+    def _parse_arg_config(self, alias: str, config: ArgParseConfig) -> Optional[set[str]]:
+        """Parse an individual argument configuration."""
+        # POSITIONAL ARGUMENT CONFIGURATION
+        if isinstance(config, str):
+            if config == "before":
+                if self.pos_before_configured:
+                    raise ValueError("Only one alias can use the value 'before' for positional argument collection.")
+                self.pos_before_configured = True
+            elif config == "after":
+                if self.pos_after_configured:
+                    raise ValueError("Only one alias can use the value 'after' for positional argument collection.")
+                self.pos_after_configured = True
+            else:
+                raise ValueError(
+                    f"Invalid positional argument type '{config}' under alias '{alias}'.\n"
+                    "Must be either 'before' or 'after'."
+                )
+            self.positional_configs[alias] = config
+            self.parsed_args[alias] = ParsedArgData(exists=False, values=[], is_pos=True)
+            return None  # NO FLAGS TO RETURN FOR POSITIONAL ARGS
+
+        # NORMAL SET OF FLAGS
+        elif isinstance(config, set):
+            if not config:
+                raise ValueError(
+                    f"The flag set under alias '{alias}' is empty.\n"
+                    "The set must contain at least one flag to search for."
+                )
+            self.parsed_args[alias] = ParsedArgData(exists=False, values=[], is_pos=False)
+            return config
+
+        # SET OF FLAGS WITH SPECIFIED DEFAULT VALUE
+        elif isinstance(config, dict):
+            if not config.get("flags"):
+                raise ValueError(
+                    f"No flags provided under alias '{alias}'.\n"
+                    "The 'flags'-key set must contain at least one flag to search for."
+                )
+            self.parsed_args[alias] = ParsedArgData(
+                exists=False,
+                values=[default] if (default := config.get("default")) is not None else [],
+                is_pos=False,
+            )
+            return config["flags"]
+
+        else:
+            raise TypeError(
+                f"Invalid configuration type under alias '{alias}'.\n"
+                "Must be a set, dict, literal 'before' or literal 'after'."
+            )
 
     def find_flag_positions(self) -> None:
         """Find positions of first and last flags for positional argument collection."""
