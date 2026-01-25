@@ -76,7 +76,9 @@ class ParsedArgData:
         if not isinstance(other, ParsedArgData):
             return False
         return (
-            self.exists == other.exists and self.values == other.values and self.is_pos == other.is_pos
+            self.exists == other.exists \
+            and self.is_pos == other.is_pos
+            and self.values == other.values
             and self.flag == other.flag
         )
 
@@ -261,30 +263,30 @@ class Console(metaclass=_ConsoleMeta):
     def get_args(cls, arg_parse_configs: ArgParseConfigs, flag_value_sep: str = "=") -> ParsedArgs:
         """Will search for the specified args in the command-line arguments
         and return the results as a special `ParsedArgs` object.\n
-        --------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------------
         - `arg_parse_configs` - a dictionary where each key is an alias name for the argument
           and the key's value is the parsing configuration for that argument
         - `flag_value_sep` - the character/s used to separate flags from their values\n
-        --------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------------
         The `arg_parse_configs` dictionary can have the following structures for each item:
         1. Simple set of flags (when no default value is needed):
-        ```python
+           ```python
             "alias_name": {"-f", "--flag"}
-        ```
+           ```
         2. Dictionary with the`"flags"` set, plus a specified `"default"` value:
-        ```python
+           ```python
             "alias_name": {
                 "flags": {"-f", "--flag"},
                 "default": "some_value",
             }
-        ```
+           ```
         3. Positional value collection using the literals `"before"` or `"after"`:
-        ```python
+           ```python
             # COLLECT ALL NON-FLAGGED VALUES THAT APPEAR BEFORE THE FIRST FLAG
             "alias_name": "before"
             # COLLECT ALL NON-FLAGGED VALUES THAT APPEAR AFTER THE LAST FLAG'S VALUE
             "alias_name": "after"
-        ```
+           ```
         #### Example usage:
         If you call the `get_args()` method in your script like this:
         ```python
@@ -313,7 +315,7 @@ class Console(metaclass=_ConsoleMeta):
             text_after = ParsedArgData(exists=True, is_pos=True, values=["Goodbye"], flag=None),
         )
         ```
-        --------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------------
         NOTE: Flags can ONLY receive values when the separator is present
         (e.g. `--flag=value` or `--flag = value`)."""
         if not flag_value_sep:
