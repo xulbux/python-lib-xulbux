@@ -31,7 +31,20 @@
   - `architecture` The CPU architecture (*e.g.* `x86_64`*,* `ARM`*, …*).
   - `cpu_count` The number of CPU cores available.
   - `python_version` The Python version string (*e.g.* `3.10.4`).
-* Created a new TypeAlias `FindArgConfig` which specifies the argument-finding configuration of a single argument for CLI argument parsing.
+* Created a two new TypeAliases:
+  - `ArgParseConfig` Matches the command-line-parsing configuration of a single argument.
+  - `ArgParseConfigs` Matches the command-line-parsing configurations of multiple arguments, packed in a dictionary.
+* Added a new attribute `flag` to the `ArgData` TypedDict and the `ArgResult` class, which contains the specific flag that was found or `None` for positional args.
+
+**BREAKING CHANGES:**
+* Rewrote `Console.get_args()` for a different parsing functionality:
+  - Flagged values are now too saved to lists, so now only the `values` attribute is used for all argument types.
+  - The results of parsed command-line arguments are also no longer differentiated between regular flagged arguments and positional `"before"`/`"after"` arguments.
+  - The param `allow_spaces` was removed, and therefore a new param `flag_value_sep` was added, which specifies the character/s used to separate flags from their values.<br>
+    This means, flags can new **only** receive values when the separator is present (*e.g.* `--flag=value` *or* `--flag = value`).
+* Combined the custom TypedDict classes `ArgResultRegular` and `ArgResultPositional` into a single TypedDict class `ArgData`, which is now used for all parsed command-line arguments.
+* Renamed the classes `Args` and `ArgResult` to `ParsedArgs` and `ParsedArgData`, to better describe their purpose.
+* Renamed the attribute `is_positional` to `is_pos` everywhere, so its name isn't that long.
 
 
 <span id="v1-9-4" />

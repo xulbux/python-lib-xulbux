@@ -66,7 +66,7 @@ class _SystemMeta(type):
 
     @property
     def username(cls) -> str:
-        """The current user's username."""
+        """The name of the current user."""
         try:
             return _getpass.getuser()
         except Exception:
@@ -104,7 +104,7 @@ class _SystemMeta(type):
 
     @property
     def python_version(cls) -> str:
-        """The Python version string (e.g. `3.10.4`)."""
+        """The version string of the currently running Python interpreter (e.g. `3.10.4`)."""
         return _platform.python_version()
 
 
