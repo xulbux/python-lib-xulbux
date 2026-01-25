@@ -15,6 +15,38 @@
 # <br><b>Changelog</b><br>
 
 
+<span id="v1-9-5" />
+
+## 25.01.2026 `v1.9.5`
+
+* Add new class property `Console.encoding`, which returns the encoding used by the console (*e.g.* `utf-8`*,* `cp1252`*, …*).
+* Add multiple new class properties to the `System` class:
+  - `is_linux` Whether the current OS is Linux or not.
+  - `is_mac` Whether the current OS is macOS or not.
+  - `is_unix` Whether the current OS is a Unix-like OS (Linux, macOS, BSD, …) or not.
+  - `hostname` The network hostname of the current machine.
+  - `username` The current user's username.
+  - `os_name` The name of the operating system (*e.g.* `Windows`*,* `Linux`*, …*).
+  - `os_version` The version of the operating system.
+  - `architecture` The CPU architecture (*e.g.* `x86_64`*,* `ARM`*, …*).
+  - `cpu_count` The number of CPU cores available.
+  - `python_version` The Python version string (*e.g.* `3.10.4`).
+* Created a two new TypeAliases:
+  - `ArgParseConfig` Matches the command-line-parsing configuration of a single argument.
+  - `ArgParseConfigs` Matches the command-line-parsing configurations of multiple arguments, packed in a dictionary.
+* Added a new attribute `flag` to the `ArgData` TypedDict and the `ArgResult` class, which contains the specific flag that was found or `None` for positional args.
+
+**BREAKING CHANGES:**
+* Rewrote `Console.get_args()` for a different parsing functionality:
+  - Flagged values are now too saved to lists, so now only the `values` attribute is used for all argument types.
+  - The results of parsed command-line arguments are also no longer differentiated between regular flagged arguments and positional `"before"`/`"after"` arguments.
+  - The param `allow_spaces` was removed, and therefore a new param `flag_value_sep` was added, which specifies the character/s used to separate flags from their values.<br>
+    This means, flags can new **only** receive values when the separator is present (*e.g.* `--flag=value` *or* `--flag = value`).
+* Combined the custom TypedDict classes `ArgResultRegular` and `ArgResultPositional` into a single TypedDict class `ArgData`, which is now used for all parsed command-line arguments.
+* Renamed the classes `Args` and `ArgResult` to `ParsedArgs` and `ParsedArgData`, to better describe their purpose.
+* Renamed the attribute `is_positional` to `is_pos` everywhere, so its name isn't that long.
+
+
 <span id="v1-9-4" />
 
 ## 06.01.2026 `v1.9.4`

@@ -2,7 +2,7 @@
 This module contains all custom type definitions used throughout the library.
 """
 
-from typing import TYPE_CHECKING, Annotated, TypeAlias, TypedDict, Optional, Protocol, Union, Any
+from typing import TYPE_CHECKING, Annotated, TypeAlias, TypedDict, Optional, Protocol, Literal, Union, Any
 from pathlib import Path
 
 # PREVENT CIRCULAR IMPORTS
@@ -70,6 +70,11 @@ AnyHsla: TypeAlias = Any
 AnyHexa: TypeAlias = Any
 """Generic type alias for hexadecimal color values in any supported format (type checking disabled)."""
 
+ArgParseConfig: TypeAlias = Union[set[str], "ArgConfigWithDefault", Literal["before", "after"]]
+"""Matches the command-line-parsing configuration of a single argument."""
+ArgParseConfigs: TypeAlias = dict[str, ArgParseConfig]
+"""Matches the command-line-parsing configurations of multiple arguments, packed in a dictionary."""
+
 #
 ################################################## Sentinel ##################################################
 
@@ -83,21 +88,17 @@ class AllTextChars:
 
 
 class ArgConfigWithDefault(TypedDict):
-    """Configuration schema for a flagged CLI argument that has a specified default value."""
+    """Configuration schema for a flagged command-line argument that has a specified default value."""
     flags: set[str]
     default: str
 
 
-class ArgResultRegular(TypedDict):
-    """Result schema for a parsed regular flagged CLI argument."""
+class ArgData(TypedDict):
+    """Schema for the resulting data of parsing a single command-line argument."""
     exists: bool
-    value: Optional[str]
-
-
-class ArgResultPositional(TypedDict):
-    """Result schema for parsed positional (`"before"`/`"after"`) CLI arguments."""
-    exists: bool
+    is_pos: bool
     values: list[str]
+    flag: Optional[str]
 
 
 class MissingLibsMsgs(TypedDict):

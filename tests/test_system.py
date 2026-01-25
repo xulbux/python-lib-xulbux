@@ -20,6 +20,72 @@ def test_system_is_win():
     assert result == (platform.system() == "Windows")
 
 
+def test_system_is_linux():
+    result = System.is_linux
+    assert isinstance(result, bool)
+    assert result == (platform.system() == "Linux")
+
+
+def test_system_is_mac():
+    result = System.is_mac
+    assert isinstance(result, bool)
+    assert result == (platform.system() == "Darwin")
+
+
+def test_system_is_unix():
+    result = System.is_unix
+    assert isinstance(result, bool)
+    current_system = platform.system()
+    expected = current_system in ["Linux", "Darwin"] or "BSD" in current_system
+    assert result == expected
+
+
+def test_system_hostname():
+    hostname = System.hostname
+    assert isinstance(hostname, str)
+    assert hostname != ""
+
+
+def test_system_username():
+    username = System.username
+    assert isinstance(username, str)
+    assert username != ""
+
+
+def test_system_os_info():
+    """Test OS name and version properties"""
+    os_name = System.os_name
+    assert isinstance(os_name, str)
+    assert os_name != ""
+    assert os_name in ["Windows", "Linux", "Darwin"] or os_name != ""
+
+    os_version = System.os_version
+    assert isinstance(os_version, str)
+    assert os_version != ""
+
+
+def test_system_architecture():
+    architecture = System.architecture
+    assert isinstance(architecture, str)
+    assert architecture != ""
+    assert any(arch in architecture.lower() for arch in ["x86", "amd64", "arm", "aarch", "i386", "i686"])
+
+
+def test_system_cpu_count():
+    cpu_count = System.cpu_count
+    assert isinstance(cpu_count, int)
+    assert cpu_count >= 1
+
+
+def test_system_python_version():
+    python_version = System.python_version
+    assert isinstance(python_version, str)
+    assert python_version != ""
+    parts = python_version.split(".")
+    assert len(parts) >= 2
+    assert all(part.isdigit() for part in parts[:2])
+
+
 def test_check_libs_existing_modules():
     """Test check_libs with existing modules"""
     result = System.check_libs(["os", "sys", "json"])

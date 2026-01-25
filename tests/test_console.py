@@ -1,6 +1,5 @@
-from xulbux.base.types import ArgResultPositional, ArgResultRegular
+from xulbux.console import ParsedArgData, ParsedArgs
 from xulbux.console import Spinner, ProgressBar
-from xulbux.console import ArgResult, Args
 from xulbux.console import Console
 from xulbux import console
 
@@ -81,497 +80,281 @@ def test_console_is_tty():
     assert isinstance(result, bool)
 
 
+def test_console_encoding():
+    encoding = Console.encoding
+    assert isinstance(encoding, str)
+    assert encoding != ""
+    assert encoding.lower() in {"utf-8", "cp1252", "ascii", "latin-1", "iso-8859-1"} or "-" in encoding
+
+
 def test_console_supports_color():
     result = Console.supports_color
     assert isinstance(result, bool)
 
 
 @pytest.mark.parametrize(
-    # CASES WITHOUT SPACES (allow_spaces=False)
-    "argv, find_args, expected_args_dict", [
-        # NO ARGS PROVIDED
+    "argv, arg_parse_configs, expected_parsed_args", [
+        # SIMPLE FLAG VALUE THE INCLUDES SPACES
         (
-            ["script.py"],
+            ["script.py", "-f=token with spaces", "-d"],
             {"file": {"-f"}, "debug": {"-d"}},
-            {"file": {"exists": False, "value": None}, "debug": {"exists": False, "value": None}},
-        ),
-        # SIMPLE FLAG
-        (
-            ["script.py", "-d"],
-            {"file": {"-f"}, "debug": {"-d"}},
-            {"file": {"exists": False, "value": None}, "debug": {"exists": True, "value": None}},
-        ),
-        # FLAG WITH VALUE
-        (
-            ["script.py", "-f", "test.txt"],
-            {"file": {"-f"}, "debug": {"-d"}},
-            {"file": {"exists": True, "value": "test.txt"}, "debug": {"exists": False, "value": None}},
-        ),
-        # LONG FLAGS WITH VALUE AND FLAG
-        (
-            ["script.py", "--file", "path/to/file", "--debug"],
-            {"file": {"-f", "--file"}, "debug": {"-d", "--debug"}},
-            {"file": {"exists": True, "value": "path/to/file"}, "debug": {"exists": True, "value": None}},
-        ),
-        # VALUE WITH SPACES (ONLY FIRST PART DUE TO allow_spaces=False)
-        (
-            ["script.py", "-t", "text", "with", "spaces"],
-            {"text": {"-t"}},
-            {"text": {"exists": True, "value": "text"}},
-        ),
-        # UNKNOWN ARG
-        (
-            ["script.py", "-x"],
-            {"file": {"-f"}},
-            {"file": {"exists": False, "value": None}},
-        ),
-        # TWO FLAGS
-        (
-            ["script.py", "-f", "-d"],
-            {"file": {"-f"}, "debug": {"-d"}},
-            {"file": {"exists": True, "value": None}, "debug": {"exists": True, "value": None}},
-        ),
-        # CASE SENSITIVE FLAGS
-        (
-            ["script.py", "-i", "input.txt", "-I", "ignore"],
-            {"input": {"-i"}, "ignore": {"-I"}, "help": {"-h"}},
             {
-                "input": {"exists": True, "value": "input.txt"},
-                "ignore": {"exists": True, "value": "ignore"},
-                "help": {"exists": False, "value": None},
+                "file": {"exists": True, "is_pos": False, "values": ["token with spaces"], "flag": "-f"},
+                "debug": {"exists": True, "is_pos": False, "values": [], "flag": "-d"},
             },
         ),
-
-        # --- CASES WITH DEFAULT VALUES ---
-        # DEFAULT USED
+        # FLAG VALUE PLUS OTHER TOKENS
         (
-            ["script.py"],
-            {"output": {"flags": {"-o"}, "default": "out.txt"}, "verbose": {"-v"}},
-            {"output": {"exists": False, "value": "out.txt"}, "verbose": {"exists": False, "value": None}},
+            ["script.py", "--msg=hello", "world"],
+            {"message": {"--msg"}},
+            {"message": {"exists": True, "is_pos": False, "values": ["hello"], "flag": "--msg"}},
         ),
-        # VALUE OVERRIDES DEFAULT
+        # VALUE SET IN SINGLE TOKEN FOLLOWED BY SECOND FLAG
         (
-            ["script.py", "-o", "my_file.log"],
-            {"output": {"flags": {"-o"}, "default": "out.txt"}, "verbose": {"-v"}},
-            {"output": {"exists": True, "value": "my_file.log"}, "verbose": {"exists": False, "value": None}},
-        ),
-        # FLAG PRESENCE OVERRIDES DEFAULT (string -> None)
-        (
-            ["script.py", "-o"],
-            {"output": {"flags": {"-o"}, "default": "out.txt"}, "verbose": {"-v"}},
-            {"output": {"exists": True, "value": None}, "verbose": {"exists": False, "value": None}},
-        ),
-        # FLAG PRESENCE OVERRIDES DEFAULT (False -> None)
-        (
-            ["script.py", "-v"],
-            {"output": {"flags": {"-o"}, "default": "out.txt"}, "verbose": {"flags": {"-v"}, "default": "False"}},
-            {"output": {"exists": False, "value": "out.txt"}, "verbose": {"exists": True, "value": None}},
-        ),
-
-        # --- MIXED list/tuple AND dict FORMATS (allow_spaces=False) ---
-        # DICT VALUE PROVIDED, LIST NOT PROVIDED
-        (
-            ["script.py", "--config", "dev.cfg"],
-            {"config": {"flags": {"-c", "--config"}, "default": "prod.cfg"}, "log": {"-l"}},
-            {"config": {"exists": True, "value": "dev.cfg"}, "log": {"exists": False, "value": None}},
-        ),
-        # LIST FLAG PROVIDED, DICT NOT PROVIDED (USES DEFAULT)
-        (
-            ["script.py", "-l"],
-            {"config": {"flags": {"-c", "--config"}, "default": "prod.cfg"}, "log": {"-l"}},
-            {"config": {"exists": False, "value": "prod.cfg"}, "log": {"exists": True, "value": None}},
-        ),
-
-        # --- 'before' / 'after' SPECIAL CASES ---
-        # 'before' SPECIAL CASE
-        (
-            ["script.py", "arg1", "arg2.1 arg2.2", "-f", "file.txt"],
-            {"before": "before", "file": {"-f"}},
-            {"before": {"exists": True, "values": ["arg1", "arg2.1 arg2.2"]}, "file": {"exists": True, "value": "file.txt"}},
-        ),
-        (
-            ["script.py", "-f", "file.txt"],
-            {"before": "before", "file": {"-f"}},
-            {"before": {"exists": False, "values": []}, "file": {"exists": True, "value": "file.txt"}},
-        ),
-        # 'after' SPECIAL CASE
-        (
-            ["script.py", "-f", "file.txt", "arg1", "arg2.1 arg2.2"],
-            {"after": "after", "file": {"-f"}},
-            {"after": {"exists": True, "values": ["arg1", "arg2.1 arg2.2"]}, "file": {"exists": True, "value": "file.txt"}},
-        ),
-        (
-            ["script.py", "-f", "file.txt"],
-            {"after": "after", "file": {"-f"}},
-            {"after": {"exists": False, "values": []}, "file": {"exists": True, "value": "file.txt"}},
-        ),
-
-        # --- CUSTOM PREFIX TESTS ---
-        # COLON AND SLASH PREFIXES
-        (
-            ["script.py", ":config", "dev.json", "/output", "result.txt"],
-            {"config": {":config"}, "output": {"/output"}},
-            {"config": {"exists": True, "value": "dev.json"}, "output": {"exists": True, "value": "result.txt"}},
-        ),
-        # WORD FLAGS WITHOUT PREFIXES
-        (
-            ["script.py", "verbose", "help", "123"],
-            {"verbose": {"verbose"}, "help": {"help"}, "number": {"-n"}},
+            ["script.py", "--msg=this is a message", "--flag"],
+            {"message": {"--msg"}, "flag": {"--flag"}},
             {
-                "verbose": {"exists": True, "value": None},
-                "help": {"exists": True, "value": "123"},
-                "number": {"exists": False, "value": None},
+                "message": {"exists": True, "is_pos": False, "values": ["this is a message"], "flag": "--msg"},
+                "flag": {"exists": True, "is_pos": False, "values": [], "flag": "--flag"},
             },
         ),
-        # MIXED CUSTOM PREFIXES WITH DEFAULTS
+        # FLAG, SEPARATOR, AND VALUE SPREAD OVER MULTIPLE TOKENS
         (
-            ["script.py", "@user", "admin"],
-            {"user": {"flags": {"@user"}, "default": "guest"}, "mode": {"flags": {"++mode"}, "default": "normal"}},
-            {"user": {"exists": True, "value": "admin"}, "mode": {"exists": False, "value": "normal"}},
-        ),
-    ]
-)
-def test_get_args_no_spaces(monkeypatch, argv, find_args, expected_args_dict):
-    monkeypatch.setattr(sys, "argv", argv)
-    args_result = Console.get_args(allow_spaces=False, **find_args)
-    assert isinstance(args_result, Args)
-    assert args_result.dict() == expected_args_dict
-    for key, expected in expected_args_dict.items():
-        assert (key in args_result) is True
-        assert isinstance(args_result[key], ArgResult)
-        assert args_result[key].exists == expected["exists"]  # type: ignore[cannot-access-attr]
-        # CHECK IF THIS IS A POSITIONAL ARG (HAS 'values') OR REGULAR ARG (HAS 'value')
-        if "values" in expected:
-            assert args_result[key].values == expected["values"]  # type: ignore[cannot-access-attr]
-        else:
-            assert args_result[key].value == expected["value"]  # type: ignore[cannot-access-attr]
-        assert bool(args_result[key]) == expected["exists"]
-    assert list(args_result.keys()) == list(expected_args_dict.keys())
-    assert [v.exists for v in args_result.values()] == [d["exists"] for d in expected_args_dict.values()]
-    assert len(args_result) == len(expected_args_dict)
-
-
-@pytest.mark.parametrize(
-    # CASES WITH SPACES (allow_spaces=True)
-    "argv, find_args, expected_args_dict", [
-        # SIMPLE VALUE WITH SPACES
-        (
-            ["script.py", "-f", "file with spaces", "-d"],
-            {"file": {"-f"}, "debug": {"-d"}},
-            {"file": {"exists": True, "value": "file with spaces"}, "debug": {"exists": True, "value": None}},
-        ),
-        # LONG VALUE WITH SPACES
-        (
-            ["script.py", "--message", "Hello", "world", "how", "are", "you"],
-            {"message": {"--message"}},
-            {"message": {"exists": True, "value": "Hello world how are you"}},
-        ),
-        # VALUE WITH SPACES FOLLOWED BY ANOTHER FLAG
-        (
-            ["script.py", "-m", "this is", "a message", "--flag"],
-            {"message": {"-m"}, "flag": {"--flag"}},
-            {"message": {"exists": True, "value": "this is a message"}, "flag": {"exists": True, "value": None}},
-        ),
-        # VALUE WITH SPACES AT THE END
-        (
-            ["script.py", "-m", "end", "of", "args"],
-            {"message": {"-m"}},
-            {"message": {"exists": True, "value": "end of args"}},
+            ["script.py", "--msg", "=", "this is a message"],
+            {"message": {"--msg"}},
+            {"message": {"exists": True, "is_pos": False, "values": ["this is a message"], "flag": "--msg"}},
         ),
         # CASE SENSITIVE FLAGS WITH SPACES
         (
-            ["script.py", "-t", "this is", "a test", "-T", "UPPERCASE"],
+            ["script.py", "-t=this is some text", "-T=THIS IS A TITLE"],
             {"text": {"-t"}, "title": {"-T"}},
-            {"text": {"exists": True, "value": "this is a test"}, "title": {"exists": True, "value": "UPPERCASE"}},
+            {
+                "text": {"exists": True, "is_pos": False, "values": ["this is some text"], "flag": "-t"},
+                "title": {"exists": True, "is_pos": False, "values": ["THIS IS A TITLE"], "flag": "-T"},
+            },
         ),
 
-        # --- CASES WITH DEFAULTS (dict FORMAT, allow_spaces=True) ---
-        # VALUE WITH SPACE OVERRIDES DEFAULT
+        # --- CASES WITH DEFAULTS ---
+        # GIVEN FLAG VALUE OVERWRITES DEFAULT
         (
-            ["script.py", "--msg", "Default message"],
-            {"msg": {"flags": {"--msg"}, "default": "No message"}, "other": {"-o"}},
-            {"msg": {"exists": True, "value": "Default message"}, "other": {"exists": False, "value": None}},
+            ["script.py", "--msg=given message"],
+            {"msg": {"flags": {"--msg"}, "default": "no message"}, "other": {"-o"}},
+            {
+                "msg": {"exists": True, "is_pos": False, "values": ["given message"], "flag": "--msg"},
+                "other": {"exists": False, "is_pos": False, "values": [], "flag": None},
+            },
         ),
-        # DEFAULT USED WHEN OTHER FLAG PRESENT
+        # DEFAULT USED WHEN FLAG PRESENT BUT NO VALUE GIVEN
+        (
+            ["script.py", "-o", "--msg"],
+            {"msg": {"flags": {"--msg"}, "default": "no message"}, "other": {"-o"}},
+            {
+                "msg": {"exists": True, "is_pos": False, "values": ["no message"], "flag": "--msg"},
+                "other": {"exists": True, "is_pos": False, "values": [], "flag": "-o"},
+            },
+        ),
+        # DEFAULT USED WHEN FLAG ABSENT
         (
             ["script.py", "-o"],
-            {"msg": {"flags": {"--msg"}, "default": "No message"}, "other": {"-o"}},
-            {"msg": {"exists": False, "value": "No message"}, "other": {"exists": True, "value": None}},
-        ),
-        # FLAG PRESENCE OVERRIDES DEFAULT (str -> True)
-        # FLAG WITH NO VALUE SHOULD HAVE None AS VALUE
-        (
-            ["script.py", "--msg"],
-            {"msg": {"flags": {"--msg"}, "default": "No message"}, "other": {"-o"}},
-            {"msg": {"exists": True, "value": None}, "other": {"exists": False, "value": None}},
+            {"msg": {"flags": {"--msg"}, "default": "no message"}, "other": {"-o"}},
+            {
+                "msg": {"exists": False, "is_pos": False, "values": ["no message"], "flag": None},
+                "other": {"exists": True, "is_pos": False, "values": [], "flag": "-o"},
+            },
         ),
 
-        # --- MIXED FORMATS WITH SPACES (allow_spaces=True) ---
-        # LIST VALUE WITH SPACES, dict VALUE PROVIDED
+        # --- POSITIONAL "before" / "after" SPECIAL CASES ---
+        # POSITIONAL "before"
         (
-            ["script.py", "-f", "input file name", "--mode", "test"],
-            {"file": {"-f"}, "mode": {"flags": {"--mode"}, "default": "prod"}},
-            {"file": {"exists": True, "value": "input file name"}, "mode": {"exists": True, "value": "test"}},
-        ),
-        # LIST VALUE WITH SPACES, dict NOT PROVIDED (USES DEFAULT)
-        (
-            ["script.py", "-f", "another file"],
-            {"file": {"-f"}, "mode": {"flags": {"--mode"}, "default": "prod"}},
-            {"file": {"exists": True, "value": "another file"}, "mode": {"exists": False, "value": "prod"}},
-        ),
-
-        # --- 'before' / 'after' SPECIAL CASES (ARE NOT AFFECTED BY allow_spaces) ---
-        # 'before' SPECIAL CASE
-        (
-            ["script.py", "arg1", "arg2.1 arg2.2", "-f", "file.txt"],
+            ["script.py", "arg1", "arg2.1 arg2.2"],
             {"before": "before", "file": {"-f"}},
-            {"before": {"exists": True, "values": ["arg1", "arg2.1 arg2.2"]}, "file": {"exists": True, "value": "file.txt"}},
+            {
+                "before": {"exists": True, "is_pos": True, "values": ["arg1", "arg2.1 arg2.2"], "flag": None},
+                "file": {"exists": False, "is_pos": False, "values": [], "flag": None},
+            },
         ),
-        # 'after' SPECIAL CASE
         (
-            ["script.py", "-f", "file.txt", "arg1", "arg2.1 arg2.2"],
-            {"after": "after", "file": {"-f"}},
-            {"after": {"exists": False, "values": []}, "file": {"exists": True, "value": "file.txt arg1 arg2.1 arg2.2"}},
+            ["script.py", "arg1", "arg2.1 arg2.2", "-f=file.txt", "arg3"],
+            {"before": "before", "file": {"-f"}},
+            {
+                "before": {"exists": True, "is_pos": True, "values": ["arg1", "arg2.1 arg2.2"], "flag": None},
+                "file": {"exists": True, "is_pos": False, "values": ["file.txt"], "flag": "-f"},
+            },
         ),
+        (
+            ["script.py", "-f=file.txt", "arg1"],
+            {"before": "before", "file": {"-f"}},
+            {
+                "before": {"exists": False, "is_pos": True, "values": [], "flag": None},
+                "file": {"exists": True, "is_pos": False, "values": ["file.txt"], "flag": "-f"},
+            },
+        ),
+        # POSITIONAL "after"
         (
             ["script.py", "arg1", "arg2.1 arg2.2"],
             {"after": "after", "file": {"-f"}},
-            {"after": {"exists": True, "values": ["arg1", "arg2.1 arg2.2"]}, "file": {"exists": False, "value": None}},
+            {
+                "file": {"exists": False, "is_pos": False, "values": [], "flag": None},
+                "after": {"exists": True, "is_pos": True, "values": ["arg1", "arg2.1 arg2.2"], "flag": None},
+            },
+        ),
+        (
+            ["script.py", "arg1", "-f=file.txt", "arg2", "arg3.1 arg3.2"],
+            {"after": "after", "file": {"-f"}},
+            {
+                "file": {"exists": True, "is_pos": False, "values": ["file.txt"], "flag": "-f"},
+                "after": {"exists": True, "is_pos": True, "values": ["arg2", "arg3.1 arg3.2"], "flag": None},
+            },
+        ),
+        (
+            ["script.py", "arg1", "-f=file.txt"],
+            {"after": "after", "file": {"-f"}},
+            {
+                "file": {"exists": True, "is_pos": False, "values": ["file.txt"], "flag": "-f"},
+                "after": {"exists": False, "is_pos": True, "values": [], "flag": None},
+            },
         ),
 
-        # --- CUSTOM PREFIX TESTS WITH SPACES ---
-        # QUESTION MARK AND DOUBLE PLUS PREFIXES WITH MULTIWORD VALUES
+        # --- CUSTOM FLAG PREFIXES ---
+        # QUESTION MARK AND DOUBLE PLUS PREFIXES
         (
-            ["script.py", "?help", "show", "detailed", "info", "++mode", "test"],
+            ["script.py", "?help = show detailed info", "++mode=test"],
             {"help": {"?help"}, "mode": {"++mode"}},
-            {"help": {"exists": True, "value": "show detailed info"}, "mode": {"exists": True, "value": "test"}},
+            {
+                "help": {"exists": True, "is_pos": False, "values": ["show detailed info"], "flag": "?help"},
+                "mode": {"exists": True, "is_pos": False, "values": ["test"], "flag": "++mode"},
+            },
         ),
-        # AT SYMBOL PREFIX WITH SPACES
+        # AT SYMBOL PREFIX WITH POSITIONAL ARGUMENTS
         (
-            ["script.py", "@message", "Hello", "World", "How", "are", "you"],
-            {"message": {"@message"}},
-            {"message": {"exists": True, "value": "Hello World How are you"}},
+            ["script.py", "@msg = Hello, world!", "How are you?"],
+            {"before": "before", "message": {"@msg"}, "after": "after"},
+            {
+                "before": {"exists": False, "is_pos": True, "values": [], "flag": None},
+                "message": {"exists": True, "is_pos": False, "values": ["Hello, world!"], "flag": "@msg"},
+                "after": {"exists": True, "is_pos": True, "values": ["How are you?"], "flag": None},
+            },
+        ),
+
+        # --- DON'T TREAT VALUES STARTING WITH SPECIFIED FLAG PREFIXES AS FLAGS ---
+        (
+            ["script.py", "-42", "-d=-256", "--file=--not-a-flag", "--also-no-flag"],
+            {"before": "before", "data": {"-d"}, "file": {"--file"}, "after": "after"},
+            {
+                "before": {"exists": True, "is_pos": True, "values": ["-42"], "flag": None},
+                "data": {"exists": True, "is_pos": False, "values": ["-256"], "flag": "-d"},
+                "file": {"exists": True, "is_pos": False, "values": ["--not-a-flag"], "flag": "--file"},
+                "after": {"exists": True, "is_pos": True, "values": ["--also-no-flag"], "flag": None},
+            },
         ),
     ]
 )
-def test_get_args_with_spaces(monkeypatch, argv, find_args, expected_args_dict):
+def test_get_args(monkeypatch, argv, arg_parse_configs, expected_parsed_args):
     monkeypatch.setattr(sys, "argv", argv)
-    args_result = Console.get_args(allow_spaces=True, **find_args)
-    assert isinstance(args_result, Args)
-    assert args_result.dict() == expected_args_dict
+    args_result = Console.get_args(arg_parse_configs)
+    assert isinstance(args_result, ParsedArgs)
+    assert args_result.dict() == expected_parsed_args
 
 
-def test_get_args_flag_without_value(monkeypatch):
-    """Test that flags without values have None as their value, not True."""
-    # TEST SINGLE FLAG WITHOUT VALUE AT END OF ARGS
-    monkeypatch.setattr(sys, "argv", ["script.py", "--verbose"])
-    args_result = Console.get_args(verbose={"--verbose"})
-    assert args_result.verbose.exists is True
-    assert args_result.verbose.value is None
-    assert args_result.verbose.is_positional is False
-
-    # TEST FLAG WITHOUT VALUE FOLLOWED BY ANOTHER FLAG
-    monkeypatch.setattr(sys, "argv", ["script.py", "--verbose", "--debug"])
-    args_result = Console.get_args(verbose={"--verbose"}, debug={"--debug"})
-    assert args_result.verbose.exists is True
-    assert args_result.verbose.value is None
-    assert args_result.verbose.is_positional is False
-    assert args_result.debug.exists is True
-    assert args_result.debug.value is None
-    assert args_result.debug.is_positional is False
-
-    # TEST FLAG WITH DEFAULT VALUE BUT NO PROVIDED VALUE
-    monkeypatch.setattr(sys, "argv", ["script.py", "--mode"])
-    args_result = Console.get_args(mode={"flags": {"--mode"}, "default": "production"})
-    assert args_result.mode.exists is True
-    assert args_result.mode.value is None
-    assert args_result.mode.is_positional is False
-
-
-def test_get_args_duplicate_flag():
+def test_get_args_invalid_params():
     with pytest.raises(ValueError, match="Duplicate flag '-f' found. It's assigned to both 'file1' and 'file2'."):
-        Console.get_args(file1={"-f", "--file1"}, file2={"flags": {"-f", "--file2"}, "default": "..."})
+        Console.get_args({"file1": {"-f", "--file1"}, "file2": {"flags": {"-f", "--file2"}, "default": "..."}})
 
     with pytest.raises(ValueError, match="Duplicate flag '--long' found. It's assigned to both 'arg1' and 'arg2'."):
-        Console.get_args(arg1={"flags": {"--long"}, "default": "..."}, arg2={"-a", "--long"})
+        Console.get_args({"arg1": {"flags": {"--long"}, "default": "..."}, "arg2": {"-a", "--long"}})
+
+    with pytest.raises(ValueError, match="The set must contain at least one flag to search for."):
+        Console.get_args({"arg": set()})
+
+    with pytest.raises(ValueError, match="The 'flags'-key set must contain at least one flag to search for."):
+        Console.get_args({"arg": {"flags": set(), "default": "..."}})
+
+    with pytest.raises(ValueError, match="The 'flag_value_sep' parameter must be a non-empty string."):
+        Console.get_args({"arg": {"-a"}}, flag_value_sep="")
 
 
-def test_get_args_dash_values_not_treated_as_flags(monkeypatch):
-    """Test that values starting with dashes are not treated as flags unless explicitly defined"""
-    monkeypatch.setattr(sys, "argv", ["script.py", "-v", "-42", "--input", "-3.14"])
-    result = Console.get_args(verbose={"-v"}, input={"--input"})
-
-    assert result.verbose.exists is True
-    assert result.verbose.value == "-42"
-    assert result.verbose.values == []
-    assert result.verbose.is_positional is False
-    assert result.verbose.dict() == {"exists": True, "value": "-42"}
-
-    assert result.input.exists is True
-    assert result.input.value == "-3.14"
-    assert result.input.values == []
-    assert result.input.is_positional is False
-    assert result.input.dict() == {"exists": True, "value": "-3.14"}
-
-    assert result.dict() == {
-        "verbose": result.verbose.dict(),
-        "input": result.input.dict(),
-    }
-
-
-def test_get_args_dash_strings_as_values(monkeypatch):
-    """Test that dash-prefixed strings are treated as values when not defined as flags"""
-    monkeypatch.setattr(sys, "argv", ["script.py", "-f", "--not-a-flag", "-t", "-another-value"])
-    result = Console.get_args(file={"-f"}, text={"-t"})
-
-    assert result.file.exists is True
-    assert result.file.value == "--not-a-flag"
-    assert result.file.values == []
-    assert result.file.is_positional is False
-    assert result.file.dict() == {"exists": True, "value": "--not-a-flag"}
-
-    assert result.text.exists is True
-    assert result.text.value == "-another-value"
-    assert result.text.values == []
-    assert result.text.is_positional is False
-    assert result.text.dict() == {"exists": True, "value": "-another-value"}
-
-    assert result.dict() == {
-        "file": result.file.dict(),
-        "text": result.text.dict(),
-    }
-
-
-def test_get_args_positional_with_dashes_before(monkeypatch):
-    """Test that positional 'before' arguments include dash-prefixed values"""
-    monkeypatch.setattr(sys, "argv", ["script.py", "-123", "--some-file", "normal", "-v"])
-    result = Console.get_args(before_args="before", verbose={"-v"})
-
-    assert result.before_args.exists is True
-    assert result.before_args.value is None
-    assert result.before_args.values == ["-123", "--some-file", "normal"]
-    assert result.before_args.is_positional is True
-    assert result.before_args.dict() == {"exists": True, "values": ["-123", "--some-file", "normal"]}
-
-    assert result.verbose.exists is True
-    assert result.verbose.value is None
-    assert result.verbose.values == []
-    assert result.verbose.is_positional is False
-    assert result.verbose.dict() == {"exists": True, "value": None}
-
-    assert result.dict() == {
-        "before_args": result.before_args.dict(),
-        "verbose": result.verbose.dict(),
-    }
-
-
-def test_get_args_positional_with_dashes_after(monkeypatch):
-    """Test that positional 'after' arguments include dash-prefixed values"""
-    monkeypatch.setattr(sys, "argv", ["script.py", "-v", "value", "-123", "--output-file", "-negative"])
-    result = Console.get_args(verbose={"-v"}, after_args="after")
-
-    assert result.verbose.exists is True
-    assert result.verbose.value == "value"
-    assert result.verbose.values == []
-    assert result.verbose.is_positional is False
-    assert result.verbose.dict() == {"exists": True, "value": "value"}
-
-    assert result.after_args.exists is True
-    assert result.after_args.value is None
-    assert result.after_args.values == ["-123", "--output-file", "-negative"]
-    assert result.after_args.is_positional is True
-    assert result.after_args.dict() == {"exists": True, "values": ["-123", "--output-file", "-negative"]}
-
-    assert result.dict() == {
-        "verbose": result.verbose.dict(),
-        "after_args": result.after_args.dict(),
-    }
-
-
-def test_get_args_multiword_with_dashes(monkeypatch):
-    """Test multiword values with dashes when allow_spaces=True"""
-    monkeypatch.setattr(sys, "argv", ["script.py", "-m", "start", "-middle", "--end", "-f", "other"])
-    result = Console.get_args(allow_spaces=True, message={"-m"}, file={"-f"})
+def test_get_args_custom_sep(monkeypatch):
+    """Test custom flag-value separator handling"""
+    monkeypatch.setattr(sys, "argv", ["script.py", "--msg::This is a message", "-d::42"])
+    result = Console.get_args({"message": {"--msg"}, "data": {"-d"}}, flag_value_sep="::")
 
     assert result.message.exists is True
-    assert result.message.value == "start -middle --end"
-    assert result.message.values == []
-    assert result.message.is_positional is False
-    assert result.message.dict() == {"exists": True, "value": "start -middle --end"}
+    assert result.message.is_pos is False
+    assert result.message.values == ["This is a message"]
+    assert result.message.flag == "--msg"
 
-    assert result.file.exists is True
-    assert result.file.value == "other"
-    assert result.file.values == []
-    assert result.file.is_positional is False
-    assert result.file.dict() == {"exists": True, "value": "other"}
+    assert result.data.exists is True
+    assert result.data.is_pos is False
+    assert result.data.values == ["42"]
+    assert result.data.flag == "-d"
 
     assert result.dict() == {
         "message": result.message.dict(),
-        "file": result.file.dict(),
+        "data": result.data.dict(),
     }
 
 
 def test_get_args_mixed_dash_scenarios(monkeypatch):
     """Test complex scenario mixing defined flags with dash-prefixed values"""
     monkeypatch.setattr(
-        sys, "argv", [
-            "script.py", "before1", "-not-flag", "before2", "-v", "VVV", "-d", "--file", "my-file.txt", "after1",
-            "-also-not-flag"
-        ]
+        sys, "argv", \
+        ["script.py", "before string", "-42", "-d=256", "--file=my-file.txt", "-vv", "after string", "--also-no-flag"]
     )
-    result = Console.get_args(
-        before="before",
-        verbose={"-v"},
-        debug={"-d"},
-        file={"--file"},
-        after="after",
-    )
+    result = Console.get_args({
+        "before": "before",
+        "data": {"-d", "--data"},
+        "file": {"-f", "--file"},
+        "verbose": {"-v", "-vv", "-vvv"},
+        "help": {"-h", "--help"},
+        "after": "after",
+    })
 
     assert result.before.exists is True
-    assert result.before.value is None
-    assert result.before.values == ["before1", "-not-flag", "before2"]
-    assert result.before.is_positional is True
-    assert result.before.dict() == {"exists": True, "values": ["before1", "-not-flag", "before2"]}
+    assert result.before.is_pos is True
+    assert result.before.values == ["before string", "-42"]
+    assert result.before.flag is None
 
-    assert result.verbose.exists is True
-    assert result.verbose.value == "VVV"
-    assert result.verbose.values == []
-    assert result.verbose.is_positional is False
-    assert result.verbose.dict() == {"exists": True, "value": "VVV"}
-
-    assert result.debug.exists is True
-    assert result.debug.value is None
-    assert result.debug.values == []
-    assert result.debug.is_positional is False
-    assert result.debug.dict() == {"exists": True, "value": None}
+    assert result.data.exists is True
+    assert result.data.is_pos is False
+    assert result.data.values == ["256"]
+    assert result.data.flag == "-d"
 
     assert result.file.exists is True
-    assert result.file.value == "my-file.txt"
-    assert result.file.values == []
-    assert result.file.is_positional is False
-    assert result.file.dict() == {"exists": True, "value": "my-file.txt"}
+    assert result.file.is_pos is False
+    assert result.file.values == ["my-file.txt"]
+    assert result.file.flag == "--file"
+
+    assert result.verbose.exists is True
+    assert result.verbose.is_pos is False
+    assert result.verbose.values == []
+    assert result.verbose.flag == "-vv"
+
+    assert result.help.exists is False
+    assert result.help.is_pos is False
+    assert result.help.values == []
+    assert result.help.flag is None
 
     assert result.after.exists is True
-    assert result.after.value is None
-    assert result.after.values == ["after1", "-also-not-flag"]
-    assert result.after.is_positional is True
-    assert result.after.dict() == {"exists": True, "values": ["after1", "-also-not-flag"]}
+    assert result.after.is_pos is True
+    assert result.after.values == ["after string", "--also-no-flag"]
+    assert result.after.flag is None
 
     assert result.dict() == {
         "before": result.before.dict(),
-        "verbose": result.verbose.dict(),
-        "debug": result.debug.dict(),
+        "data": result.data.dict(),
         "file": result.file.dict(),
+        "verbose": result.verbose.dict(),
+        "help": result.help.dict(),
         "after": result.after.dict(),
     }
 
 
 def test_args_dunder_methods():
-    args = Args(
-        before=ArgResultPositional(exists=True, values=["arg1", "arg2"]),
-        debug=ArgResultRegular(exists=True, value=None),
-        file=ArgResultRegular(exists=True, value="test.txt"),
-        after=ArgResultPositional(exists=False, values=["arg3", "arg4"]),
+    args = ParsedArgs(
+        before=ParsedArgData(exists=True, values=["arg1", "arg2"], is_pos=True),
+        debug=ParsedArgData(exists=True, values=[], is_pos=False),
+        file=ParsedArgData(exists=True, values=["test.txt"], is_pos=False),
+        after=ParsedArgData(exists=False, values=["arg3", "arg4"], is_pos=True),
     )
 
     assert len(args) == 4
@@ -580,10 +363,10 @@ def test_args_dunder_methods():
     assert ("missing" in args) is False
 
     assert bool(args) is True
-    assert bool(Args()) is False
+    assert bool(ParsedArgs()) is False
 
     assert (args == args) is True
-    assert (args != Args()) is True
+    assert (args != ParsedArgs()) is True
 
 
 def test_multiline_input(mock_prompt_toolkit, capsys):

@@ -3,7 +3,7 @@ This module provides the `Console`, `ProgressBar`, and `Spinner` classes
 which offer methods for logging and other actions within the console.
 """
 
-from .base.types import ArgConfigWithDefault, ArgResultRegular, ArgResultPositional, ProgressUpdater, AllTextChars, Rgba, Hexa
+from .base.types import ProgressUpdater, AllTextChars, ArgParseConfigs, ArgParseConfig, ArgData, Rgba, Hexa
 from .base.decorators import mypyc_attr
 from .base.consts import COLOR, CHARS, ANSI
 
@@ -47,105 +47,83 @@ _PATTERNS = LazyRegex(
 )
 
 
-class ArgResult:
-    """Represents the result of a parsed command-line argument, containing the following attributes:
-    - `exists` -⠀if the argument was found or not
-    - `value` -⠀the flagged argument value or `None` if no value was provided
-    - `values` -⠀the list of values for positional `"before"`/`"after"` arguments
-    - `is_positional` -⠀whether the argument is a positional `"before"`/`"after"` argument or not\n
-    --------------------------------------------------------------------------------------------------------
-    When the `ArgResult` instance is accessed as a boolean it will correspond to the `exists` attribute."""
+class ParsedArgData:
+    """Represents the result of a parsed command-line argument, containing the attributes listed below.\n
+    ------------------------------------------------------------------------------------------------------------
+    - `exists` - whether the argument was found in the command-line arguments or not
+    - `is_pos` - whether the argument is a positional `"before"`/`"after"` argument or not
+    - `values` - the list of values associated with the argument
+    - `flag` - the specific flag that was found (e.g. `-v`, `-vv`, `-vvv`), or `None` for positional args\n
+    ------------------------------------------------------------------------------------------------------------
+    When the `ParsedArgData` instance is accessed as a boolean it will correspond to the `exists` attribute."""
 
-    def __init__(self, exists: bool, value: Optional[str] = None, values: list[str] = [], is_positional: bool = False):
-        if value is not None and len(values) > 0:
-            raise ValueError("The 'value' and 'values' parameters are mutually exclusive. Only one can be set.")
-        if is_positional and value is not None:
-            raise ValueError("Positional arguments cannot have a single 'value'. Use 'values' for positional arguments.")
-
+    def __init__(self, exists: bool, values: list[str], is_pos: bool, flag: Optional[str] = None):
         self.exists: bool = exists
         """Whether the argument was found or not."""
-        self.value: Optional[str] = value
-        """The flagged argument value or `None` if no value was provided."""
-        self.values: list[str] = values
-        """The list of positional `"before"`/`"after"` argument values."""
-        self.is_positional: bool = is_positional
+        self.is_pos: bool = is_pos
         """Whether the argument is a positional argument or not."""
+        self.values: list[str] = values
+        """The list of values associated with the argument."""
+        self.flag: Optional[str] = flag
+        """The specific flag that was found (e.g. `-v`, `-vv`, `-vvv`), or `None` for positional args."""
 
     def __bool__(self) -> bool:
         """Whether the argument was found or not (i.e. the `exists` attribute)."""
         return self.exists
 
     def __eq__(self, other: object) -> bool:
-        """Check if two `ArgResult` objects are equal by comparing their attributes."""
-        if not isinstance(other, ArgResult):
+        """Check if two `ParsedArgData` objects are equal by comparing their attributes."""
+        if not isinstance(other, ParsedArgData):
             return False
         return (
             self.exists == other.exists \
-            and self.value == other.value
+            and self.is_pos == other.is_pos
             and self.values == other.values
-            and self.is_positional == other.is_positional
+            and self.flag == other.flag
         )
 
     def __ne__(self, other: object) -> bool:
-        """Check if two `ArgResult` objects are not equal by comparing their attributes."""
+        """Check if two `ParsedArgData` objects are not equal by comparing their attributes."""
         return not self.__eq__(other)
 
     def __repr__(self) -> str:
-        if self.is_positional:
-            return f"ArgResult(\n  exists = {self.exists},\n  values = {self.values},\n  is_positional = {self.is_positional}\n)"
-        else:
-            return f"ArgResult(\n  exists = {self.exists},\n  value  = {self.value},\n  is_positional = {self.is_positional}\n)"
+        return f"ParsedArgData(\n  exists = {self.exists!r},\n  is_pos = {self.is_pos!r},\n  values = {self.values!r},\n  flag = {self.flag!r}\n)"
 
     def __str__(self) -> str:
         return self.__repr__()
 
-    def dict(self) -> ArgResultRegular | ArgResultPositional:
+    def dict(self) -> ArgData:
         """Returns the argument result as a dictionary."""
-        if self.is_positional:
-            return ArgResultPositional(exists=self.exists, values=self.values)
-        else:
-            return ArgResultRegular(exists=self.exists, value=self.value)
+        return ArgData(exists=self.exists, is_pos=self.is_pos, values=self.values, flag=self.flag)
 
 
 @mypyc_attr(native_class=False)
-class Args:
+class ParsedArgs:
     """Container for parsed command-line arguments, allowing attribute-style access.\n
-    ----------------------------------------------------------------------------------------
-    - `**kwargs` -⠀a mapping of argument aliases to their corresponding data dictionaries\n
-    ----------------------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------
+    - `**parsed_args` -⠀a mapping of argument aliases to their corresponding data
+      saved in an `ParsedArgData` object\n
+    -----------------------------------------------------------------------------------
     For example, if an argument `foo` was parsed, it can be accessed via `args.foo`.
-    Each such attribute (e.g. `args.foo`) is an instance of `ArgResult`."""
+    Each such attribute (e.g. `args.foo`) is an instance of `ParsedArgData`."""
 
-    def __init__(self, **kwargs: ArgResultRegular | ArgResultPositional):
-        for alias_name, data_dict in kwargs.items():
-            if "values" in data_dict:
-                data_dict = cast(ArgResultPositional, data_dict)
-                setattr(
-                    self,
-                    alias_name,
-                    ArgResult(exists=data_dict["exists"], values=data_dict["values"], is_positional=True),
-                )
-            else:
-                data_dict = cast(ArgResultRegular, data_dict)
-                setattr(
-                    self,
-                    alias_name,
-                    ArgResult(exists=data_dict["exists"], value=data_dict["value"], is_positional=False),
-                )
+    def __init__(self, **parsed_args: ParsedArgData):
+        for alias_name, parsed_arg_data in parsed_args.items():
+            setattr(self, alias_name, parsed_arg_data)
 
     def __len__(self):
-        """The number of arguments stored in the `Args` object."""
+        """The number of arguments stored in the `ParsedArgs` object."""
         return len(vars(self))
 
     def __contains__(self, key):
-        """Checks if an argument with the given alias exists in the `Args` object."""
+        """Checks if an argument with the given alias exists in the `ParsedArgs` object."""
         return key in vars(self)
 
     def __bool__(self) -> bool:
-        """Whether the `Args` object contains any arguments."""
+        """Whether the `ParsedArgs` object contains any arguments."""
         return len(self) > 0
 
-    def __getattr__(self, name: str) -> ArgResult:
+    def __getattr__(self, name: str) -> ParsedArgData:
         raise AttributeError(f"'{type(self).__name__}' object has no attribute {name}")
 
     def __getitem__(self, key):
@@ -153,24 +131,24 @@ class Args:
             return list(self.__iter__())[key]
         return getattr(self, key)
 
-    def __iter__(self) -> Generator[tuple[str, ArgResult], None, None]:
-        for key, val in cast(dict[str, ArgResult], vars(self)).items():
+    def __iter__(self) -> Generator[tuple[str, ParsedArgData], None, None]:
+        for key, val in cast(dict[str, ParsedArgData], vars(self)).items():
             yield (key, val)
 
     def __eq__(self, other: object) -> bool:
-        """Check if two `Args` objects are equal by comparing their stored arguments."""
-        if not isinstance(other, Args):
+        """Check if two `ParsedArgs` objects are equal by comparing their stored arguments."""
+        if not isinstance(other, ParsedArgs):
             return False
         return vars(self) == vars(other)
 
     def __ne__(self, other: object) -> bool:
-        """Check if two `Args` objects are not equal by comparing their stored arguments."""
+        """Check if two `ParsedArgs` objects are not equal by comparing their stored arguments."""
         return not self.__eq__(other)
 
     def __repr__(self) -> str:
         if not self:
-            return "Args()"
-        return "Args(\n  " + ",\n  ".join(
+            return "ParsedArgs()"
+        return "ParsedArgs(\n  " + ",\n  ".join(
             f"{key} = " + "\n  ".join(repr(val).splitlines()) \
             for key, val in self.__iter__()
         ) + "\n)"
@@ -178,17 +156,11 @@ class Args:
     def __str__(self) -> str:
         return self.__repr__()
 
-    def dict(self) -> dict[str, ArgResultRegular | ArgResultPositional]:
+    def dict(self) -> dict[str, ArgData]:
         """Returns the arguments as a dictionary."""
-        result: dict[str, ArgResultRegular | ArgResultPositional] = {}
-        for key, val in vars(self).items():
-            if val.is_positional:
-                result[key] = ArgResultPositional(exists=val.exists, values=val.values)
-            else:
-                result[key] = ArgResultRegular(exists=val.exists, value=val.value)
-        return result
+        return {key: val.dict() for key, val in self.__iter__()}
 
-    def get(self, key: str, default: Any = None) -> ArgResult | Any:
+    def get(self, key: str, default: Any = None) -> ParsedArgData | Any:
         """Returns the argument result for the given alias, or `default` if not found."""
         return getattr(self, key, default)
 
@@ -200,19 +172,19 @@ class Args:
         """Returns the argument results as `dict_values([…])`."""
         return vars(self).values()
 
-    def items(self) -> Generator[tuple[str, ArgResult], None, None]:
-        """Yields tuples of `(alias, ArgResult)`."""
+    def items(self) -> Generator[tuple[str, ParsedArgData], None, None]:
+        """Yields tuples of `(alias, ParsedArgData)`."""
         for key, val in self.__iter__():
             yield (key, val)
 
-    def existing(self) -> Generator[tuple[str, ArgResult], None, None]:
-        """Yields tuples of `(alias, ArgResult)` for existing arguments only."""
+    def existing(self) -> Generator[tuple[str, ParsedArgData], None, None]:
+        """Yields tuples of `(alias, ParsedArgData)` for existing arguments only."""
         for key, val in self.__iter__():
             if val.exists:
                 yield (key, val)
 
-    def missing(self) -> Generator[tuple[str, ArgResult], None, None]:
-        """Yields tuples of `(alias, ArgResult)` for missing arguments only."""
+    def missing(self) -> Generator[tuple[str, ParsedArgData], None, None]:
+        """Yields tuples of `(alias, ParsedArgData)` for missing arguments only."""
         for key, val in self.__iter__():
             if not val.exists:
                 yield (key, val)
@@ -257,6 +229,15 @@ class _ConsoleMeta(type):
         return _sys.stdout.isatty()
 
     @property
+    def encoding(cls) -> str:
+        """The encoding used by the console (e.g. `utf-8`, `cp1252`, …)."""
+        try:
+            encoding = _sys.stdout.encoding
+            return encoding if encoding is not None else "utf-8"
+        except (AttributeError, Exception):
+            return "utf-8"
+
+    @property
     def supports_color(cls) -> bool:
         """Whether the terminal supports ANSI color codes or not."""
         if not cls.is_tty:
@@ -279,81 +260,68 @@ class Console(metaclass=_ConsoleMeta):
     """This class provides methods for logging and other actions within the console."""
 
     @classmethod
-    def get_args(
-        cls,
-        allow_spaces: bool = False,
-        **find_args: set[str] | ArgConfigWithDefault | Literal["before", "after"],
-    ) -> Args:
-        """Will search for the specified arguments in the command line
-        arguments and return the results as a special `Args` object.\n
-        ---------------------------------------------------------------------------------------------------------
-        - `allow_spaces` -⠀if true, flagged argument values can span multiple space-separated tokens until the
-          next flag is encountered, otherwise only the immediate next token is captured as the value:<br>
-          This allows passing multi-word values without quotes
-          (e.g. `-f hello world` instead of `-f "hello world"`).<br>
-          * This setting does not affect `"before"`/`"after"` positional arguments,
-            which always treat each token separately.<br>
-          * When `allow_spaces=True`, positional `"after"` arguments will always be empty if any flags
-            are present, as all tokens following the last flag are consumed as that flag's value.
-        - `**find_args` -⠀kwargs defining the argument aliases and their flags/configuration (explained below)\n
-        ---------------------------------------------------------------------------------------------------------
-        The `**find_args` keyword arguments can have the following structures for each alias:
+    def get_args(cls, arg_parse_configs: ArgParseConfigs, flag_value_sep: str = "=") -> ParsedArgs:
+        """Will search for the specified args in the command-line arguments
+        and return the results as a special `ParsedArgs` object.\n
+        -------------------------------------------------------------------------------------------------
+        - `arg_parse_configs` - a dictionary where each key is an alias name for the argument
+          and the key's value is the parsing configuration for that argument
+        - `flag_value_sep` - the character/s used to separate flags from their values\n
+        -------------------------------------------------------------------------------------------------
+        The `arg_parse_configs` dictionary can have the following structures for each item:
         1. Simple set of flags (when no default value is needed):
            ```python
-            alias_name={"-f", "--flag"}
+            "alias_name": {"-f", "--flag"}
            ```
-        2. Dictionary with `"flags"` and `"default"` value:
+        2. Dictionary with the`"flags"` set, plus a specified `"default"` value:
            ```python
-            alias_name={
+            "alias_name": {
                 "flags": {"-f", "--flag"},
                 "default": "some_value",
             }
            ```
-        3. Positional argument collection using the literals `"before"` or `"after"`:
+        3. Positional value collection using the literals `"before"` or `"after"`:
            ```python
-            # COLLECT ALL NON-FLAGGED ARGUMENTS THAT APPEAR BEFORE THE FIRST FLAG
-            alias_name="before"
-            # COLLECT ALL NON-FLAGGED ARGUMENTS THAT APPEAR AFTER THE LAST FLAG'S VALUE
-            alias_name="after"
+            # COLLECT ALL NON-FLAGGED VALUES THAT APPEAR BEFORE THE FIRST FLAG
+            "alias_name": "before"
+            # COLLECT ALL NON-FLAGGED VALUES THAT APPEAR AFTER THE LAST FLAG'S VALUE
+            "alias_name": "after"
            ```
         #### Example usage:
+        If you call the `get_args()` method in your script like this:
         ```python
-        Args(
-            # FOUND TWO POSITIONAL ARGUMENTS BEFORE THE FIRST FLAG
-            text = ArgResult(exists=True, values=["Hello", "World"]),
+        parsed_args = Console.get_args({
+            "text_before": "before",   # POSITIONAL VALUES BEFORE FIRST FLAG
+            "arg1": {"-A", "--arg1"},  # NORMAL FLAGS
+            "arg2": {                  # FLAGS WITH SPECIFIED DEFAULT VALUE
+                "flags": {"-B", "--arg2"},
+                "default": "default value"
+            },
+            "text_after": "after",     # POSITIONAL VALUES AFTER LAST FLAG'S VALUE
+        })
+        ```
+        … and execute the script via the command line like this:\n
+        `$ python script.py "Hello" "World" --arg1=42 "Goodbye"`\n
+        … the `get_args()` method would return a `ParsedArgs` object with the following structure:
+        ```python
+        ParsedArgs(
+            # FOUND 2 VALUES BEFORE THE FIRST FLAG
+            text_before = ParsedArgData(exists=True, is_pos=True, values=["Hello", "World"], flag=None),
             # FOUND ONE OF THE SPECIFIED FLAGS WITH A VALUE
-            arg1 = ArgResult(exists=True, value="value1"),
-            # FOUND ONE OF THE SPECIFIED FLAGS WITHOUT A VALUE
-            arg2 = ArgResult(exists=True, value=None),
-            # DIDN'T FIND ANY OF THE SPECIFIED FLAGS BUT HAS A DEFAULT VALUE
-            arg3 = ArgResult(exists=False, value="default_val"),
+            arg1 = ParsedArgData(exists=True, is_pos=False, values=["42"], flag="--arg1"),
+            # DIDN'T FIND ANY OF THE SPECIFIED FLAGS, USED THE DEFAULT VALUE
+            arg2 = ParsedArgData(exists=False, is_pos=False, values=["default value"], flag=None),
+            # FOUND 1 VALUE AFTER THE LAST FLAG'S VALUE
+            text_after = ParsedArgData(exists=True, is_pos=True, values=["Goodbye"], flag=None),
         )
         ```
-        If the script is called via the command line:\n
-        `python script.py Hello World -a1 "value1" --arg2`\n
-        … it would return an `Args` object:
-        ```python
-        Args(
-            # FOUND TWO ARGUMENTS BEFORE THE FIRST FLAG
-            text = ArgResult(exists=True, values=["Hello", "World"]),
-            # FOUND ONE OF THE SPECIFIED FLAGS WITH A FOLLOWING VALUE
-            arg1 = ArgResult(exists=True, value="value1"),
-            # FOUND ONE OF THE SPECIFIED FLAGS BUT NO FOLLOWING VALUE
-            arg2 = ArgResult(exists=True, value=None),
-            # DIDN'T FIND ANY OF THE SPECIFIED FLAGS AND HAS NO DEFAULT VALUE
-            arg3 = ArgResult(exists=False, value="default_val"),
-        )
-        ```
-        ---------------------------------------------------------------------------------------------------------
-        If an arg, defined with flags in `find_args`, is NOT present in the command line:
-        - `exists` will be `False`
-        - `value` will be the specified `"default"` value, or `None` if no default was specified
-        - `values` will be an empty list `[]`\n
-        ---------------------------------------------------------------------------------------------------------
-        Normally if `allow_spaces` is false, it will take a space as the end of an args value.
-        If it is true, it will take spaces as part of the value up until the next arg-flag is found.
-        (Multiple spaces will become one space in the value.)"""
-        return _ConsoleArgsParseHelper(allow_spaces=allow_spaces, find_args=find_args)()
+        -------------------------------------------------------------------------------------------------
+        NOTE: Flags can ONLY receive values when the separator is present
+        (e.g. `--flag=value` or `--flag = value`)."""
+        if not flag_value_sep:
+            raise ValueError("The 'flag_value_sep' parameter must be a non-empty string.")
+
+        return _ConsoleArgsParseHelper(arg_parse_configs, flag_value_sep)()
 
     @classmethod
     def pause_exit(
@@ -1071,71 +1039,38 @@ class Console(metaclass=_ConsoleMeta):
 class _ConsoleArgsParseHelper:
     """Internal, callable helper class to parse command-line arguments."""
 
-    def __init__(
-        self,
-        allow_spaces: bool,
-        find_args: dict[str, set[str] | ArgConfigWithDefault | Literal["before", "after"]],
-    ):
-        self.allow_spaces = allow_spaces
-        self.find_args = find_args
+    def __init__(self, arg_parse_configs: ArgParseConfigs, flag_value_sep: str):
+        self.arg_parse_configs = arg_parse_configs
+        self.flag_value_sep = flag_value_sep
 
-        self.results_positional: dict[str, ArgResultPositional] = {}
-        self.results_regular: dict[str, ArgResultRegular] = {}
+        self.parsed_args: dict[str, ParsedArgData] = {}
         self.positional_configs: dict[str, str] = {}
         self.arg_lookup: dict[str, str] = {}
 
         self.args = _sys.argv[1:]
         self.args_len = len(self.args)
+        self.pos_before_configured = False
+        self.pos_after_configured = False
         self.first_flag_pos: Optional[int] = None
-        self.last_flag_with_value_pos: Optional[int] = None
+        self.last_flag_pos: Optional[int] = None
 
-    def __call__(self) -> Args:
-        self.parse_configuration()
+    def __call__(self) -> ParsedArgs:
+        self.parse_arg_configs()
         self.find_flag_positions()
-        self.process_positional_args()
         self.process_flagged_args()
+        self.process_positional_args()
 
-        return Args(**self.results_positional, **self.results_regular)
+        return ParsedArgs(**self.parsed_args)
 
-    def parse_configuration(self) -> None:
-        """Parse the `find_args` configuration and build lookup structures."""
-        before_count, after_count = 0, 0
+    def parse_arg_configs(self) -> None:
+        """Parse the `arg_parse_configs` configuration and build lookup structures."""
+        for alias, config in self.arg_parse_configs.items():
+            if not alias.isidentifier():
+                raise ValueError(f"Invalid argument alias '{alias}'.\n"
+                                 "Aliases must be valid Python identifiers.")
 
-        for alias, config in self.find_args.items():
-            flags: Optional[set[str]] = None
-            default_value: Optional[str] = None
-
-            if isinstance(config, str):
-                # HANDLE POSITIONAL ARGUMENT COLLECTION
-                if config == "before":
-                    before_count += 1
-                    if before_count > 1:
-                        raise ValueError("Only one alias can have the value 'before' for positional argument collection.")
-                elif config == "after":
-                    after_count += 1
-                    if after_count > 1:
-                        raise ValueError("Only one alias can have the value 'after' for positional argument collection.")
-                else:
-                    raise ValueError(
-                        f"Invalid positional argument type '{config}' for alias '{alias}'.\n"
-                        "Must be either 'before' or 'after'."
-                    )
-                self.positional_configs[alias] = config
-                self.results_positional[alias] = {"exists": False, "values": []}
-            elif isinstance(config, set):
-                flags = config
-                self.results_regular[alias] = {"exists": False, "value": default_value}
-            elif isinstance(config, dict):
-                flags, default_value = config.get("flags"), config.get("default")
-                self.results_regular[alias] = {"exists": False, "value": default_value}
-            else:
-                raise TypeError(
-                    f"Invalid configuration type for alias '{alias}'.\n"
-                    "Must be a set, dict, literal 'before' or literal 'after'."
-                )
-
-            # BUILD FLAG LOOKUP FOR NON-POSITIONAL ARGUMENTS
-            if flags is not None:
+            # PARSE ARG CONFIG & BUILD FLAG LOOKUP FOR NON-POSITIONAL ARGS
+            if (flags := self._parse_arg_config(alias, config)) is not None:
                 for flag in flags:
                     if flag in self.arg_lookup:
                         raise ValueError(
@@ -1143,28 +1078,91 @@ class _ConsoleArgsParseHelper:
                         )
                     self.arg_lookup[flag] = alias
 
+    def _parse_arg_config(self, alias: str, config: ArgParseConfig) -> Optional[set[str]]:
+        """Parse an individual argument configuration."""
+        # POSITIONAL ARGUMENT CONFIGURATION
+        if isinstance(config, str):
+            if config == "before":
+                if self.pos_before_configured:
+                    raise ValueError("Only one alias can use the value 'before' for positional argument collection.")
+                self.pos_before_configured = True
+            elif config == "after":
+                if self.pos_after_configured:
+                    raise ValueError("Only one alias can use the value 'after' for positional argument collection.")
+                self.pos_after_configured = True
+            else:
+                raise ValueError(
+                    f"Invalid positional argument type '{config}' under alias '{alias}'.\n"
+                    "Must be either 'before' or 'after'."
+                )
+            self.positional_configs[alias] = config
+            self.parsed_args[alias] = ParsedArgData(exists=False, values=[], is_pos=True)
+            return None  # NO FLAGS TO RETURN FOR POSITIONAL ARGS
+
+        # NORMAL SET OF FLAGS
+        elif isinstance(config, set):
+            if not config:
+                raise ValueError(
+                    f"The flag set under alias '{alias}' is empty.\n"
+                    "The set must contain at least one flag to search for."
+                )
+            self.parsed_args[alias] = ParsedArgData(exists=False, values=[], is_pos=False)
+            return config
+
+        # SET OF FLAGS WITH SPECIFIED DEFAULT VALUE
+        elif isinstance(config, dict):
+            if not config.get("flags"):
+                raise ValueError(
+                    f"No flags provided under alias '{alias}'.\n"
+                    "The 'flags'-key set must contain at least one flag to search for."
+                )
+            self.parsed_args[alias] = ParsedArgData(
+                exists=False,
+                values=[default] if (default := config.get("default")) is not None else [],
+                is_pos=False,
+            )
+            return config["flags"]
+
+        else:
+            raise TypeError(
+                f"Invalid configuration type under alias '{alias}'.\n"
+                "Must be a set, dict, literal 'before' or literal 'after'."
+            )
+
     def find_flag_positions(self) -> None:
         """Find positions of first and last flags for positional argument collection."""
-        for i, arg in enumerate(self.args):
+        i = 0
+        while i < self.args_len:
+            arg = self.args[i]
+
+            # CHECK FOR FLAG WITH INLINE SEPARATOR ('--flag=value')
+            if self.flag_value_sep in arg:
+                if arg.split(self.flag_value_sep, 1)[0].strip() in self.arg_lookup:
+                    if self.first_flag_pos is None:
+                        self.first_flag_pos = i
+                    self.last_flag_pos = i
+                    i += 1
+                    continue
+
+            # CHECK FOR STANDALONE FLAG
             if arg in self.arg_lookup:
                 if self.first_flag_pos is None:
                     self.first_flag_pos = i
+                self.last_flag_pos = i
 
-                # CHECK IF THIS FLAG HAS A VALUE FOLLOWING IT
-                if i + 1 < self.args_len and self.args[i + 1] not in self.arg_lookup:
-                    if not self.allow_spaces:
-                        self.last_flag_with_value_pos = i + 1
-
+                # CHECK FOR SEPARATOR IN NEXT TOKENS ('--flag', '=', 'value')
+                if i + 1 < self.args_len and self.args[i + 1] == self.flag_value_sep:
+                    if i + 2 < self.args_len:
+                        i += 3  # SKIP FLAG, SEPARATOR, AND VALUE
+                        continue
                     else:
-                        # FIND THE END OF THE MULTI-WORD VALUE
-                        j = i + 1
-                        while j < self.args_len and self.args[j] not in self.arg_lookup:
-                            j += 1
+                        i += 2  # SKIP FLAG AND SEPARATOR
+                        continue
 
-                        self.last_flag_with_value_pos = j - 1
+            i += 1
 
     def process_positional_args(self) -> None:
-        """Collect positional `"before"/"after"` arguments."""
+        """Collect positional `"before"`/`"after"` arguments."""
         for alias, pos_type in self.positional_configs.items():
             if pos_type == "before":
                 self._collect_before_arg(alias)
@@ -1182,68 +1180,88 @@ class _ConsoleArgsParseHelper:
         end_pos: int = self.first_flag_pos if self.first_flag_pos is not None else self.args_len
 
         for i in range(end_pos):
-            if self.args[i] not in self.arg_lookup:
-                before_args.append(self.args[i])
+            if self._is_positional_arg(arg := self.args[i], allow_separator=False):
+                before_args.append(arg)
 
         if before_args:
-            self.results_positional[alias]["values"] = before_args
-            self.results_positional[alias]["exists"] = len(before_args) > 0
+            self.parsed_args[alias].values = before_args
+            self.parsed_args[alias].exists = len(before_args) > 0
 
     def _collect_after_arg(self, alias: str) -> None:
+        """Collect positional `"after"` arguments."""
         after_args: list[str] = []
-        start_pos: int = (self.last_flag_with_value_pos + 1) if self.last_flag_with_value_pos is not None else 0
+        start_pos: int = (self.last_flag_pos + 1) if self.last_flag_pos is not None else 0
 
-        # IF NO FLAGS WERE FOUND WITH VALUES, START AFTER THE LAST FLAG
-        if self.last_flag_with_value_pos is None and self.first_flag_pos is not None:
-            # FIND THE LAST FLAG POSITION
-            last_flag_pos: Optional[int] = None
-            for i, arg in enumerate(self.args):
-                if arg in self.arg_lookup:
-                    last_flag_pos = i
-
-            if last_flag_pos is not None:
-                start_pos = last_flag_pos + 1
+        # SKIP THE VALUE AFTER THE LAST FLAG IF IT HAS A SEPARATOR
+        if self.last_flag_pos is not None:
+            # CHECK IF LAST FLAG HAS INLINE VALUE ('--flag=value')
+            if self.flag_value_sep in self.args[self.last_flag_pos]:
+                start_pos = self.last_flag_pos + 1  # VALUE IS INLINE, START AFTER THIS POSITION
+            # CHECK IF NEXT TOKEN IS SEPARATOR ('--flag', '=', 'value')
+            elif start_pos < self.args_len and self.args[start_pos].strip() == self.flag_value_sep:
+                if start_pos + 1 < self.args_len:
+                    start_pos += 2  # SKIP SEPARATOR AND VALUE
+                else:
+                    start_pos += 1  # SKIP SEPARATOR ONLY
+            # NO SEPARATOR = FLAG HAS NO VALUE = START COLLECTING FROM NEXT POSITION
 
         for i in range(start_pos, self.args_len):
-            if self.args[i] not in self.arg_lookup:
-                after_args.append(self.args[i])
+            # DON'T INCLUDE FLAGS OR SEPARATORS
+            if (arg := self.args[i]) == self.flag_value_sep:
+                continue
+            elif self._is_positional_arg(arg):
+                after_args.append(arg)
 
         if after_args:
-            self.results_positional[alias]["values"] = after_args
-            self.results_positional[alias]["exists"] = len(after_args) > 0
+            self.parsed_args[alias].values = after_args
+            self.parsed_args[alias].exists = len(after_args) > 0
+
+    def _is_positional_arg(self, arg: str, allow_separator: bool = True) -> bool:
+        """Check if an argument is positional (not a flag or separator)."""
+        if self.flag_value_sep in arg and arg.split(self.flag_value_sep, 1)[0].strip() not in self.arg_lookup:
+            return True
+        if arg not in self.arg_lookup and (allow_separator or arg != self.flag_value_sep):
+            return True
+        return False
 
     def process_flagged_args(self) -> None:
-        """Process normal flagged arguments."""
+        """Process flagged arguments."""
         i = 0
 
         while i < self.args_len:
             arg = self.args[i]
 
-            if (opt_alias := self.arg_lookup.get(arg)) is not None:
-                self.results_regular[opt_alias]["exists"] = True
-                value_found_after_flag: bool = False
+            # CASE 1: FLAG WITH INLINE SEPARATOR ('--flag=value')
+            if self.flag_value_sep in arg:
+                parts = arg.split(self.flag_value_sep, 1)
 
-                if i + 1 < self.args_len and self.args[i + 1] not in self.arg_lookup:
-                    if not self.allow_spaces:
-                        self.results_regular[opt_alias]["value"] = self.args[i + 1]
-                        i += 1
-                        value_found_after_flag = True
+                if (potential_flag := (parts := arg.split(self.flag_value_sep, 1))[0].strip()) in self.arg_lookup:
+                    alias = self.arg_lookup[potential_flag]
+                    self.parsed_args[alias].exists = True
+                    self.parsed_args[alias].flag = potential_flag
 
-                    else:
-                        value_parts = []
+                    if len(parts) > 1 and (val := parts[1].strip()):
+                        self.parsed_args[alias].values = [val]
 
-                        j = i + 1
-                        while j < self.args_len and self.args[j] not in self.arg_lookup:
-                            value_parts.append(self.args[j])
-                            j += 1
+                    i += 1
+                    continue
 
-                        if value_parts:
-                            self.results_regular[opt_alias]["value"] = " ".join(value_parts)
-                            i = j - 1
-                            value_found_after_flag = True
+            # CASE 2: STANDALONE FLAG
+            if arg in self.arg_lookup:
+                alias = self.arg_lookup[arg]
+                self.parsed_args[alias].exists = True
+                self.parsed_args[alias].flag = arg
 
-                if not value_found_after_flag:
-                    self.results_regular[opt_alias]["value"] = None
+                # CHECK FOR SEPARATOR IN NEXT TOKENS ('--flag', '=', 'value')
+                if i + 1 < self.args_len and self.args[i + 1].strip() == self.flag_value_sep:
+                    if i + 2 < self.args_len:
+                        if (val := self.args[i + 2]) not in self.arg_lookup and val != self.flag_value_sep:
+                            self.parsed_args[alias].values = [val]
+                            i += 3
+                            continue
+                    i += 2
+                    continue
+                # NO SEPARATOR = JUST A FLAG WITHOUT VALUE
 
             i += 1
 

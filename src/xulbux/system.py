@@ -11,8 +11,11 @@ from .console import Console
 
 from typing import Optional
 import subprocess as _subprocess
+import multiprocessing as _multiprocessing
 import platform as _platform
 import ctypes as _ctypes
+import getpass as _getpass
+import socket as _socket
 import time as _time
 import sys as _sys
 import os as _os
@@ -37,6 +40,72 @@ class _SystemMeta(type):
     def is_win(cls) -> bool:
         """Whether the current operating system is Windows or not."""
         return _platform.system() == "Windows"
+
+    @property
+    def is_linux(cls) -> bool:
+        """Whether the current operating system is Linux or not."""
+        return _platform.system() == "Linux"
+
+    @property
+    def is_mac(cls) -> bool:
+        """Whether the current operating system is macOS or not."""
+        return _platform.system() == "Darwin"
+
+    @property
+    def is_unix(cls) -> bool:
+        """Whether the current operating system is a Unix-like OS (Linux, macOS, BSD, …) or not."""
+        return _os.name == "posix"
+
+    @property
+    def hostname(cls) -> str:
+        """The network hostname of the current machine."""
+        try:
+            return _socket.gethostname()
+        except Exception:
+            return "unknown"
+
+    @property
+    def username(cls) -> str:
+        """The name of the current user."""
+        try:
+            return _getpass.getuser()
+        except Exception:
+            try:
+                return _os.getlogin()
+            except Exception:
+                return "unknown"
+
+    @property
+    def os_name(cls) -> str:
+        """The name of the operating system (e.g. `Windows`, `Linux`, …)."""
+        return _platform.system()
+
+    @property
+    def os_version(cls) -> str:
+        """The version of the operating system."""
+        try:
+            return _platform.version()
+        except Exception:
+            return "unknown"
+
+    @property
+    def architecture(cls) -> str:
+        """The CPU architecture (e.g. `x86_64`, `ARM`, …)."""
+        return _platform.machine()
+
+    @property
+    def cpu_count(cls) -> int:
+        """The number of CPU cores available."""
+        try:
+            count = _multiprocessing.cpu_count()
+            return count if count is not None else 1
+        except (NotImplementedError, AttributeError):
+            return 1
+
+    @property
+    def python_version(cls) -> str:
+        """The version string of the currently running Python interpreter (e.g. `3.10.4`)."""
+        return _platform.python_version()
 
 
 class System(metaclass=_SystemMeta):
