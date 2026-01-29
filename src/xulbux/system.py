@@ -97,8 +97,7 @@ class _SystemMeta(type):
     def cpu_count(cls) -> int:
         """The number of CPU cores available."""
         try:
-            count = _multiprocessing.cpu_count()
-            return count if count is not None else 1
+            return _multiprocessing.cpu_count()
         except (NotImplementedError, AttributeError):
             return 1
 
@@ -148,7 +147,7 @@ class System(metaclass=_SystemMeta):
         return _SystemCheckLibsHelper(lib_names, install_missing, missing_libs_msgs, confirm_install)()
 
     @classmethod
-    def elevate(cls, win_title: Optional[str] = None, args: Optional[list] = None) -> bool:
+    def elevate(cls, win_title: Optional[str] = None, args: Optional[list[str]] = None) -> bool:
         """Attempts to start a new process with elevated privileges.\n
         ---------------------------------------------------------------------------------
         - `win_title` -⠀the window title of the elevated process (only on Windows)
@@ -285,7 +284,7 @@ class _SystemCheckLibsHelper:
 
     def find_missing_libs(self) -> list[str]:
         """Find which libraries are missing."""
-        missing = []
+        missing: list[str] = []
         for lib in self.lib_names:
             try:
                 __import__(lib)

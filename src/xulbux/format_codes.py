@@ -468,9 +468,7 @@ class FormatCodes:
         _modifiers: tuple[str, str] = (_DEFAULT_COLOR_MODS["lighten"], _DEFAULT_COLOR_MODS["darken"]),
     ) -> Optional[str]:
         """Internal method to get the `default_color` and lighter/darker versions of it as ANSI code."""
-        if not isinstance(default_color, rgba):
-            return None
-        _default_color: tuple[int, int, int] = tuple(default_color)[:3]
+        _default_color: tuple[int, int, int] = (default_color[0], default_color[1], default_color[2])
         if brightness_steps is None or (format_key and _PATTERNS.bg_opt_default.search(format_key)):
             return (ANSI.SEQ_BG_COLOR if format_key and _PATTERNS.bg_default.search(format_key) else ANSI.SEQ_COLOR).format(
                 *_default_color

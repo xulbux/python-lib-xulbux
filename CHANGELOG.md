@@ -15,12 +15,21 @@
 # <br><b>Changelog</b><br>
 
 
+<span id="v1-9-6" />
+
+## ... `v1.9.6`
+
+* The compiled version of the library now includes the type stub files (`.pyi`), so type checkers can properly check types.
+* Made all type hints in the whole library way more strict and accurate.
+* Removed leftover unnecessary runtime type-checks in several methods throughout the whole library.
+
+
 <span id="v1-9-5" />
 
 ## 25.01.2026 `v1.9.5`
 
-* Add new class property `Console.encoding`, which returns the encoding used by the console (*e.g.* `utf-8`*,* `cp1252`*, …*).
-* Add multiple new class properties to the `System` class:
+* Added a new class property `Console.encoding`, which returns the encoding used by the console (*e.g.* `utf-8`*,* `cp1252`*, …*).
+* Added multiple new class properties to the `System` class:
   - `is_linux` Whether the current OS is Linux or not.
   - `is_mac` Whether the current OS is macOS or not.
   - `is_unix` Whether the current OS is a Unix-like OS (Linux, macOS, BSD, …) or not.

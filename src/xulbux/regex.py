@@ -239,7 +239,7 @@ class LazyRegex:
     def __init__(self, **patterns: str):
         self._patterns = patterns
 
-    def __getattr__(self, name: str) -> _rx.Pattern:
+    def __getattr__(self, name: str) -> _rx.Pattern[str]:
         if name in self._patterns:
             setattr(self, name, compiled := _rx.compile(self._patterns[name]))
             return compiled

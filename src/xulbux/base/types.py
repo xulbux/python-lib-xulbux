@@ -27,48 +27,48 @@ FormattableString = Annotated[str, "String made to be formatted with the `.forma
 #
 ################################################## TypeAlias ##################################################
 
-PathsList: TypeAlias = Union[list[Path], list[str], list[Path | str]]
+PathsList: TypeAlias = Union[list[Path], list[str], list[Union[Path, str]]]
 """Union of all supported list types for a list of paths."""
 
-DataStructure: TypeAlias = Union[list, tuple, set, frozenset, dict]
+DataStructure: TypeAlias = Union[list[Any], tuple[Any, ...], set[Any], frozenset[Any], dict[Any, Any]]
 """Union of supported data structures used in the `data` module."""
 DataStructureTypes = (list, tuple, set, frozenset, dict)
 """Tuple of supported data structures used in the `data` module."""
 
-IndexIterable: TypeAlias = Union[list, tuple, set, frozenset]
+IndexIterable: TypeAlias = Union[list[Any], tuple[Any, ...], set[Any], frozenset[Any]]
 """Union of all iterable types that support indexing operations."""
 IndexIterableTypes = (list, tuple, set, frozenset)
 """Tuple of all iterable types that support indexing operations."""
 
 Rgba: TypeAlias = Union[
     tuple[Int_0_255, Int_0_255, Int_0_255],
-    tuple[Int_0_255, Int_0_255, Int_0_255, Float_0_1],
+    tuple[Int_0_255, Int_0_255, Int_0_255, Optional[Float_0_1]],
     list[Int_0_255],
-    list[Union[Int_0_255, Float_0_1]],
-    dict[str, Union[int, float]],
+    list[Union[Int_0_255, Optional[Float_0_1]]],
+    "RgbaDict",
     "rgba",
     str,
 ]
 """Matches all supported RGBA color value formats."""
 Hsla: TypeAlias = Union[
     tuple[Int_0_360, Int_0_100, Int_0_100],
-    tuple[Int_0_360, Int_0_100, Int_0_100, Float_0_1],
+    tuple[Int_0_360, Int_0_100, Int_0_100, Optional[Float_0_1]],
     list[Union[Int_0_360, Int_0_100]],
-    list[Union[Int_0_360, Int_0_100, Float_0_1]],
-    dict[str, Union[int, float]],
+    list[Union[Int_0_360, Int_0_100, Optional[Float_0_1]]],
+    "HslaDict",
     "hsla",
     str,
 ]
 """Matches all supported HSLA color value formats."""
 Hexa: TypeAlias = Union[str, int, "hexa"]
-"""Matches all supported hexadecimal color value formats."""
+"""Matches all supported HEXA color value formats."""
 
 AnyRgba: TypeAlias = Any
-"""Generic type alias for RGBA color values in any supported format (type checking disabled)."""
+"""Generic type alias for RGBA color values in any format (type checking disabled)."""
 AnyHsla: TypeAlias = Any
-"""Generic type alias for HSLA color values in any supported format (type checking disabled)."""
+"""Generic type alias for HSLA color values in any format (type checking disabled)."""
 AnyHexa: TypeAlias = Any
-"""Generic type alias for hexadecimal color values in any supported format (type checking disabled)."""
+"""Generic type alias for HEXA color values in any format (type checking disabled)."""
 
 ArgParseConfig: TypeAlias = Union[set[str], "ArgConfigWithDefault", Literal["before", "after"]]
 """Matches the command-line-parsing configuration of a single argument."""
@@ -92,13 +92,34 @@ class ArgConfigWithDefault(TypedDict):
     flags: set[str]
     default: str
 
-
 class ArgData(TypedDict):
     """Schema for the resulting data of parsing a single command-line argument."""
     exists: bool
     is_pos: bool
     values: list[str]
     flag: Optional[str]
+
+
+class RgbaDict(TypedDict):
+    """Dictionary schema for RGBA color components."""
+    r: Int_0_255
+    g: Int_0_255
+    b: Int_0_255
+    a: Optional[Float_0_1]
+
+class HslaDict(TypedDict):
+    """Dictionary schema for HSLA color components."""
+    h: Int_0_360
+    s: Int_0_100
+    l: Int_0_100
+    a: Optional[Float_0_1]
+
+class HexaDict(TypedDict):
+    """Dictionary schema for HEXA color components."""
+    r: str
+    g: str
+    b: str
+    a: Optional[str]
 
 
 class MissingLibsMsgs(TypedDict):

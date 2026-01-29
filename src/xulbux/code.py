@@ -6,6 +6,7 @@ from .string import String
 from .regex import Regex
 from .data import Data
 
+from typing import Any
 import regex as _rx
 
 
@@ -48,7 +49,7 @@ class Code:
                 return "\n".join(code_lines)
             return code
 
-        result = []
+        result: list[str] = []
         for line in code_lines:
             indent_level = (len(line) - len(stripped := line.lstrip())) // tab_spaces
             result.append((" " * (indent_level * new_tab_size)) + stripped)
@@ -56,11 +57,11 @@ class Code:
         return "\n".join(result)
 
     @classmethod
-    def get_func_calls(cls, code: str) -> list:
+    def get_func_calls(cls, code: str) -> list[list[Any]]:
         """Will try to get all function calls and return them as a list.\n
         -------------------------------------------------------------------
         - `code` -⠀the code to analyze"""
-        nested_func_calls = []
+        nested_func_calls: list[list[Any]] = []
 
         for _, func_attrs in (funcs := _rx.findall(r"(?i)" + Regex.func_call(), code)):
             if (nested_calls := _rx.findall(r"(?i)" + Regex.func_call(), func_attrs)):
