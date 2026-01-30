@@ -14,7 +14,7 @@ class Code:
     """This class includes methods to work with code strings."""
 
     @classmethod
-    def add_indent(cls, code: str, indent: int) -> str:
+    def add_indent(cls, code: str, indent: int, /) -> str:
         """Adds `indent` spaces at the beginning of each line.\n
         --------------------------------------------------------------------------
         - `code` -⠀the code to indent
@@ -25,7 +25,7 @@ class Code:
         return "\n".join(" " * indent + line for line in code.splitlines())
 
     @classmethod
-    def get_tab_spaces(cls, code: str) -> int:
+    def get_tab_spaces(cls, code: str, /) -> int:
         """Will try to get the amount of spaces used for indentation.\n
         ----------------------------------------------------------------
         - `code` -⠀the code to analyze"""
@@ -33,7 +33,7 @@ class Code:
         return min(non_zero_indents) if (non_zero_indents := [i for i in indents if i > 0]) else 0
 
     @classmethod
-    def change_tab_size(cls, code: str, new_tab_size: int, remove_empty_lines: bool = False) -> str:
+    def change_tab_size(cls, code: str, new_tab_size: int, /, *, remove_empty_lines: bool = False) -> str:
         """Replaces all tabs with `new_tab_size` spaces.\n
         --------------------------------------------------------------------------------
         - `code` -⠀the code to modify the tab size of
@@ -57,7 +57,7 @@ class Code:
         return "\n".join(result)
 
     @classmethod
-    def get_func_calls(cls, code: str) -> list[list[Any]]:
+    def get_func_calls(cls, code: str, /) -> list[list[Any]]:
         """Will try to get all function calls and return them as a list.\n
         -------------------------------------------------------------------
         - `code` -⠀the code to analyze"""
@@ -70,7 +70,7 @@ class Code:
         return list(Data.remove_duplicates(funcs + nested_func_calls))
 
     @classmethod
-    def is_js(cls, code: str, funcs: set[str] = {"__", "$t", "$lang"}) -> bool:
+    def is_js(cls, code: str, /, *, funcs: set[str] = {"__", "$t", "$lang"}) -> bool:
         """Will check if the code is very likely to be JavaScript.\n
         -------------------------------------------------------------
         - `code` -⠀the code to analyze

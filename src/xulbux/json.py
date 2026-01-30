@@ -3,12 +3,12 @@ This module provides the `Json` class, which includes methods to read,
 create and update JSON files, with support for comments inside the JSON data.
 """
 
-from .base.types import DataStructure
+from .base.types import DataObj
 from .file_sys import FileSys
 from .data import Data
 from .file import File
 
-from typing import Literal, Any, cast
+from typing import Literal, Any, overload, cast
 from pathlib import Path
 import json as _json
 
@@ -17,10 +17,38 @@ class Json:
     """This class provides methods to read, create and update JSON files,
     with support for comments inside the JSON data."""
 
+    @overload
     @classmethod
     def read(
         cls,
         json_file: Path | str,
+        /,
+        *,
+        comment_start: str = ">>",
+        comment_end: str = "<<",
+        return_original: Literal[True],
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        ...
+
+    @overload
+    @classmethod
+    def read(
+        cls,
+        json_file: Path | str,
+        /,
+        *,
+        comment_start: str = ">>",
+        comment_end: str = "<<",
+        return_original: Literal[False] = False,
+    ) -> dict[str, Any]:
+        ...
+
+    @classmethod
+    def read(
+        cls,
+        json_file: Path | str,
+        /,
+        *,
         comment_start: str = ">>",
         comment_end: str = "<<",
         return_original: bool = False,
@@ -50,7 +78,7 @@ class Json:
             fmt_error = "\n  ".join(str(e).splitlines())
             raise ValueError(f"Error parsing JSON in {file_path!r}:\n  {fmt_error}") from e
 
-        if not (processed_data := dict(Data.remove_comments(data, comment_start, comment_end))):
+        if not (processed_data := dict(Data.remove_comments(data, comment_start=comment_start, comment_end=comment_end))):
             raise ValueError(f"The JSON file {file_path!r} is empty or contains only comments.")
 
         return (processed_data, data) if return_original else processed_data
@@ -60,6 +88,8 @@ class Json:
         cls,
         json_file: Path | str,
         data: dict[str, Any],
+        /,
+        *,
         indent: int = 2,
         compactness: Literal[0, 1, 2] = 1,
         force: bool = False,
@@ -82,14 +112,8 @@ class Json:
 
         file_path = FileSys.extend_or_make_path(json_path, prefer_script_dir=True)
         File.create(
-            file_path=file_path,
-            content=Data.render(
-                data=data,
-                indent=indent,
-                compactness=compactness,
-                as_json=True,
-                syntax_highlighting=False,
-            ),
+            file_path,
+            Data.render(data, indent=indent, compactness=compactness, as_json=True, syntax_highlighting=False),
             force=force,
         )
 
@@ -100,6 +124,8 @@ class Json:
         cls,
         json_file: Path | str,
         update_values: dict[str, Any],
+        /,
+        *,
         comment_start: str = ">>",
         comment_end: str = "<<",
         path_sep: str = "->",
@@ -142,25 +168,18 @@ class Json:
         If you don't know that the first list item is `"apples"`,
         you can use the items list index inside the value-path, so `healthy->fruits->0`.\n
         ⇾ If the given value-path doesn't exist, it will be created."""
-        processed_data, data = cast(
-            tuple[dict[str, Any], dict[str, Any]],
-            cls.read(
-                json_file=json_file,
-                comment_start=comment_start,
-                comment_end=comment_end,
-                return_original=True,
-            ),
+        processed_data, data = cls.read(
+            json_file,
+            comment_start=comment_start,
+            comment_end=comment_end,
+            return_original=True,
         )
 
         update: dict[str, Any] = {}
         for val_path, new_val in update_values.items():
             try:
-                if (path_id := Data.get_path_id(
-                    data=cast(DataStructure, processed_data),
-                    value_paths=val_path,
-                    path_sep=path_sep,
-                )) is not None:
-                    update[cast(str, path_id)] = new_val
+                if (path_id := Data.get_path_id(cast(DataObj, processed_data), val_path, path_sep=path_sep)) is not None:
+                    update[path_id] = new_val
                 else:
                     data = cls._create_nested_path(data, val_path.split(path_sep), new_val)
             except Exception:
@@ -169,10 +188,10 @@ class Json:
         if update:
             data = Data.set_value_by_path_id(data, update)
 
-        cls.create(json_file=json_file, data=dict(data), force=True)
+        cls.create(json_file, data, force=True)
 
     @staticmethod
-    def _create_nested_path(data_obj: dict[str, Any], path_keys: list[str], value: Any) -> dict[str, Any]:
+    def _create_nested_path(data_obj: dict[str, Any], path_keys: list[str], value: Any, /) -> dict[str, Any]:
         """Internal method that creates nested dictionaries/lists based on the
         given path keys and sets the specified value at the end of the path."""
         last_idx, current = len(path_keys) - 1, data_obj

@@ -13,7 +13,7 @@ class String:
     """This class provides various utility methods for string manipulation and conversion."""
 
     @classmethod
-    def to_type(cls, string: str) -> Any:
+    def to_type(cls, string: str, /) -> Any:
         """Will convert a string to the found type, including complex nested structures.\n
         -----------------------------------------------------------------------------------
         - `string` -⠀the string to convert"""
@@ -26,7 +26,7 @@ class String:
                 return string
 
     @classmethod
-    def normalize_spaces(cls, string: str, tab_spaces: int = 4) -> str:
+    def normalize_spaces(cls, string: str, /, tab_spaces: int = 4) -> str:
         """Replaces all special space characters with normal spaces.\n
         ---------------------------------------------------------------
         - `tab_spaces` -⠀number of spaces to replace tab chars with"""
@@ -38,7 +38,7 @@ class String:
             .replace("\u2007", " ").replace("\u2008", " ").replace("\u2009", " ").replace("\u200A", " ")
 
     @classmethod
-    def escape(cls, string: str, str_quotes: Optional[Literal["'", '"']] = None) -> str:
+    def escape(cls, string: str, /, str_quotes: Optional[Literal["'", '"']] = None) -> str:
         """Escapes Python's special characters (e.g. `\\n`, `\\t`, …) and quotes inside the string.\n
         --------------------------------------------------------------------------------------------------------
         - `string` -⠀the string to escape
@@ -57,7 +57,7 @@ class String:
             return string
 
     @classmethod
-    def is_empty(cls, string: Optional[str], spaces_are_empty: bool = False) -> bool:
+    def is_empty(cls, string: Optional[str], /, *, spaces_are_empty: bool = False) -> bool:
         """Returns `True` if the string is considered empty and `False` otherwise.\n
         -----------------------------------------------------------------------------------------------
         - `string` -⠀the string to check (or `None`, which is considered empty)
@@ -68,9 +68,9 @@ class String:
         )
 
     @classmethod
-    def single_char_repeats(cls, string: str, char: str) -> int | bool:
+    def single_char_repeats(cls, string: str, char: str, /) -> int:
         """- If the string consists of only the same `char`, it returns the number of times it is present.
-        - If the string doesn't consist of only the same character, it returns `False`.\n
+        - If the string doesn't consist of only the same character, it returns `0`.\n
         ---------------------------------------------------------------------------------------------------
         - `string` -⠀the string to check
         - `char` -⠀the character to check for repetition"""
@@ -80,10 +80,10 @@ class String:
         if len(string) == (len(char) * string.count(char)):
             return string.count(char)
         else:
-            return False
+            return 0
 
     @classmethod
-    def decompose(cls, case_string: str, seps: str = "-_", lower_all: bool = True) -> list[str]:
+    def decompose(cls, case_string: str, /, seps: str = "-_", *, lower_all: bool = True) -> list[str]:
         """Will decompose the string (any type of casing, also mixed) into parts.\n
         ----------------------------------------------------------------------------
         - `case_string` -⠀the string to decompose
@@ -95,7 +95,7 @@ class String:
         ]
 
     @classmethod
-    def to_camel_case(cls, string: str, upper: bool = True) -> str:
+    def to_camel_case(cls, string: str, /, *, upper: bool = True) -> str:
         """Will convert the string of any type of casing to CamelCase.\n
         -----------------------------------------------------------------
         - `string` -⠀the string to convert
@@ -109,7 +109,7 @@ class String:
         )
 
     @classmethod
-    def to_delimited_case(cls, string: str, delimiter: str = "_", screaming: bool = False) -> str:
+    def to_delimited_case(cls, string: str, /, delimiter: str = "_", *, screaming: bool = False) -> str:
         """Will convert the string of any type of casing to delimited case.\n
         -----------------------------------------------------------------------
         - `string` -⠀the string to convert
@@ -121,7 +121,7 @@ class String:
         )
 
     @classmethod
-    def get_lines(cls, string: str, remove_empty_lines: bool = False) -> list[str]:
+    def get_lines(cls, string: str, /, *, remove_empty_lines: bool = False) -> list[str]:
         """Will split the string into lines.\n
         ------------------------------------------------------------------------------------
         - `string` -⠀the string to split
@@ -136,7 +136,7 @@ class String:
             return non_empty_lines
 
     @classmethod
-    def remove_consecutive_empty_lines(cls, string: str, max_consecutive: int = 0) -> str:
+    def remove_consecutive_empty_lines(cls, string: str, /, max_consecutive: int = 0) -> str:
         """Will remove consecutive empty lines from the string.\n
         -------------------------------------------------------------------------------------
         - `string` -⠀the string to process
@@ -150,7 +150,7 @@ class String:
         return _re.sub(r"(\n\s*){2,}", r"\1" * (max_consecutive + 1), string)
 
     @classmethod
-    def split_count(cls, string: str, count: int) -> list[str]:
+    def split_count(cls, string: str, count: int, /) -> list[str]:
         """Will split the string every `count` characters.\n
         -----------------------------------------------------
         - `string` -⠀the string to split

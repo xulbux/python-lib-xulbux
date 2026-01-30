@@ -22,7 +22,13 @@
 * The compiled version of the library now includes the type stub files (`.pyi`), so type checkers can properly check types.
 * Made all type hints in the whole library way more strict and accurate.
 * Removed leftover unnecessary runtime type-checks in several methods throughout the whole library.
+
+**BREAKING CHANGES:**
+* All methods that should use positional-only params up to a certain point, now actually enforce that by using the `/` syntax.
 * Renamed the `Spinner` class from the `console` module to `Throbber`, since that name is closer to what it's actually used for.
+* Changed the name of the TypeAlias `DataStructure` to `DataObj` because that name is shorter and more general.
+* Changed both names `DataStructureTypes` and `IndexIterableTypes` to `DataObjTT` and `IndexIterableTT` respectively (`TT` *stands for types-tuple*).
+* Made the return value of `String.single_char_repeats()` always be *`int`* and not <code>*int* | *bool*</code>.
 
 
 <span id="v1-9-5" />

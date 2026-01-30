@@ -30,14 +30,14 @@ FormattableString = Annotated[str, "String made to be formatted with the `.forma
 PathsList: TypeAlias = Union[list[Path], list[str], list[Union[Path, str]]]
 """Union of all supported list types for a list of paths."""
 
-DataStructure: TypeAlias = Union[list[Any], tuple[Any, ...], set[Any], frozenset[Any], dict[Any, Any]]
+DataObj: TypeAlias = Union[list[Any], tuple[Any, ...], set[Any], frozenset[Any], dict[Any, Any]]
 """Union of supported data structures used in the `data` module."""
-DataStructureTypes = (list, tuple, set, frozenset, dict)
+DataObjTT = (list, tuple, set, frozenset, dict)
 """Tuple of supported data structures used in the `data` module."""
 
 IndexIterable: TypeAlias = Union[list[Any], tuple[Any, ...], set[Any], frozenset[Any]]
 """Union of all iterable types that support indexing operations."""
-IndexIterableTypes = (list, tuple, set, frozenset)
+IndexIterableTT = (list, tuple, set, frozenset)
 """Tuple of all iterable types that support indexing operations."""
 
 Rgba: TypeAlias = Union[
@@ -92,6 +92,7 @@ class ArgConfigWithDefault(TypedDict):
     flags: set[str]
     default: str
 
+
 class ArgData(TypedDict):
     """Schema for the resulting data of parsing a single command-line argument."""
     exists: bool
@@ -107,12 +108,14 @@ class RgbaDict(TypedDict):
     b: Int_0_255
     a: Optional[Float_0_1]
 
+
 class HslaDict(TypedDict):
     """Dictionary schema for HSLA color components."""
     h: Int_0_360
     s: Int_0_100
     l: Int_0_100
     a: Optional[Float_0_1]
+
 
 class HexaDict(TypedDict):
     """Dictionary schema for HEXA color components."""

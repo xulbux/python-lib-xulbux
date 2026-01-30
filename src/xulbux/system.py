@@ -111,7 +111,7 @@ class System(metaclass=_SystemMeta):
     """This class provides methods to interact with the underlying operating system."""
 
     @classmethod
-    def restart(cls, prompt: object = "", wait: int = 0, continue_program: bool = False, force: bool = False) -> None:
+    def restart(cls, prompt: object = "", /, *, wait: int = 0, continue_program: bool = False, force: bool = False) -> None:
         """Restarts the system with some advanced options\n
         --------------------------------------------------------------------------------------------------
         - `prompt` -⠀the message to be displayed in the systems restart notification
@@ -121,12 +121,14 @@ class System(metaclass=_SystemMeta):
         if wait < 0:
             raise ValueError(f"The 'wait' parameter must be non-negative, got {wait!r}")
 
-        _SystemRestartHelper(prompt, wait, continue_program, force)()
+        _SystemRestartHelper(prompt, wait=wait, continue_program=continue_program, force=force)()
 
     @classmethod
     def check_libs(
         cls,
         lib_names: list[str],
+        /,
+        *,
         install_missing: bool = False,
         missing_libs_msgs: MissingLibsMsgs = {
             "found_missing": "The following required libraries are missing:",
@@ -144,7 +146,12 @@ class System(metaclass=_SystemMeta):
         ------------------------------------------------------------------------------------------------------------
         If some libraries are missing or they could not be installed, their names will be returned as a list.
         If all libraries are installed (or were installed successfully), `None` will be returned."""
-        return _SystemCheckLibsHelper(lib_names, install_missing, missing_libs_msgs, confirm_install)()
+        return _SystemCheckLibsHelper(
+            lib_names,
+            install_missing=install_missing,
+            missing_libs_msgs=missing_libs_msgs,
+            confirm_install=confirm_install,
+        )()
 
     @classmethod
     def elevate(cls, win_title: Optional[str] = None, args: Optional[list[str]] = None) -> bool:
@@ -192,7 +199,7 @@ class System(metaclass=_SystemMeta):
 class _SystemRestartHelper:
     """Internal, callable helper class to handle system restart with platform-specific logic."""
 
-    def __init__(self, prompt: object, wait: int, continue_program: bool, force: bool):
+    def __init__(self, prompt: object, /, *, wait: int, continue_program: bool, force: bool):
         self.prompt = prompt
         self.wait = wait
         self.continue_program = continue_program
@@ -206,7 +213,7 @@ class _SystemRestartHelper:
         else:
             raise NotImplementedError(f"Restart not implemented for '{system}' systems.")
 
-    def check_running_processes(self, command: str | list[str], skip_lines: int = 0) -> None:
+    def check_running_processes(self, command: str | list[str], /, skip_lines: int = 0) -> None:
         """Check if processes are running and raise error if force is False."""
         if self.force:
             return
@@ -260,6 +267,8 @@ class _SystemCheckLibsHelper:
     def __init__(
         self,
         lib_names: list[str],
+        /,
+        *,
         install_missing: bool,
         missing_libs_msgs: MissingLibsMsgs,
         confirm_install: bool,
@@ -292,7 +301,7 @@ class _SystemCheckLibsHelper:
                 missing.append(lib)
         return missing
 
-    def confirm_installation(self, missing: list[str]) -> bool:
+    def confirm_installation(self, missing: list[str], /) -> bool:
         """Ask user for confirmation before installing libraries."""
         FormatCodes.print(f"[b]({self.missing_libs_msgs['found_missing']})")
         for lib in missing:
@@ -300,7 +309,7 @@ class _SystemCheckLibsHelper:
         print()
         return Console.confirm(self.missing_libs_msgs["should_install"], end="\n")
 
-    def install_libs(self, missing: list[str]) -> Optional[list[str]]:
+    def install_libs(self, missing: list[str], /) -> Optional[list[str]]:
         """Install missing libraries using pip."""
         for lib in missing[:]:
             try:
