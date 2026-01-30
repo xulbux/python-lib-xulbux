@@ -1,5 +1,5 @@
 from xulbux.console import ParsedArgData, ParsedArgs
-from xulbux.console import Spinner, ProgressBar
+from xulbux.console import Throbber, ProgressBar
 from xulbux.console import Console
 from xulbux import console
 
@@ -1029,128 +1029,128 @@ def test_progressbar_redraw_progress_bar():
     mock_stdout.flush.assert_called_once()
 
 
-################################################## Spinner TESTS ##################################################
+################################################## Throbber TESTS ##################################################
 
 
-def test_spinner_init_defaults():
-    spinner = Spinner()
-    assert spinner.label is None
-    assert spinner.interval == 0.2
-    assert spinner.active is False
-    assert spinner.sep == " "
-    assert len(spinner.frames) > 0
+def test_throbber_init_defaults():
+    throbber = Throbber()
+    assert throbber.label is None
+    assert throbber.interval == 0.2
+    assert throbber.active is False
+    assert throbber.sep == " "
+    assert len(throbber.frames) > 0
 
 
-def test_spinner_init_custom():
-    spinner = Spinner(label="Loading", interval=0.5, sep="-")
-    assert spinner.label == "Loading"
-    assert spinner.interval == 0.5
-    assert spinner.sep == "-"
+def test_throbber_init_custom():
+    throbber = Throbber(label="Loading", interval=0.5, sep="-")
+    assert throbber.label == "Loading"
+    assert throbber.interval == 0.5
+    assert throbber.sep == "-"
 
 
-def test_spinner_set_format_valid():
-    spinner = Spinner()
-    spinner.set_format(["{l}", "{a}"])
-    assert spinner.spinner_format == ["{l}", "{a}"]
+def test_throbber_set_format_valid():
+    throbber = Throbber()
+    throbber.set_format(["{l}", "{a}"])
+    assert throbber.throbber_format == ["{l}", "{a}"]
 
 
-def test_spinner_set_format_invalid():
-    spinner = Spinner()
+def test_throbber_set_format_invalid():
+    throbber = Throbber()
     with pytest.raises(ValueError):
-        spinner.set_format(["{l}"])  # MISSING {a}
+        throbber.set_format(["{l}"])  # MISSING {a}
 
 
-def test_spinner_set_frames_valid():
-    spinner = Spinner()
-    spinner.set_frames(("a", "b"))
-    assert spinner.frames == ("a", "b")
+def test_throbber_set_frames_valid():
+    throbber = Throbber()
+    throbber.set_frames(("a", "b"))
+    assert throbber.frames == ("a", "b")
 
 
-def test_spinner_set_frames_invalid():
-    spinner = Spinner()
+def test_throbber_set_frames_invalid():
+    throbber = Throbber()
     with pytest.raises(ValueError):
-        spinner.set_frames(("a", ))  # LESS THAN 2 FRAMES
+        throbber.set_frames(("a", ))  # LESS THAN 2 FRAMES
 
 
-def test_spinner_set_interval_valid():
-    spinner = Spinner()
-    spinner.set_interval(1.0)
-    assert spinner.interval == 1.0
+def test_throbber_set_interval_valid():
+    throbber = Throbber()
+    throbber.set_interval(1.0)
+    assert throbber.interval == 1.0
 
 
-def test_spinner_set_interval_invalid():
-    spinner = Spinner()
+def test_throbber_set_interval_invalid():
+    throbber = Throbber()
     with pytest.raises(ValueError):
-        spinner.set_interval(0)
+        throbber.set_interval(0)
     with pytest.raises(ValueError):
-        spinner.set_interval(-1)
+        throbber.set_interval(-1)
 
 
 @patch("xulbux.console._threading.Thread")
 @patch("xulbux.console._threading.Event")
 @patch("sys.stdout", new_callable=MagicMock)
-def test_spinner_start(mock_stdout, mock_event, mock_thread):
+def test_throbber_start(mock_stdout, mock_event, mock_thread):
     mock_thread.return_value.start.return_value = None
-    spinner = Spinner()
-    spinner.start("Test")
+    throbber = Throbber()
+    throbber.start("Test")
 
-    assert spinner.active is True
-    assert spinner.label == "Test"
+    assert throbber.active is True
+    assert throbber.label == "Test"
     mock_event.assert_called_once()
     mock_thread.assert_called_once()
 
     # TEST CALLING START AGAIN DOESN'T DO ANYTHING
-    spinner.start("Test2")
+    throbber.start("Test2")
     assert mock_event.call_count == 1
 
 
 @patch("xulbux.console._threading.Thread")
 @patch("xulbux.console._threading.Event")
-def test_spinner_stop(mock_event, mock_thread):
-    spinner = Spinner()
+def test_throbber_stop(mock_event, mock_thread):
+    throbber = Throbber()
     # MANUALLY SET ACTIVE TO SIMULATE RUNNING
-    spinner.active = True
+    throbber.active = True
     mock_stop_event = MagicMock()
     mock_stop_event.set.return_value = None
-    spinner._stop_event = mock_stop_event
+    throbber._stop_event = mock_stop_event
     mock_animation_thread = MagicMock()
     mock_animation_thread.join.return_value = None
-    spinner._animation_thread = mock_animation_thread
+    throbber._animation_thread = mock_animation_thread
 
-    spinner.stop()
+    throbber.stop()
 
-    assert spinner.active is False
+    assert throbber.active is False
     mock_stop_event.set.assert_called_once()
     mock_animation_thread.join.assert_called_once()
 
 
-def test_spinner_update_label():
-    spinner = Spinner()
-    spinner.update_label("New Label")
-    assert spinner.label == "New Label"
+def test_throbber_update_label():
+    throbber = Throbber()
+    throbber.update_label("New Label")
+    assert throbber.label == "New Label"
 
 
-def test_spinner_context_manager():
-    spinner = Spinner()
+def test_throbber_context_manager():
+    throbber = Throbber()
 
     # TEST CONTEXT MANAGER BEHAVIOR BY CHECKING ACTUAL EFFECTS
-    with spinner.context("Test") as update:
-        assert spinner.active is True
-        assert spinner.label == "Test"
+    with throbber.context("Test") as update:
+        assert throbber.active is True
+        assert throbber.label == "Test"
         update("New Label")
-        assert spinner.label == "New Label"
+        assert throbber.label == "New Label"
 
-    # AFTER CONTEXT EXITS, SPINNER SHOULD BE STOPPED
-    assert spinner.active is False
+    # AFTER CONTEXT EXITS, THROBBER SHOULD BE STOPPED
+    assert throbber.active is False
 
 
-def test_spinner_context_manager_exception():
-    spinner = Spinner()
+def test_throbber_context_manager_exception():
+    throbber = Throbber()
 
     # TEST THAT CLEANUP HAPPENS EVEN WITH EXCEPTIONS
     with pytest.raises(ValueError):
-        with spinner.context("Test"):
+        with throbber.context("Test"):
             raise ValueError("Oops")
 
-    # AFTER EXCEPTION, SPINNER SHOULD STILL BE CLEANED UP
-    assert spinner.active is False
+    # AFTER EXCEPTION, THROBBER SHOULD STILL BE CLEANED UP
+    assert throbber.active is False

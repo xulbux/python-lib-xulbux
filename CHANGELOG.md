@@ -22,6 +22,7 @@
 * The compiled version of the library now includes the type stub files (`.pyi`), so type checkers can properly check types.
 * Made all type hints in the whole library way more strict and accurate.
 * Removed leftover unnecessary runtime type-checks in several methods throughout the whole library.
+* Renamed the `Spinner` class from the `console` module to `Throbber`, since that name is closer to what it's actually used for.
 
 
 <span id="v1-9-5" />

@@ -3,6 +3,7 @@ This module provides the `Json` class, which includes methods to read,
 create and update JSON files, with support for comments inside the JSON data.
 """
 
+from .base.types import DataStructure
 from .file_sys import FileSys
 from .data import Data
 from .file import File
@@ -23,7 +24,7 @@ class Json:
         comment_start: str = ">>",
         comment_end: str = "<<",
         return_original: bool = False,
-    ) -> dict | tuple[dict, dict]:
+    ) -> dict[str, Any] | tuple[dict[str, Any], dict[str, Any]]:
         """Read JSON files, ignoring comments.\n
         ------------------------------------------------------------------------------------
         - `json_file` -⠀the path (relative or absolute) to the JSON file to read
@@ -58,7 +59,7 @@ class Json:
     def create(
         cls,
         json_file: Path | str,
-        data: dict,
+        data: dict[str, Any],
         indent: int = 2,
         compactness: Literal[0, 1, 2] = 1,
         force: bool = False,
@@ -141,17 +142,24 @@ class Json:
         If you don't know that the first list item is `"apples"`,
         you can use the items list index inside the value-path, so `healthy->fruits->0`.\n
         ⇾ If the given value-path doesn't exist, it will be created."""
-        processed_data, data = cls.read(
-            json_file=json_file,
-            comment_start=comment_start,
-            comment_end=comment_end,
-            return_original=True,
+        processed_data, data = cast(
+            tuple[dict[str, Any], dict[str, Any]],
+            cls.read(
+                json_file=json_file,
+                comment_start=comment_start,
+                comment_end=comment_end,
+                return_original=True,
+            ),
         )
 
         update: dict[str, Any] = {}
         for val_path, new_val in update_values.items():
             try:
-                if (path_id := Data.get_path_id(data=processed_data, value_paths=val_path, path_sep=path_sep)) is not None:
+                if (path_id := Data.get_path_id(
+                    data=cast(DataStructure, processed_data),
+                    value_paths=val_path,
+                    path_sep=path_sep,
+                )) is not None:
                     update[cast(str, path_id)] = new_val
                 else:
                     data = cls._create_nested_path(data, val_path.split(path_sep), new_val)
@@ -164,7 +172,7 @@ class Json:
         cls.create(json_file=json_file, data=dict(data), force=True)
 
     @staticmethod
-    def _create_nested_path(data_obj: dict, path_keys: list[str], value: Any) -> dict:
+    def _create_nested_path(data_obj: dict[str, Any], path_keys: list[str], value: Any) -> dict[str, Any]:
         """Internal method that creates nested dictionaries/lists based on the
         given path keys and sets the specified value at the end of the path."""
         last_idx, current = len(path_keys) - 1, data_obj
@@ -175,11 +183,11 @@ class Json:
                     current[key] = value
                 elif isinstance(current, list) and key.isdigit():
                     idx = int(key)
-                    while len(current) <= idx:
-                        current.append(None)
+                    while len(cast(list[Any], current)) <= idx:
+                        cast(list[Any], current).append(None)
                     current[idx] = value
                 else:
-                    raise TypeError(f"Cannot set key '{key}' on {type(current)}")
+                    raise TypeError(f"Cannot set key '{key}' on {type(cast(Any, current))}")
 
             else:
                 next_key = path_keys[i + 1]
@@ -189,12 +197,12 @@ class Json:
                     current = current[key]
                 elif isinstance(current, list) and key.isdigit():
                     idx = int(key)
-                    while len(current) <= idx:
-                        current.append(None)
+                    while len(cast(list[Any], current)) <= idx:
+                        cast(list[Any], current).append(None)
                     if current[idx] is None:
                         current[idx] = [] if next_key.isdigit() else {}
-                    current = current[idx]
+                    current = cast(list[Any], current)[idx]
                 else:
-                    raise TypeError(f"Cannot navigate through {type(current)}")
+                    raise TypeError(f"Cannot navigate through {type(cast(Any, current))}")
 
         return data_obj

@@ -9,7 +9,7 @@ includes methods to work with colors in various formats.
 from .base.types import RgbaDict, HslaDict, HexaDict, AnyRgba, AnyHsla, AnyHexa, Rgba, Hsla, Hexa
 from .regex import Regex
 
-from typing import Iterator, Optional, Literal, overload, cast
+from typing import Iterator, Optional, Literal, Any, overload, cast
 import re as _re
 
 
@@ -197,8 +197,8 @@ class rgba:
         none_alpha = self.a is None and (len(other_rgba) <= 3 or other_rgba[3] is None)
 
         if not none_alpha:
-            self_a = 1 if self.a is None else self.a
-            other_a = (other_rgba[3] if other_rgba[3] is not None else 1) if len(other_rgba) > 3 else 1
+            self_a: float = 1.0 if self.a is None else self.a
+            other_a: float = cast(float, 1.0 if other_rgba[3] is None else other_rgba[3]) if len(other_rgba) > 3 else 1.0
 
             if additive_alpha:
                 self.a = max(0, min(1, (self_a * (2 - ratio)) + (other_a * ratio)))
@@ -770,32 +770,36 @@ class Color:
                 return True
 
             elif isinstance(color, (list, tuple)):
+                array_color = cast(list[Any] | tuple[Any, ...], color)
+
                 if (allow_alpha \
-                    and len(color) == 4
-                    and all(isinstance(c, int) for c in color[:3])
-                    and isinstance(color[3], (float, type(None)))
+                    and len(array_color) == 4
+                    and all(isinstance(val, int) for val in array_color[:3])
+                    and isinstance(array_color[3], (float, type(None)))
                 ):
                     return (
-                        0 <= color[0] <= 255 and 0 <= color[1] <= 255 and 0 <= color[2] <= 255
-                        and (0 <= color[3] <= 1 or color[3] is None)
+                        0 <= array_color[0] <= 255 and 0 <= array_color[1] <= 255 and 0 <= array_color[2] <= 255
+                        and (array_color[3] is None or 0 <= array_color[3] <= 1)
                     )
-                elif len(color) == 3 and all(isinstance(c, int) for c in color):
-                    return 0 <= color[0] <= 255 and 0 <= color[1] <= 255 and 0 <= color[2] <= 255
+                elif len(array_color) == 3 and all(isinstance(val, int) for val in array_color):
+                    return 0 <= array_color[0] <= 255 and 0 <= array_color[1] <= 255 and 0 <= array_color[2] <= 255
                 else:
                     return False
 
             elif isinstance(color, dict):
+                dict_color = cast(dict[str, Any], color)
+
                 if (allow_alpha \
-                    and len(color) == 4
-                    and all(isinstance(color.get(c), int) for c in ("r", "g", "b"))
-                    and isinstance(color.get("a", "no alpha"), (float, type(None)))
+                    and len(dict_color) == 4
+                    and all(isinstance(dict_color.get(ch), int) for ch in ("r", "g", "b"))
+                    and isinstance(dict_color.get("a", "no alpha"), (float, type(None)))
                 ):
                     return (
-                        0 <= color["r"] <= 255 and 0 <= color["g"] <= 255 and 0 <= color["b"] <= 255
-                        and (0 <= color["a"] <= 1 or color["a"] is None)
+                        0 <= dict_color["r"] <= 255 and 0 <= dict_color["g"] <= 255 and 0 <= dict_color["b"] <= 255
+                        and (dict_color["a"] is None or 0 <= dict_color["a"] <= 1)
                     )
-                elif len(color) == 3 and all(isinstance(color.get(c), int) for c in ("r", "g", "b")):
-                    return 0 <= color["r"] <= 255 and 0 <= color["g"] <= 255 and 0 <= color["b"] <= 255
+                elif len(dict_color) == 3 and all(isinstance(dict_color.get(ch), int) for ch in ("r", "g", "b")):
+                    return 0 <= dict_color["r"] <= 255 and 0 <= dict_color["g"] <= 255 and 0 <= dict_color["b"] <= 255
                 else:
                     return False
 
@@ -817,32 +821,36 @@ class Color:
                 return True
 
             elif isinstance(color, (list, tuple)):
+                array_color = cast(list[Any] | tuple[Any, ...], color)
+
                 if (allow_alpha \
-                    and len(color) == 4
-                    and all(isinstance(c, int) for c in color[:3])
-                    and isinstance(color[3], (float, type(None)))
+                    and len(array_color) == 4
+                    and all(isinstance(val, int) for val in array_color[:3])
+                    and isinstance(array_color[3], (float, type(None)))
                 ):
                     return (
-                        0 <= color[0] <= 360 and 0 <= color[1] <= 100 and 0 <= color[2] <= 100
-                        and (0 <= color[3] <= 1 or color[3] is None)
+                        0 <= array_color[0] <= 360 and 0 <= array_color[1] <= 100 and 0 <= array_color[2] <= 100
+                        and (array_color[3] is None or 0 <= array_color[3] <= 1)
                     )
-                elif len(color) == 3 and all(isinstance(c, int) for c in color):
-                    return 0 <= color[0] <= 360 and 0 <= color[1] <= 100 and 0 <= color[2] <= 100
+                elif len(array_color) == 3 and all(isinstance(val, int) for val in array_color):
+                    return 0 <= array_color[0] <= 360 and 0 <= array_color[1] <= 100 and 0 <= array_color[2] <= 100
                 else:
                     return False
 
             elif isinstance(color, dict):
+                dict_color = cast(dict[str, Any], color)
+
                 if (allow_alpha \
-                    and len(color) == 4
-                    and all(isinstance(color.get(c), int) for c in ("h", "s", "l"))
-                    and isinstance(color.get("a", "no alpha"), (float, type(None)))
+                    and len(dict_color) == 4
+                    and all(isinstance(dict_color.get(ch), int) for ch in ("h", "s", "l"))
+                    and isinstance(dict_color.get("a", "no alpha"), (float, type(None)))
                 ):
                     return (
-                        0 <= color["h"] <= 360 and 0 <= color["s"] <= 100 and 0 <= color["l"] <= 100
-                        and (0 <= color["a"] <= 1 or color["a"] is None)
+                        0 <= dict_color["h"] <= 360 and 0 <= dict_color["s"] <= 100 and 0 <= dict_color["l"] <= 100
+                        and (dict_color["a"] is None or 0 <= dict_color["a"] <= 1)
                     )
-                elif len(color) == 3 and all(isinstance(color.get(c), int) for c in ("h", "s", "l")):
-                    return 0 <= color["h"] <= 360 and 0 <= color["s"] <= 100 and 0 <= color["l"] <= 100
+                elif len(dict_color) == 3 and all(isinstance(dict_color.get(ch), int) for ch in ("h", "s", "l")):
+                    return 0 <= dict_color["h"] <= 360 and 0 <= dict_color["s"] <= 100 and 0 <= dict_color["l"] <= 100
                 else:
                     return False
 
@@ -1239,34 +1247,46 @@ class Color:
         """Internal method to parse a color to an RGBA object."""
         if isinstance(color, rgba):
             return color
+
         elif isinstance(color, (list, tuple)):
-            if len(color) == 4:
-                return rgba(int(color[0]), int(color[1]), int(color[2]), float(color[3]), _validate=False)
-            elif len(color) == 3:
-                return rgba(int(color[0]), int(color[1]), int(color[2]), None, _validate=False)
+            array_color = cast(list[Any] | tuple[Any, ...], color)
+            if len(array_color) == 4:
+                return rgba(int(array_color[0]), int(array_color[1]), int(array_color[2]), float(array_color[3]), _validate=False)
+            elif len(array_color) == 3:
+                return rgba(int(array_color[0]), int(array_color[1]), int(array_color[2]), None, _validate=False)
+            raise ValueError(f"Could not parse RGBA color: {color!r}")
+
         elif isinstance(color, dict):
-            return rgba(int(color["r"]), int(color["g"]), int(color["b"]), color.get("a"), _validate=False)
-        elif isinstance(color, str):
+            dict_color = cast(dict[str, Any], color)
+            return rgba(int(dict_color["r"]), int(dict_color["g"]), int(dict_color["b"]), dict_color.get("a"), _validate=False)
+
+        else:
             if parsed := cls.str_to_rgba(color, only_first=True):
                 return cast(rgba, parsed)
-        raise ValueError(f"Could not parse RGBA color: {color!r}")
+            raise ValueError(f"Could not parse RGBA color: {color!r}")
 
     @classmethod
     def _parse_hsla(cls, color: Hsla) -> hsla:
         """Internal method to parse a color to an HSLA object."""
         if isinstance(color, hsla):
             return color
+
         elif isinstance(color, (list, tuple)):
+            array_color = cast(list[Any] | tuple[Any, ...], color)
             if len(color) == 4:
-                return hsla(int(color[0]), int(color[1]), int(color[2]), float(color[3]), _validate=False)
+                return hsla(int(array_color[0]), int(array_color[1]), int(array_color[2]), float(array_color[3]), _validate=False)
             elif len(color) == 3:
-                return hsla(int(color[0]), int(color[1]), int(color[2]), None, _validate=False)
+                return hsla(int(array_color[0]), int(array_color[1]), int(array_color[2]), None, _validate=False)
+            raise ValueError(f"Could not parse HSLA color: {color!r}")
+
         elif isinstance(color, dict):
-            return hsla(int(color["h"]), int(color["s"]), int(color["l"]), color.get("a"), _validate=False)
-        elif isinstance(color, str):
+            dict_color = cast(dict[str, Any], color)
+            return hsla(int(dict_color["h"]), int(dict_color["s"]), int(dict_color["l"]), dict_color.get("a"), _validate=False)
+
+        else:
             if parsed := cls.str_to_hsla(color, only_first=True):
                 return cast(hsla, parsed)
-        raise ValueError(f"Could not parse HSLA color: {color!r}")
+            raise ValueError(f"Could not parse HSLA color: {color!r}")
 
     @staticmethod
     def _linearize_srgb(c: float) -> float:
