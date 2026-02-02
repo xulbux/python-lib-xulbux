@@ -380,6 +380,20 @@ class FormatCodes:
     ) -> str:
         ...
 
+
+    @overload
+    @classmethod
+    def remove(
+        cls,
+        string: str,
+        /,
+        default_color: Optional[Rgba | Hexa] = None,
+        *,
+        get_removals: bool = False,
+        _ignore_linebreaks: bool = False,
+    ) -> str | tuple[str, tuple[tuple[int, str], ...]]:
+        ...
+
     @classmethod
     def remove(
         cls,
@@ -425,6 +439,18 @@ class FormatCodes:
         get_removals: Literal[False] = False,
         _ignore_linebreaks: bool = False,
     ) -> str:
+        ...
+
+    @overload
+    @classmethod
+    def remove_ansi(
+        cls,
+        ansi_string: str,
+        /,
+        *,
+        get_removals: bool = False,
+        _ignore_linebreaks: bool = False,
+    ) -> str | tuple[str, tuple[tuple[int, str], ...]]:
         ...
 
     @classmethod

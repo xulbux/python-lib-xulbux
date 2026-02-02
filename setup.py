@@ -52,7 +52,7 @@ def generate_stubs_for_package():
                 if result.stderr:
                     print(f"    {result.stderr.strip()}")
 
-        print(f"\nStub generation complete! ({generated_count} generated, {skipped_count} copied)\n")
+        print(f"\nStub generation complete. ({generated_count} generated, {skipped_count} copied)\n")
 
     except Exception as e:
         fmt_error = "\n  ".join(str(e).splitlines())
@@ -69,6 +69,7 @@ if os.environ.get("XULBUX_USE_MYPYC", "1") == "1":
         print("\nCompiling with mypyc...\n")
         source_files = find_python_files("src/xulbux")
         ext_modules = mypycify(source_files, opt_level="3")
+        print("\nMypyc compilation complete.\n")
 
         generate_stubs_for_package()
 

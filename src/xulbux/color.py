@@ -80,6 +80,10 @@ class rgba:
     def __getitem__(self, index: Literal[3], /) -> Optional[float]:
         ...
 
+    @overload
+    def __getitem__(self, index: int, /) -> int | Optional[float]:
+        ...
+
     def __getitem__(self, index: int, /) -> int | Optional[float]:
         return ((self.r, self.g, self.b) + (() if self.a is None else (self.a, )))[index]
 
@@ -328,6 +332,10 @@ class hsla:
     def __getitem__(self, index: Literal[3], /) -> Optional[float]:
         ...
 
+    @overload
+    def __getitem__(self, index: int, /) -> int | Optional[float]:
+        ...
+
     def __getitem__(self, index: int, /) -> int | Optional[float]:
         return ((self.h, self.s, self.l) + (() if self.a is None else (self.a, )))[index]
 
@@ -539,11 +547,7 @@ class hexa:
     - `complementary()` to get the complementary color"""
 
     @overload
-    def __init__(
-        self,
-        color: str | int,
-        /,
-    ) -> None:
+    def __init__(self, color: str | int, /) -> None:
         ...
 
     @overload
@@ -920,6 +924,18 @@ class Color:
     ) -> bool:
         ...
 
+    @overload
+    @classmethod
+    def is_valid_hexa(
+        cls,
+        color: AnyHexa,
+        /,
+        *,
+        allow_alpha: bool = True,
+        get_prefix: bool = False,
+    ) -> bool | tuple[bool, Optional[Literal["#", "0x"]]]:
+        ...
+
     @classmethod
     def is_valid_hexa(
         cls,
@@ -1054,6 +1070,11 @@ class Color:
     def str_to_rgba(cls, string: str, /, *, only_first: Literal[False] = False) -> Optional[list[rgba]]:
         ...
 
+    @overload
+    @classmethod
+    def str_to_rgba(cls, string: str, /, *, only_first: bool = False) -> Optional[rgba | list[rgba]]:
+        ...
+
     @classmethod
     def str_to_rgba(cls, string: str, /, *, only_first: bool = False) -> Optional[rgba | list[rgba]]:
         """Will try to recognize RGBA colors inside a string and output the found ones as RGBA objects.\n
@@ -1063,12 +1084,12 @@ class Color:
         if only_first:
             if not (match := _re.search(Regex.rgba_str(allow_alpha=True), string)):
                 return None
-            matches = match.groups()
+            groups = match.groups()
             return rgba(
-                int(matches[0]),
-                int(matches[1]),
-                int(matches[2]),
-                ((int(matches[3]) if "." not in matches[3] else float(matches[3])) if matches[3] else None),
+                int(groups[0]),
+                int(groups[1]),
+                int(groups[2]),
+                ((int(groups[3]) if "." not in groups[3] else float(groups[3])) if groups[3] else None),
                 _validate=False,
             )
 
@@ -1093,6 +1114,11 @@ class Color:
     @overload
     @classmethod
     def str_to_hsla(cls, string: str, /, *, only_first: Literal[False] = False) -> Optional[list[hsla]]:
+        ...
+
+    @overload
+    @classmethod
+    def str_to_hsla(cls, string: str, /, *, only_first: bool = False) -> Optional[hsla | list[hsla]]:
         ...
 
     @classmethod
@@ -1247,6 +1273,20 @@ class Color:
     ) -> int:
         ...
 
+    @overload
+    @classmethod
+    def luminance(
+        cls,
+        r: int,
+        g: int,
+        b: int,
+        /,
+        *,
+        output_type: Optional[type[int | float]] = None,
+        method: Literal["wcag2", "wcag3", "simple", "bt601"] = "wcag2",
+    ) -> int | float:
+        ...
+
     @classmethod
     def luminance(
         cls,
@@ -1312,6 +1352,11 @@ class Color:
     def text_color_for_on_bg(cls, text_bg_color: int, /) -> int:
         ...
 
+    @overload
+    @classmethod
+    def text_color_for_on_bg(cls, text_bg_color: Rgba | Hexa, /) -> rgba | hexa | int:
+        ...
+
     @classmethod
     def text_color_for_on_bg(cls, text_bg_color: Rgba | Hexa, /) -> rgba | hexa | int:
         """Returns either black or white text color for optimal contrast on the given background color.\n
@@ -1338,6 +1383,11 @@ class Color:
     @overload
     @classmethod
     def adjust_lightness(cls, color: hexa, lightness_change: float, /) -> hexa:
+        ...
+
+    @overload
+    @classmethod
+    def adjust_lightness(cls, color: Rgba | Hexa, lightness_change: float, /) -> rgba | hexa:
         ...
 
     @classmethod
@@ -1374,6 +1424,11 @@ class Color:
     @overload
     @classmethod
     def adjust_saturation(cls, color: hexa, saturation_change: float, /) -> hexa:
+        ...
+
+    @overload
+    @classmethod
+    def adjust_saturation(cls, color: Rgba | Hexa, saturation_change: float, /) -> rgba | hexa:
         ...
 
     @classmethod

@@ -102,11 +102,11 @@ class Data:
             ) for key, val in data.items()})
 
         else:
-            return type(data)((
+            return cast(DataObj, type(data)((
                 cls.strip(cast(DataObjType, item)) \
                 if isinstance(item, DataObjTT)
                 else item.strip()
-            ) for item in data)
+            ) for item in data))
 
     @classmethod
     def remove_empty_items(cls, data: DataObj, /, *, spaces_are_empty: bool = False) -> DataObj:
@@ -120,11 +120,11 @@ class Data:
                     val if not isinstance(val, DataObjTT) else
                     cls.remove_empty_items(cast(DataObjType, val), spaces_are_empty=spaces_are_empty)
                 )
-                for key, val in data.items() if not String.is_empty(val, spaces_are_empty)
+                for key, val in data.items() if not String.is_empty(val, spaces_are_empty=spaces_are_empty)
             })
 
         else:
-            return type(data)(
+            return cast(DataObj, type(data)(
                 item for item in (
                     (
                         item \
@@ -132,9 +132,9 @@ class Data:
                         else cls.remove_empty_items(cast(DataObjType, item), spaces_are_empty=spaces_are_empty)
                     )
                     for item in data
-                    if not (isinstance(item, (str, type(None))) and String.is_empty(item, spaces_are_empty))
+                    if not (isinstance(item, (str, type(None))) and String.is_empty(item, spaces_are_empty=spaces_are_empty))
                 ) if item not in ([], (), {}, set(), frozenset())
-            )
+            ))
 
     @classmethod
     def remove_duplicates(cls, data: DataObj, /) -> DataObj:
@@ -161,14 +161,14 @@ class Data:
                 if not is_duplicate:
                     result.append(processed_item)
 
-            return type(data)(result)
+            return cast(DataObj, type(data)(result))
 
         else:
             processed_elements: set[Any] = set()
             for item in data:
                 processed_item = cls.remove_duplicates(cast(DataObjType, item)) if isinstance(item, DataObjTT) else item
                 processed_elements.add(processed_item)
-            return type(data)(processed_elements)
+            return cast(DataObj, type(data)(processed_elements))
 
     @classmethod
     def remove_comments(
@@ -231,14 +231,12 @@ class Data:
         if len(comment_start) == 0:
             raise ValueError("The 'comment_start' parameter string must not be empty.")
 
-        return type(data)(
-            _DataRemoveCommentsHelper(
-                data,
-                comment_start=comment_start,
-                comment_end=comment_end,
-                comment_sep=comment_sep,
-            )()
-        )
+        return cast(DataObj, _DataRemoveCommentsHelper(
+            data,
+            comment_start=comment_start,
+            comment_end=comment_end,
+            comment_sep=comment_sep,
+        )())
 
     @classmethod
     def is_equal(
@@ -306,6 +304,21 @@ class Data:
         comment_end: str = "<<",
         ignore_not_found: bool = False,
     ) -> list[Optional[str]]:
+        ...
+
+    @overload
+    @classmethod
+    def get_path_id(
+        cls,
+        data: DataObjType,
+        value_paths: str | list[str],
+        /,
+        *,
+        path_sep: str = "->",
+        comment_start: str = ">>",
+        comment_end: str = "<<",
+        ignore_not_found: bool = False,
+    ) -> Optional[str | list[Optional[str]]]:
         ...
 
     @classmethod

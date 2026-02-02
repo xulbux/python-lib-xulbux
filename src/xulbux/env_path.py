@@ -24,6 +24,11 @@ class EnvPath:
     def paths(cls, *, as_list: Literal[False] = False) -> Path:
         ...
 
+    @overload
+    @classmethod
+    def paths(cls, *, as_list: bool = False) -> Path | list[Path]:
+        ...
+
     @classmethod
     def paths(cls, *, as_list: bool = False) -> Path | list[Path]:
         """Get the PATH environment variable.\n
