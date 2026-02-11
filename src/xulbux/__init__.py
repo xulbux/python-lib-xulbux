@@ -3,7 +3,7 @@ __version__ = "1.9.5"
 __description__ = "A Python library to simplify common programming tasks."
 __status__ = "Production/Stable"
 
-__url__ = "https://github.com/XulbuX/PythonLibraryXulbuX"
+__url__ = "https://github.com/xulbux/python-lib-xulbux"
 
 __author__ = "XulbuX"
 __email__ = "xulbux.real@gmail.com"

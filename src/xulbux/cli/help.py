@@ -54,19 +54,19 @@ CLI_HELP = FormatCodes.to_ansi(
   [i|#9095FF]A TON OF COOL FUNCTIONS, YOU NEED![*]
 
   [b|{CLI_COLORS["heading"]}](Usage:)[*]
-  [{CLI_COLORS["border"]}](╭────────────────────────────────────────────────────╮)[*]
-  [{CLI_COLORS["border"]}](│) [i|{CLI_COLORS["punctuator"]}](# LIBRARY CONSTANTS)[*]                                [{CLI_COLORS["border"]}](│)[*]
-  [{CLI_COLORS["border"]}](│) [{CLI_COLORS["import"]}]from [{CLI_COLORS["lib"]}]xulbux[{CLI_COLORS["punctuator"]}].[{CLI_COLORS["lib"]}]base[{CLI_COLORS["punctuator"]}].[{CLI_COLORS["lib"]}]consts [{CLI_COLORS["import"]}]import [{CLI_COLORS["const"]}]COLOR[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["const"]}]CHARS[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["const"]}]ANSI[*]  [{CLI_COLORS["border"]}](│)[*]
-  [{CLI_COLORS["border"]}](│) [i|{CLI_COLORS["punctuator"]}](# Main Classes)[*]                                     [{CLI_COLORS["border"]}](│)[*]
-  [{CLI_COLORS["border"]}](│) [{CLI_COLORS["import"]}]from [{CLI_COLORS["lib"]}]xulbux [{CLI_COLORS["import"]}]import [{CLI_COLORS["class"]}]Code[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["class"]}]Color[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["class"]}]Console[{CLI_COLORS["punctuator"]}], ...[*]       [{CLI_COLORS["border"]}](│)[*]
-  [{CLI_COLORS["border"]}](│) [i|{CLI_COLORS["punctuator"]}](# module specific imports)[*]                          [{CLI_COLORS["border"]}](│)[*]
-  [{CLI_COLORS["border"]}](│) [{CLI_COLORS["import"]}]from [{CLI_COLORS["lib"]}]xulbux[{CLI_COLORS["punctuator"]}].[{CLI_COLORS["lib"]}]color [{CLI_COLORS["import"]}]import [{CLI_COLORS["func"]}]rgba[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["func"]}]hsla[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["func"]}]hexa[*]          [{CLI_COLORS["border"]}](│)
-  [{CLI_COLORS["border"]}](╰────────────────────────────────────────────────────╯)[*]
+  [{CLI_COLORS["border"]}](╭───────────────────────────────────────────────────╮)[*]
+  [{CLI_COLORS["border"]}](│) [i|{CLI_COLORS["punctuator"]}](# LIBRARY CONSTANTS)[*]                               [{CLI_COLORS["border"]}](│)[*]
+  [{CLI_COLORS["border"]}](│) [{CLI_COLORS["import"]}]from [{CLI_COLORS["lib"]}]xulbux[{CLI_COLORS["punctuator"]}].[{CLI_COLORS["lib"]}]base[{CLI_COLORS["punctuator"]}].[{CLI_COLORS["lib"]}]consts [{CLI_COLORS["import"]}]import [{CLI_COLORS["const"]}]COLOR[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["const"]}]CHARS[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["const"]}]ANSI[*] [{CLI_COLORS["border"]}](│)[*]
+  [{CLI_COLORS["border"]}](│) [i|{CLI_COLORS["punctuator"]}](# Main Classes)[*]                                    [{CLI_COLORS["border"]}](│)[*]
+  [{CLI_COLORS["border"]}](│) [{CLI_COLORS["import"]}]from [{CLI_COLORS["lib"]}]xulbux [{CLI_COLORS["import"]}]import [{CLI_COLORS["class"]}]Code[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["class"]}]Color[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["class"]}]Console[{CLI_COLORS["punctuator"]}], ...[*]      [{CLI_COLORS["border"]}](│)[*]
+  [{CLI_COLORS["border"]}](│) [i|{CLI_COLORS["punctuator"]}](# module specific imports)[*]                         [{CLI_COLORS["border"]}](│)[*]
+  [{CLI_COLORS["border"]}](│) [{CLI_COLORS["import"]}]from [{CLI_COLORS["lib"]}]xulbux[{CLI_COLORS["punctuator"]}].[{CLI_COLORS["lib"]}]color [{CLI_COLORS["import"]}]import [{CLI_COLORS["func"]}]rgba[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["func"]}]hsla[{CLI_COLORS["punctuator"]}], [{CLI_COLORS["func"]}]hexa[*]         [{CLI_COLORS["border"]}](│)
+  [{CLI_COLORS["border"]}](╰───────────────────────────────────────────────────╯)[*]
   [b|{CLI_COLORS["heading"]}](Documentation:)[*]
-  [{CLI_COLORS["border"]}](╭────────────────────────────────────────────────────╮)[*]
-  [{CLI_COLORS["border"]}](│) [{CLI_COLORS["text"]}]For more information see the GitHub page.          [{CLI_COLORS["border"]}](│)[*]
-  [{CLI_COLORS["border"]}](│) [{CLI_COLORS["link"]}](https://github.com/XulbuX/PythonLibraryXulbuX/wiki) [{CLI_COLORS["border"]}](│)[*]
-  [{CLI_COLORS["border"]}](╰────────────────────────────────────────────────────╯)[*]
+  [{CLI_COLORS["border"]}](╭───────────────────────────────────────────────────╮)[*]
+  [{CLI_COLORS["border"]}](│) [{CLI_COLORS["text"]}]For more information see the GitHub page.         [{CLI_COLORS["border"]}](│)[*]
+  [{CLI_COLORS["border"]}](│) [{CLI_COLORS["link"]}](https://github.com/xulbux/python-lib-xulbux/wiki)  [{CLI_COLORS["border"]}](│)[*]
+  [{CLI_COLORS["border"]}](╰───────────────────────────────────────────────────╯)[*]
   [_]"""
 )
 
