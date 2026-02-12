@@ -5,7 +5,7 @@ methods to work with the PATH environment variable.
 
 from .file_sys import FileSys
 
-from typing import Optional, cast
+from typing import Optional, Literal, overload
 from pathlib import Path
 import sys as _sys
 import os as _os
@@ -14,8 +14,23 @@ import os as _os
 class EnvPath:
     """This class includes methods to work with the PATH environment variable."""
 
+    @overload
     @classmethod
-    def paths(cls, as_list: bool = False) -> Path | list[Path]:
+    def paths(cls, *, as_list: Literal[True]) -> list[Path]:
+        ...
+
+    @overload
+    @classmethod
+    def paths(cls, *, as_list: Literal[False] = False) -> Path:
+        ...
+
+    @overload
+    @classmethod
+    def paths(cls, *, as_list: bool = False) -> Path | list[Path]:
+        ...
+
+    @classmethod
+    def paths(cls, *, as_list: bool = False) -> Path | list[Path]:
         """Get the PATH environment variable.\n
         ------------------------------------------------------------------------------------------------
         - `as_list` -⠀if true, returns the paths as a list of `Path`s; otherwise, as a single `Path`"""
@@ -25,39 +40,39 @@ class EnvPath:
         return Path(paths_str)
 
     @classmethod
-    def has_path(cls, path: Optional[Path | str] = None, cwd: bool = False, base_dir: bool = False) -> bool:
+    def has_path(cls, path: Optional[Path | str] = None, /, *, cwd: bool = False, base_dir: bool = False) -> bool:
         """Check if a path is present in the PATH environment variable.\n
         ------------------------------------------------------------------------
         - `path` -⠀the path to check for
         - `cwd` -⠀if true, uses the current working directory as the path
         - `base_dir` -⠀if true, uses the script's base directory as the path"""
-        check_path = cls._get(path, cwd, base_dir).resolve()
-        return check_path in {path.resolve() for path in cast(list[Path], cls.paths(as_list=True))}
+        check_path = cls._get(path, cwd=cwd, base_dir=base_dir).resolve()
+        return check_path in {path.resolve() for path in cls.paths(as_list=True)}
 
     @classmethod
-    def add_path(cls, path: Optional[Path | str] = None, cwd: bool = False, base_dir: bool = False) -> None:
+    def add_path(cls, path: Optional[Path | str] = None, /, *, cwd: bool = False, base_dir: bool = False) -> None:
         """Add a path to the PATH environment variable.\n
         ------------------------------------------------------------------------
         - `path` -⠀the path to add
         - `cwd` -⠀if true, uses the current working directory as the path
         - `base_dir` -⠀if true, uses the script's base directory as the path"""
-        path_obj = cls._get(path, cwd, base_dir)
+        path_obj = cls._get(path, cwd=cwd, base_dir=base_dir)
         if not cls.has_path(path_obj):
             cls._persistent(path_obj)
 
     @classmethod
-    def remove_path(cls, path: Optional[Path | str] = None, cwd: bool = False, base_dir: bool = False) -> None:
+    def remove_path(cls, path: Optional[Path | str] = None, /, *, cwd: bool = False, base_dir: bool = False) -> None:
         """Remove a path from the PATH environment variable.\n
         ------------------------------------------------------------------------
         - `path` -⠀the path to remove
         - `cwd` -⠀if true, uses the current working directory as the path
         - `base_dir` -⠀if true, uses the script's base directory as the path"""
-        path_obj = cls._get(path, cwd, base_dir)
+        path_obj = cls._get(path, cwd=cwd, base_dir=base_dir)
         if cls.has_path(path_obj):
             cls._persistent(path_obj, remove=True)
 
     @staticmethod
-    def _get(path: Optional[Path | str] = None, cwd: bool = False, base_dir: bool = False) -> Path:
+    def _get(path: Optional[Path | str] = None, /, *, cwd: bool = False, base_dir: bool = False) -> Path:
         """Internal method to get the normalized `path`, CWD path or script directory path.\n
         --------------------------------------------------------------------------------------
         Raise an error if no path is provided and neither `cwd` or `base_dir` is true."""
@@ -74,10 +89,10 @@ class EnvPath:
         return Path(path) if isinstance(path, str) else path
 
     @classmethod
-    def _persistent(cls, path: Path, remove: bool = False) -> None:
+    def _persistent(cls, path: Path, /, *, remove: bool = False) -> None:
         """Internal method to add or remove a path from the PATH environment variable,
         persistently, across sessions, as well as the current session."""
-        current_paths = cast(list[Path], cls.paths(as_list=True))
+        current_paths = cls.paths(as_list=True)
         path_resolved = path.resolve()
 
         if remove:

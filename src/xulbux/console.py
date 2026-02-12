@@ -1,5 +1,5 @@
 """
-This module provides the `Console`, `ProgressBar`, and `Spinner` classes
+This module provides the `Console`, `ProgressBar`, and `Throbber` classes
 which offer methods for logging and other actions within the console.
 """
 
@@ -7,7 +7,7 @@ from .base.types import ProgressUpdater, AllTextChars, ArgParseConfigs, ArgParse
 from .base.decorators import mypyc_attr
 from .base.consts import COLOR, CHARS, ANSI
 
-from .format_codes import _PATTERNS as _FC_PATTERNS, FormatCodes
+from .format_codes import _PATTERNS as _FC_PATTERNS, FormatCodes  # type: ignore[private-access]
 from .string import String
 from .color import Color, hexa
 from .regex import LazyRegex
@@ -15,6 +15,7 @@ from .regex import LazyRegex
 from typing import Generator, Callable, Optional, Literal, TypeVar, TextIO, Any, overload, cast
 from prompt_toolkit.key_binding import KeyPressEvent, KeyBindings
 from prompt_toolkit.validation import ValidationError, Validator
+from prompt_toolkit.document import Document
 from prompt_toolkit.styles import Style
 from prompt_toolkit.keys import Keys
 from contextlib import contextmanager
@@ -57,7 +58,7 @@ class ParsedArgData:
     ------------------------------------------------------------------------------------------------------------
     When the `ParsedArgData` instance is accessed as a boolean it will correspond to the `exists` attribute."""
 
-    def __init__(self, exists: bool, values: list[str], is_pos: bool, flag: Optional[str] = None):
+    def __init__(self, *, exists: bool, values: list[str], is_pos: bool, flag: Optional[str] = None):
         self.exists: bool = exists
         """Whether the argument was found or not."""
         self.is_pos: bool = is_pos
@@ -71,7 +72,7 @@ class ParsedArgData:
         """Whether the argument was found or not (i.e. the `exists` attribute)."""
         return self.exists
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: object, /) -> bool:
         """Check if two `ParsedArgData` objects are equal by comparing their attributes."""
         if not isinstance(other, ParsedArgData):
             return False
@@ -82,7 +83,7 @@ class ParsedArgData:
             and self.flag == other.flag
         )
 
-    def __ne__(self, other: object) -> bool:
+    def __ne__(self, other: object, /) -> bool:
         """Check if two `ParsedArgData` objects are not equal by comparing their attributes."""
         return not self.__eq__(other)
 
@@ -115,7 +116,7 @@ class ParsedArgs:
         """The number of arguments stored in the `ParsedArgs` object."""
         return len(vars(self))
 
-    def __contains__(self, key):
+    def __contains__(self, key: str, /) -> bool:
         """Checks if an argument with the given alias exists in the `ParsedArgs` object."""
         return key in vars(self)
 
@@ -123,25 +124,25 @@ class ParsedArgs:
         """Whether the `ParsedArgs` object contains any arguments."""
         return len(self) > 0
 
-    def __getattr__(self, name: str) -> ParsedArgData:
+    def __getattr__(self, name: str, /) -> ParsedArgData:
         raise AttributeError(f"'{type(self).__name__}' object has no attribute {name}")
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str | int, /) -> ParsedArgData:
         if isinstance(key, int):
-            return list(self.__iter__())[key]
+            return list(self.values())[key]
         return getattr(self, key)
 
     def __iter__(self) -> Generator[tuple[str, ParsedArgData], None, None]:
         for key, val in cast(dict[str, ParsedArgData], vars(self)).items():
             yield (key, val)
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: object, /) -> bool:
         """Check if two `ParsedArgs` objects are equal by comparing their stored arguments."""
         if not isinstance(other, ParsedArgs):
             return False
         return vars(self) == vars(other)
 
-    def __ne__(self, other: object) -> bool:
+    def __ne__(self, other: object, /) -> bool:
         """Check if two `ParsedArgs` objects are not equal by comparing their stored arguments."""
         return not self.__eq__(other)
 
@@ -160,7 +161,7 @@ class ParsedArgs:
         """Returns the arguments as a dictionary."""
         return {key: val.dict() for key, val in self.__iter__()}
 
-    def get(self, key: str, default: Any = None) -> ParsedArgData | Any:
+    def get(self, key: str, /, default: Any = None) -> ParsedArgData | Any:
         """Returns the argument result for the given alias, or `default` if not found."""
         return getattr(self, key, default)
 
@@ -260,7 +261,7 @@ class Console(metaclass=_ConsoleMeta):
     """This class provides methods for logging and other actions within the console."""
 
     @classmethod
-    def get_args(cls, arg_parse_configs: ArgParseConfigs, flag_value_sep: str = "=") -> ParsedArgs:
+    def get_args(cls, arg_parse_configs: ArgParseConfigs, /, *, flag_value_sep: str = "=") -> ParsedArgs:
         """Will search for the specified args in the command-line arguments
         and return the results as a special `ParsedArgs` object.\n
         -------------------------------------------------------------------------------------------------
@@ -327,6 +328,8 @@ class Console(metaclass=_ConsoleMeta):
     def pause_exit(
         cls,
         prompt: object = "",
+        /,
+        *,
         pause: bool = True,
         exit: bool = False,
         exit_code: int = 0,
@@ -361,6 +364,8 @@ class Console(metaclass=_ConsoleMeta):
         cls,
         title: Optional[str] = None,
         prompt: object = "",
+        /,
+        *,
         format_linebreaks: bool = True,
         start: str = "",
         end: str = "\n",
@@ -387,7 +392,7 @@ class Console(metaclass=_ConsoleMeta):
         information about formatting codes, see `format_codes` module documentation."""
         has_title_bg: bool = False
         if title_bg_color is not None and (Color.is_valid_rgba(title_bg_color) or Color.is_valid_hexa(title_bg_color)):
-            title_bg_color, has_title_bg = Color.to_hexa(cast(Rgba | Hexa, title_bg_color)), True
+            title_bg_color, has_title_bg = Color.to_hexa(title_bg_color), True
         if tab_size < 0:
             raise ValueError("The 'tab_size' parameter must be a non-negative integer.")
         if title_px < 0:
@@ -402,21 +407,16 @@ class Console(metaclass=_ConsoleMeta):
         tab = " " * (tab_size - 1 - ((len(mx) + (title_len := len(title) + 2 * len(px))) % tab_size))
 
         if format_linebreaks:
-            clean_prompt, removals = cast(
-                tuple[str, tuple[tuple[int, str], ...]],
-                FormatCodes.remove(str(prompt), get_removals=True, _ignore_linebreaks=True),
-            )
+            clean_prompt, removals = *FormatCodes.remove(str(prompt), get_removals=True, _ignore_linebreaks=True),
             prompt_lst: list[str] = [
                 item for lst in
                 (
                     String.split_count(line, cls.w - (title_len + len(tab) + 2 * len(mx))) \
                     for line in str(clean_prompt).splitlines()
                 )
-                for item in ([""] if lst == [] else (lst if isinstance(lst, list) else [lst]))
+                for item in ([""] if lst == [] else lst)
             ]
-            prompt = f"\n{mx}{' ' * title_len}{mx}{tab}".join(
-                cls._add_back_removed_parts(prompt_lst, cast(tuple[tuple[int, str], ...], removals))
-            )
+            prompt = f"\n{mx}{' ' * title_len}{mx}{tab}".join(cls._add_back_removed_parts(prompt_lst, removals))
 
         if title == "":
             FormatCodes.print(
@@ -436,6 +436,8 @@ class Console(metaclass=_ConsoleMeta):
     def debug(
         cls,
         prompt: object = "Point in program reached.",
+        /,
+        *,
         active: bool = True,
         format_linebreaks: bool = True,
         start: str = "",
@@ -451,8 +453,8 @@ class Console(metaclass=_ConsoleMeta):
         If `active` is false, no debug message will be printed."""
         if active:
             cls.log(
-                title="DEBUG",
-                prompt=prompt,
+                "DEBUG",
+                prompt,
                 format_linebreaks=format_linebreaks,
                 start=start,
                 end=end,
@@ -465,6 +467,8 @@ class Console(metaclass=_ConsoleMeta):
     def info(
         cls,
         prompt: object = "Program running.",
+        /,
+        *,
         format_linebreaks: bool = True,
         start: str = "",
         end: str = "\n",
@@ -477,8 +481,8 @@ class Console(metaclass=_ConsoleMeta):
         """A preset for `log()`: `INFO` log message with the options to pause
         at the message and exit the program after the message was printed."""
         cls.log(
-            title="INFO",
-            prompt=prompt,
+            "INFO",
+            prompt,
             format_linebreaks=format_linebreaks,
             start=start,
             end=end,
@@ -491,6 +495,8 @@ class Console(metaclass=_ConsoleMeta):
     def done(
         cls,
         prompt: object = "Program finished.",
+        /,
+        *,
         format_linebreaks: bool = True,
         start: str = "",
         end: str = "\n",
@@ -503,8 +509,8 @@ class Console(metaclass=_ConsoleMeta):
         """A preset for `log()`: `DONE` log message with the options to pause
         at the message and exit the program after the message was printed."""
         cls.log(
-            title="DONE",
-            prompt=prompt,
+            "DONE",
+            prompt,
             format_linebreaks=format_linebreaks,
             start=start,
             end=end,
@@ -517,6 +523,8 @@ class Console(metaclass=_ConsoleMeta):
     def warn(
         cls,
         prompt: object = "Important message.",
+        /,
+        *,
         format_linebreaks: bool = True,
         start: str = "",
         end: str = "\n",
@@ -529,8 +537,8 @@ class Console(metaclass=_ConsoleMeta):
         """A preset for `log()`: `WARN` log message with the options to pause
         at the message and exit the program after the message was printed."""
         cls.log(
-            title="WARN",
-            prompt=prompt,
+            "WARN",
+            prompt,
             format_linebreaks=format_linebreaks,
             start=start,
             end=end,
@@ -543,6 +551,8 @@ class Console(metaclass=_ConsoleMeta):
     def fail(
         cls,
         prompt: object = "Program error.",
+        /,
+        *,
         format_linebreaks: bool = True,
         start: str = "",
         end: str = "\n",
@@ -555,8 +565,8 @@ class Console(metaclass=_ConsoleMeta):
         """A preset for `log()`: `FAIL` log message with the options to pause
         at the message and exit the program after the message was printed."""
         cls.log(
-            title="FAIL",
-            prompt=prompt,
+            "FAIL",
+            prompt,
             format_linebreaks=format_linebreaks,
             start=start,
             end=end,
@@ -569,6 +579,8 @@ class Console(metaclass=_ConsoleMeta):
     def exit(
         cls,
         prompt: object = "Program ended.",
+        /,
+        *,
         format_linebreaks: bool = True,
         start: str = "",
         end: str = "\n",
@@ -581,8 +593,8 @@ class Console(metaclass=_ConsoleMeta):
         """A preset for `log()`: `EXIT` log message with the options to pause
         at the message and exit the program after the message was printed."""
         cls.log(
-            title="EXIT",
-            prompt=prompt,
+            "EXIT",
+            prompt,
             format_linebreaks=format_linebreaks,
             start=start,
             end=end,
@@ -709,7 +721,7 @@ class Console(metaclass=_ConsoleMeta):
             if not all(len(char) == 1 for char in _border_chars):
                 raise ValueError("The '_border_chars' parameter must only contain single-character strings.")
 
-        if border_style is not None and Color.is_valid(border_style):
+        if Color.is_valid(border_style):
             border_style = Color.to_hexa(border_style)
 
         borders = {
@@ -754,6 +766,8 @@ class Console(metaclass=_ConsoleMeta):
     def confirm(
         cls,
         prompt: object = "Do you want to continue?",
+        /,
+        *,
         start: str = "",
         end: str = "",
         default_color: Optional[Rgba | Hexa] = None,
@@ -784,6 +798,8 @@ class Console(metaclass=_ConsoleMeta):
     def multiline_input(
         cls,
         prompt: object = "",
+        /,
+        *,
         start: str = "",
         end: str = "\n",
         default_color: Optional[Rgba | Hexa] = None,
@@ -819,6 +835,8 @@ class Console(metaclass=_ConsoleMeta):
     def input(
         cls,
         prompt: object = "",
+        /,
+        *,
         start: str = "",
         end: str = "",
         default_color: Optional[Rgba | Hexa] = None,
@@ -839,6 +857,8 @@ class Console(metaclass=_ConsoleMeta):
     def input(
         cls,
         prompt: object = "",
+        /,
+        *,
         start: str = "",
         end: str = "",
         default_color: Optional[Rgba | Hexa] = None,
@@ -858,6 +878,8 @@ class Console(metaclass=_ConsoleMeta):
     def input(
         cls,
         prompt: object = "",
+        /,
+        *,
         start: str = "",
         end: str = "",
         default_color: Optional[Rgba | Hexa] = None,
@@ -915,10 +937,10 @@ class Console(metaclass=_ConsoleMeta):
         kb.add(Keys.Any)(helper.handle_any)
 
         custom_style = Style.from_dict({"bottom-toolbar": "noreverse"})
-        session: _pt.PromptSession = _pt.PromptSession(
+        session: _pt.PromptSession[str] = _pt.PromptSession(
             message=_pt.formatted_text.ANSI(FormatCodes.to_ansi(str(prompt), default_color=default_color)),
             validator=_ConsoleInputValidator(
-                get_text=helper.get_text,
+                helper.get_text,
                 mask_char=mask_char,
                 min_len=min_len,
                 validator=validator,
@@ -951,10 +973,10 @@ class Console(metaclass=_ConsoleMeta):
                 raise
 
     @classmethod
-    def _add_back_removed_parts(cls, split_string: list[str], removals: tuple[tuple[int, str], ...]) -> list[str]:
+    def _add_back_removed_parts(cls, split_string: list[str], removals: tuple[tuple[int, str], ...], /) -> list[str]:
         """Adds back the removed parts into the split string parts at their original positions."""
         cumulative_pos = [0]
-        for length in (len(s) for s in split_string):
+        for length in (len(part) for part in split_string):
             cumulative_pos.append(cumulative_pos[-1] + length)
 
         result, offset_adjusts = split_string.copy(), [0] * len(split_string)
@@ -974,7 +996,7 @@ class Console(metaclass=_ConsoleMeta):
         return result
 
     @staticmethod
-    def _find_string_part(pos: int, cumulative_pos: list[int]) -> int:
+    def _find_string_part(pos: int, cumulative_pos: list[int], /) -> int:
         """Finds the index of the string part that contains the given position."""
         left, right = 0, len(cumulative_pos) - 1
         while left < right:
@@ -990,14 +1012,19 @@ class Console(metaclass=_ConsoleMeta):
     @staticmethod
     def _prepare_log_box(
         values: list[object] | tuple[object, ...],
+        /,
         default_color: Optional[Rgba | Hexa] = None,
+        *,
         has_rules: bool = False,
     ) -> tuple[list[str], list[str], int]:
         """Prepares the log box content and returns it along with the max line length."""
         if has_rules:
-            lines = []
+            lines: list[str] = []
+
             for val in values:
-                val_str, result_parts, current_pos = str(val), [], 0
+                result_parts: list[str] = []
+                val_str, current_pos = str(val), 0
+
                 for match in _PATTERNS.hr.finditer(val_str):
                     start, end = match.span()
                     should_split_before = start > 0 and val_str[start - 1] != "\n"
@@ -1027,19 +1054,19 @@ class Console(metaclass=_ConsoleMeta):
         else:
             lines = [line for val in values for line in str(val).splitlines()]
 
-        unfmt_lines = [cast(str, FormatCodes.remove(line, default_color)) for line in lines]
+        unfmt_lines = [FormatCodes.remove(line, default_color) for line in lines]
         max_line_len = max(len(line) for line in unfmt_lines) if unfmt_lines else 0
         return lines, unfmt_lines, max_line_len
 
     @staticmethod
-    def _multiline_input_submit(event: KeyPressEvent) -> None:
+    def _multiline_input_submit(event: KeyPressEvent, /) -> None:
         event.app.exit(result=event.app.current_buffer.document.text)
 
 
 class _ConsoleArgsParseHelper:
     """Internal, callable helper class to parse command-line arguments."""
 
-    def __init__(self, arg_parse_configs: ArgParseConfigs, flag_value_sep: str):
+    def __init__(self, arg_parse_configs: ArgParseConfigs, /, flag_value_sep: str):
         self.arg_parse_configs = arg_parse_configs
         self.flag_value_sep = flag_value_sep
 
@@ -1078,7 +1105,7 @@ class _ConsoleArgsParseHelper:
                         )
                     self.arg_lookup[flag] = alias
 
-    def _parse_arg_config(self, alias: str, config: ArgParseConfig) -> Optional[set[str]]:
+    def _parse_arg_config(self, alias: str, config: ArgParseConfig, /) -> Optional[set[str]]:
         """Parse an individual argument configuration."""
         # POSITIONAL ARGUMENT CONFIGURATION
         if isinstance(config, str):
@@ -1110,24 +1137,18 @@ class _ConsoleArgsParseHelper:
             return config
 
         # SET OF FLAGS WITH SPECIFIED DEFAULT VALUE
-        elif isinstance(config, dict):
-            if not config.get("flags"):
+        else:
+            if not config["flags"]:
                 raise ValueError(
                     f"No flags provided under alias '{alias}'.\n"
                     "The 'flags'-key set must contain at least one flag to search for."
                 )
             self.parsed_args[alias] = ParsedArgData(
                 exists=False,
-                values=[default] if (default := config.get("default")) is not None else [],
+                values=[config["default"]],
                 is_pos=False,
             )
             return config["flags"]
-
-        else:
-            raise TypeError(
-                f"Invalid configuration type under alias '{alias}'.\n"
-                "Must be a set, dict, literal 'before' or literal 'after'."
-            )
 
     def find_flag_positions(self) -> None:
         """Find positions of first and last flags for positional argument collection."""
@@ -1174,7 +1195,7 @@ class _ConsoleArgsParseHelper:
                     "Must be either 'before' or 'after'."
                 )
 
-    def _collect_before_arg(self, alias: str) -> None:
+    def _collect_before_arg(self, alias: str, /) -> None:
         """Collect positional `"before"` arguments."""
         before_args: list[str] = []
         end_pos: int = self.first_flag_pos if self.first_flag_pos is not None else self.args_len
@@ -1187,7 +1208,7 @@ class _ConsoleArgsParseHelper:
             self.parsed_args[alias].values = before_args
             self.parsed_args[alias].exists = len(before_args) > 0
 
-    def _collect_after_arg(self, alias: str) -> None:
+    def _collect_after_arg(self, alias: str, /) -> None:
         """Collect positional `"after"` arguments."""
         after_args: list[str] = []
         start_pos: int = (self.last_flag_pos + 1) if self.last_flag_pos is not None else 0
@@ -1216,7 +1237,7 @@ class _ConsoleArgsParseHelper:
             self.parsed_args[alias].values = after_args
             self.parsed_args[alias].exists = len(after_args) > 0
 
-    def _is_positional_arg(self, arg: str, allow_separator: bool = True) -> bool:
+    def _is_positional_arg(self, arg: str, /, *, allow_separator: bool = True) -> bool:
         """Check if an argument is positional (not a flag or separator)."""
         if self.flag_value_sep in arg and arg.split(self.flag_value_sep, 1)[0].strip() not in self.arg_lookup:
             return True
@@ -1269,11 +1290,11 @@ class _ConsoleArgsParseHelper:
 class _ConsoleLogBoxBgReplacer:
     """Internal, callable class to replace matched text with background-colored text for log boxes."""
 
-    def __init__(self, box_bg_color: str | Rgba | Hexa) -> None:
+    def __init__(self, box_bg_color: str | Rgba | Hexa, /) -> None:
         self.box_bg_color = box_bg_color
 
-    def __call__(self, m: _rx.Match[str]) -> str:
-        return f"{cast(str, m.group(0))}[bg:{self.box_bg_color}]"
+    def __call__(self, m: _rx.Match[str], /) -> str:
+        return f"{m.group(0)}[bg:{self.box_bg_color}]"
 
 
 class _ConsoleInputHelper:
@@ -1334,7 +1355,7 @@ class _ConsoleInputHelper:
         except Exception:
             return _pt.formatted_text.ANSI("")
 
-    def process_insert_text(self, text: str) -> tuple[str, set[str]]:
+    def process_insert_text(self, text: str, /) -> tuple[str, set[str]]:
         """Processes the inserted text according to the allowed characters and max length."""
         removed_chars: set[str] = set()
 
@@ -1360,7 +1381,7 @@ class _ConsoleInputHelper:
 
         return processed_text, removed_chars
 
-    def insert_text_event(self, event: KeyPressEvent) -> None:
+    def insert_text_event(self, event: KeyPressEvent, /) -> None:
         """Handles text insertion events (typing/pasting)."""
         try:
             if not (insert_text := event.data):
@@ -1381,7 +1402,7 @@ class _ConsoleInputHelper:
         except Exception:
             pass
 
-    def remove_text_event(self, event: KeyPressEvent, is_backspace: bool = False) -> None:
+    def remove_text_event(self, event: KeyPressEvent, /, *, is_backspace: bool = False) -> None:
         """Handles text removal events (backspace/delete)."""
         try:
             buffer = event.app.current_buffer
@@ -1406,26 +1427,26 @@ class _ConsoleInputHelper:
         except Exception:
             pass
 
-    def handle_delete(self, event: KeyPressEvent) -> None:
+    def handle_delete(self, event: KeyPressEvent, /) -> None:
         self.remove_text_event(event)
 
-    def handle_backspace(self, event: KeyPressEvent) -> None:
+    def handle_backspace(self, event: KeyPressEvent, /) -> None:
         self.remove_text_event(event, is_backspace=True)
 
     @staticmethod
-    def handle_control_a(event: KeyPressEvent) -> None:
+    def handle_control_a(event: KeyPressEvent, /) -> None:
         buffer = event.app.current_buffer
         buffer.cursor_position = 0
         buffer.start_selection()
         buffer.cursor_position = len(buffer.text)
 
-    def handle_paste(self, event: KeyPressEvent) -> None:
+    def handle_paste(self, event: KeyPressEvent, /) -> None:
         if self.allow_paste:
             self.insert_text_event(event)
         else:
             self.tried_pasting = True
 
-    def handle_any(self, event: KeyPressEvent) -> None:
+    def handle_any(self, event: KeyPressEvent, /) -> None:
         self.insert_text_event(event)
 
 
@@ -1434,6 +1455,8 @@ class _ConsoleInputValidator(Validator):
     def __init__(
         self,
         get_text: Callable[[], str],
+        /,
+        *,
         mask_char: Optional[str],
         min_len: Optional[int],
         validator: Optional[Callable[[str], Optional[str]]],
@@ -1443,7 +1466,7 @@ class _ConsoleInputValidator(Validator):
         self.min_len = min_len
         self.validator = validator
 
-    def validate(self, document) -> None:
+    def validate(self, document: Document) -> None:
         text_to_validate = self.get_text() if self.mask_char else document.text
         if self.min_len and len(text_to_validate) < self.min_len:
             raise ValidationError(message="", cursor_position=len(document.text))
@@ -1475,6 +1498,7 @@ class ProgressBar:
 
     def __init__(
         self,
+        *,
         min_width: int = 10,
         max_width: int = 50,
         bar_format: list[str] | tuple[str, ...] = ["{l}", "▕{b}▏", "[b]({c:,})/{t:,}", "[dim](([i]({p}%)))"],
@@ -1498,7 +1522,7 @@ class ProgressBar:
         """A tuple of characters ordered from full to empty progress."""
 
         self.set_width(min_width, max_width)
-        self.set_bar_format(bar_format, limited_bar_format, sep)
+        self.set_bar_format(bar_format, limited_bar_format, sep=sep)
         self.set_chars(chars)
 
         self._buffer: list[str] = []
@@ -1529,6 +1553,7 @@ class ProgressBar:
         self,
         bar_format: Optional[list[str] | tuple[str, ...]] = None,
         limited_bar_format: Optional[list[str] | tuple[str, ...]] = None,
+        *,
         sep: Optional[str] = None,
     ) -> None:
         """Set the format string used to render the progress bar.\n
@@ -1546,13 +1571,13 @@ class ProgressBar:
         The bar format (also limited) can additionally be formatted with special formatting codes. For
         more detailed information about formatting codes, see the `format_codes` module documentation."""
         if bar_format is not None:
-            if not any(_PATTERNS.bar.search(s) for s in bar_format):
+            if not any(_PATTERNS.bar.search(part) for part in bar_format):
                 raise ValueError("The 'bar_format' parameter value must contain the '{bar}' or '{b}' placeholder.")
 
             self.bar_format = bar_format
 
         if limited_bar_format is not None:
-            if not any(_PATTERNS.bar.search(s) for s in limited_bar_format):
+            if not any(_PATTERNS.bar.search(part) for part in limited_bar_format):
                 raise ValueError("The 'limited_bar_format' parameter value must contain the '{bar}' or '{b}' placeholder.")
 
             self.limited_bar_format = limited_bar_format
@@ -1560,7 +1585,7 @@ class ProgressBar:
         if sep is not None:
             self.sep = sep
 
-    def set_chars(self, chars: tuple[str, ...]) -> None:
+    def set_chars(self, chars: tuple[str, ...], /) -> None:
         """Set the characters used to render the progress bar.\n
         --------------------------------------------------------------------------
         - `chars` -⠀a tuple of characters ordered from full to empty progress<br>
@@ -1569,12 +1594,12 @@ class ProgressBar:
           empty sections. If None, uses default Unicode block characters."""
         if len(chars) < 2:
             raise ValueError("The 'chars' parameter must contain at least two characters (full and empty).")
-        elif not all(isinstance(c, str) and len(c) == 1 for c in chars):
+        elif not all(len(char) == 1 for char in chars):
             raise ValueError("All elements of 'chars' must be single-character strings.")
 
         self.chars = chars
 
-    def show_progress(self, current: int, total: int, label: Optional[str] = None) -> None:
+    def show_progress(self, current: int, total: int, /, label: Optional[str] = None) -> None:
         """Show or update the progress bar.\n
         -------------------------------------------------------------------------------------------
         - `current` -⠀the current progress value (below `0` or greater than `total` hides the bar)
@@ -1612,7 +1637,7 @@ class ProgressBar:
             self._stop_intercepting()
 
     @contextmanager
-    def progress_context(self, total: int, label: Optional[str] = None) -> Generator[ProgressUpdater, None, None]:
+    def progress_context(self, total: int, /, label: Optional[str] = None) -> Generator[ProgressUpdater, None, None]:
         """Context manager for automatic cleanup. Returns a function to update progress.\n
         ----------------------------------------------------------------------------------------------------
         - `total` -⠀the total value representing 100% progress (must be greater than `0`)
@@ -1648,7 +1673,7 @@ class ProgressBar:
         finally:
             self.hide_progress()
 
-    def _draw_progress_bar(self, current: int, total: int, label: Optional[str] = None) -> None:
+    def _draw_progress_bar(self, current: int, total: int, /, label: Optional[str] = None) -> None:
         if total <= 0 or not self._original_stdout:
             return
 
@@ -1674,12 +1699,13 @@ class ProgressBar:
         current: int,
         total: int,
         percentage: float,
+        /,
         label: Optional[str] = None,
     ) -> tuple[str, int]:
-        fmt_parts = []
+        fmt_parts: list[str] = []
 
-        for s in bar_format:
-            fmt_part = _PATTERNS.label.sub(label or "", s)
+        for part in bar_format:
+            fmt_part = _PATTERNS.label.sub(label or "", part)
             fmt_part = _PATTERNS.current.sub(_ProgressBarCurrentReplacer(current), fmt_part)
             fmt_part = _PATTERNS.total.sub(_ProgressBarTotalReplacer(total), fmt_part)
             fmt_part = _PATTERNS.percentage.sub(_ProgressBarPercentageReplacer(percentage), fmt_part)
@@ -1694,9 +1720,9 @@ class ProgressBar:
 
         return fmt_str, bar_width
 
-    def _create_bar(self, current: int, total: int, bar_width: int) -> str:
+    def _create_bar(self, current: int, total: int, bar_width: int, /) -> str:
         progress = current / total if total > 0 else 0
-        bar = []
+        bar: list[str] = []
 
         for i in range(bar_width):
             pos_progress = (i + 1) / bar_width
@@ -1759,7 +1785,7 @@ class _ProgressContextHelper:
     - `type_checking` -⠀whether to check the parameters' types:
       Is false per default to save performance, but can be set to true for debugging purposes."""
 
-    def __init__(self, progress_bar: ProgressBar, total: int, label: Optional[str]):
+    def __init__(self, progress_bar: ProgressBar, total: int, label: Optional[str], /):
         self.progress_bar = progress_bar
         self.total = total
         self.current_label = label
@@ -1788,16 +1814,16 @@ class _ProgressContextHelper:
         if label is not None:
             self.current_label = label
 
-        self.progress_bar.show_progress(current=self.current_progress, total=self.total, label=self.current_label)
+        self.progress_bar.show_progress(self.current_progress, self.total, label=self.current_label)
 
 
 class _ProgressBarCurrentReplacer:
     """Internal, callable class to replace `{current}` placeholder with formatted number."""
 
-    def __init__(self, current: int) -> None:
+    def __init__(self, current: int, /) -> None:
         self.current = current
 
-    def __call__(self, match: _rx.Match[str]) -> str:
+    def __call__(self, match: _rx.Match[str], /) -> str:
         if (sep := match.group(1)):
             return f"{self.current:,}".replace(",", sep)
         return str(self.current)
@@ -1806,10 +1832,10 @@ class _ProgressBarCurrentReplacer:
 class _ProgressBarTotalReplacer:
     """Internal, callable class to replace `{total}` placeholder with formatted number."""
 
-    def __init__(self, total: int) -> None:
+    def __init__(self, total: int, /) -> None:
         self.total = total
 
-    def __call__(self, match: _rx.Match[str]) -> str:
+    def __call__(self, match: _rx.Match[str], /) -> str:
         if (sep := match.group(1)):
             return f"{self.total:,}".replace(",", sep)
         return str(self.total)
@@ -1818,39 +1844,40 @@ class _ProgressBarTotalReplacer:
 class _ProgressBarPercentageReplacer:
     """Internal, callable class to replace `{percentage}` placeholder with formatted float."""
 
-    def __init__(self, percentage: float) -> None:
+    def __init__(self, percentage: float, /) -> None:
         self.percentage = percentage
 
-    def __call__(self, match: _rx.Match[str]) -> str:
+    def __call__(self, match: _rx.Match[str], /) -> str:
         return f"{self.percentage:.{match.group(1) if match.group(1) else '1'}f}"
 
 
-class Spinner:
-    """A console spinner for indeterminate processes with customizable appearance.
+class Throbber:
+    """A console throbber for indeterminate processes with customizable appearance.
     This class intercepts stdout to allow printing while the animation is active.\n
     ---------------------------------------------------------------------------------------------
     - `label` -⠀the current label text
-    - `spinner_format` -⠀the format string used to render the spinner, containing placeholders:
+    - `throbber_format` -⠀the format string used to render the throbber, containing placeholders:
       * `{label}` `{l}`
       * `{animation}` `{a}`
     - `frames` -⠀a tuple of strings representing the animation frames
     - `interval` -⠀the time in seconds between each animation frame
     ---------------------------------------------------------------------------------------------
-    The `spinner_format` can additionally be formatted with special formatting codes. For more
+    The `throbber_format` can additionally be formatted with special formatting codes. For more
     detailed information about formatting codes, see the `format_codes` module documentation."""
 
     def __init__(
         self,
+        *,
         label: Optional[str] = None,
-        spinner_format: list[str] | tuple[str, ...] = ["{l}", "[b]({a}) "],
+        throbber_format: list[str] | tuple[str, ...] = ["{l}", "[b]({a}) "],
         sep: str = " ",
         frames: tuple[str, ...] = ("·  ", "·· ", "···", " ··", "  ·", "  ·", " ··", "···", "·· ", "·  "),
         interval: float = 0.2,
     ):
-        self.spinner_format: list[str] | tuple[str, ...]
-        """The format strings used to render the spinner (joined by `sep`)."""
+        self.throbber_format: list[str] | tuple[str, ...]
+        """The format strings used to render the throbber (joined by `sep`)."""
         self.sep: str
-        """The separator string used to join multiple spinner-format strings."""
+        """The separator string used to join multiple throbber-format strings."""
         self.frames: tuple[str, ...]
         """A tuple of strings representing the animation frames."""
         self.interval: float
@@ -1858,10 +1885,10 @@ class Spinner:
         self.label: Optional[str]
         """The current label text."""
         self.active: bool = False
-        """Whether the spinner is currently active (intercepting stdout) or not."""
+        """Whether the throbber is currently active (intercepting stdout) or not."""
 
         self.update_label(label)
-        self.set_format(spinner_format, sep)
+        self.set_format(throbber_format, sep=sep)
         self.set_frames(frames)
         self.set_interval(interval)
 
@@ -1873,23 +1900,23 @@ class Spinner:
         self._stop_event: Optional[_threading.Event] = None
         self._animation_thread: Optional[_threading.Thread] = None
 
-    def set_format(self, spinner_format: list[str] | tuple[str, ...], sep: Optional[str] = None) -> None:
-        """Set the format string used to render the spinner.\n
+    def set_format(self, throbber_format: list[str] | tuple[str, ...], *, sep: Optional[str] = None) -> None:
+        """Set the format string used to render the throbber.\n
         ---------------------------------------------------------------------------------------------
-        - `spinner_format` -⠀the format strings used to render the spinner, containing placeholders:
+        - `throbber_format` -⠀the format strings used to render the throbber, containing placeholders:
           * `{label}` `{l}`
           * `{animation}` `{a}`
         - `sep` -⠀the separator string used to join multiple format strings"""
-        if not any(_PATTERNS.animation.search(fmt) for fmt in spinner_format):
+        if not any(_PATTERNS.animation.search(fmt) for fmt in throbber_format):
             raise ValueError(
-                "At least one format string in 'spinner_format' must contain the '{animation}' or '{a}' placeholder."
+                "At least one format string in 'throbber_format' must contain the '{animation}' or '{a}' placeholder."
             )
 
-        self.spinner_format = spinner_format
+        self.throbber_format = throbber_format
         self.sep = sep or self.sep
 
-    def set_frames(self, frames: tuple[str, ...]) -> None:
-        """Set the frames used for the spinner animation.\n
+    def set_frames(self, frames: tuple[str, ...], /) -> None:
+        """Set the frames used for the throbber animation.\n
         ---------------------------------------------------------------------
         - `frames` -⠀a tuple of strings representing the animation frames"""
         if len(frames) < 2:
@@ -1897,7 +1924,7 @@ class Spinner:
 
         self.frames = frames
 
-    def set_interval(self, interval: int | float) -> None:
+    def set_interval(self, interval: int | float, /) -> None:
         """Set the time interval between each animation frame.\n
         -------------------------------------------------------------------
         - `interval` -⠀the time in seconds between each animation frame"""
@@ -1906,10 +1933,10 @@ class Spinner:
 
         self.interval = interval
 
-    def start(self, label: Optional[str] = None) -> None:
-        """Start the spinner animation and intercept stdout.\n
+    def start(self, label: Optional[str] = None, /) -> None:
+        """Start the throbber animation and intercept stdout.\n
         ----------------------------------------------------------
-        - `label` -⠀the label to display alongside the spinner"""
+        - `label` -⠀the label to display alongside the throbber"""
         if self.active:
             return
 
@@ -1920,7 +1947,7 @@ class Spinner:
         self._animation_thread.start()
 
     def stop(self) -> None:
-        """Stop and hide the spinner and restore normal console output."""
+        """Stop and hide the throbber and restore normal console output."""
         if self.active:
             if self._stop_event:
                 self._stop_event.set()
@@ -1931,27 +1958,27 @@ class Spinner:
             self._animation_thread = None
             self._frame_index = 0
 
-            self._clear_spinner_line()
+            self._clear_throbber_line()
             self._stop_intercepting()
 
-    def update_label(self, label: Optional[str]) -> None:
-        """Update the spinner's label text.\n
+    def update_label(self, label: Optional[str], /) -> None:
+        """Update the throbber's label text.\n
         --------------------------------------
         - `new_label` -⠀the new label text"""
         self.label = label
 
     @contextmanager
-    def context(self, label: Optional[str] = None) -> Generator[Callable[[str], None], None, None]:
+    def context(self, label: Optional[str] = None, /) -> Generator[Callable[[str], None], None, None]:
         """Context manager for automatic cleanup. Returns a function to update the label.\n
         ----------------------------------------------------------------------------------------------
-        - `label` -⠀the label to display alongside the spinner
+        - `label` -⠀the label to display alongside the throbber
         -----------------------------------------------------------------------------------------------
         The returned callable accepts a single parameter:
         - `new_label` -⠀the new label text\n
 
         #### Example usage:
         ```python
-        with Spinner().context("Starting...") as update_label:
+        with Throbber().context("Starting...") as update_label:
             time.sleep(2)
             update_label("Processing...")
             time.sleep(3)
@@ -1979,10 +2006,8 @@ class Spinner:
 
                 frame = FormatCodes.to_ansi(f"{self.frames[self._frame_index % len(self.frames)]}[*]")
                 formatted = FormatCodes.to_ansi(self.sep.join(
-                    s for s in ( \
-                        _PATTERNS.animation.sub(frame, _PATTERNS.label.sub(self.label or "", s))
-                        for s in self.spinner_format
-                    ) if s
+                    fmt_part for part in self.throbber_format if \
+                    (fmt_part := _PATTERNS.animation.sub(frame, _PATTERNS.label.sub(self.label or "", part)))
                 ))
 
                 self._current_animation_str = formatted
@@ -2018,14 +2043,14 @@ class Spinner:
         except Exception:
             pass
 
-    def _clear_spinner_line(self) -> None:
+    def _clear_throbber_line(self) -> None:
         if self._last_line_len > 0 and self._original_stdout:
             self._original_stdout.write(f"{ANSI.CHAR}[2K\r")
             self._original_stdout.flush()
 
     def _flush_buffer(self) -> None:
         if self._buffer and self._original_stdout:
-            self._clear_spinner_line()
+            self._clear_throbber_line()
             for content in self._buffer:
                 self._original_stdout.write(content)
                 self._original_stdout.flush()
@@ -2041,29 +2066,29 @@ class Spinner:
 class _InterceptedOutput:
     """Custom StringIO that captures output and stores it in the progress bar buffer."""
 
-    def __init__(self, progress_bar: ProgressBar | Spinner):
-        self.progress_bar = progress_bar
+    def __init__(self, status_indicator: ProgressBar | Throbber, /):
+        self.status_indicator = status_indicator
         self.string_io = StringIO()
 
-    def write(self, content: str) -> int:
+    def write(self, content: str, /) -> int:
         self.string_io.write(content)
         try:
             if content and content != "\r":
-                self.progress_bar._buffer.append(content)
+                cast(ProgressBar | Throbber, self.status_indicator)._buffer.append(content)  # type: ignore[protected-access]
             return len(content)
         except Exception:
-            self.progress_bar._emergency_cleanup()
+            self.status_indicator._emergency_cleanup()  # type: ignore[protected-access]
             raise
 
     def flush(self) -> None:
         self.string_io.flush()
         try:
-            if self.progress_bar.active and self.progress_bar._buffer:
-                self.progress_bar._flush_buffer()
-                self.progress_bar._redraw_display()
+            if self.status_indicator.active and self.status_indicator._buffer:  # type: ignore[protected-access]
+                self.status_indicator._flush_buffer()  # type: ignore[protected-access]
+                self.status_indicator._redraw_display()  # type: ignore[protected-access]
         except Exception:
-            self.progress_bar._emergency_cleanup()
+            self.status_indicator._emergency_cleanup()  # type: ignore[protected-access]
             raise
 
-    def __getattr__(self, name: str) -> Any:
+    def __getattr__(self, name: str, /) -> Any:
         return getattr(self.string_io, name)

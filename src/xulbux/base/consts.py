@@ -88,7 +88,7 @@ class ANSI:
     """End of an ANSI escape sequence."""
 
     @classmethod
-    def seq(cls, placeholders: int = 1) -> FormattableString:
+    def seq(cls, placeholders: int = 1, /) -> FormattableString:
         """Generates an ANSI escape sequence with the specified number of placeholders."""
         return cls.CHAR + cls.START + cls.SEP.join(["{}" for _ in range(placeholders)]) + cls.END
 

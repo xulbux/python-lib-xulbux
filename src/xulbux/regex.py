@@ -29,6 +29,8 @@ class Regex:
         cls,
         bracket1: str = "(",
         bracket2: str = ")",
+        /,
+        *,
         is_group: bool = False,
         strip_spaces: bool = False,
         ignore_in_strings: bool = True,
@@ -75,12 +77,12 @@ class Regex:
             )
 
     @classmethod
-    def outside_strings(cls, pattern: str = r".*") -> str:
+    def outside_strings(cls, pattern: str = r".*", /) -> str:
         """Matches the `pattern` only when it is not found inside a string (`'…'` or `"…"`)."""
         return rf"""(?<!["'])(?:{pattern})(?!["'])"""
 
     @classmethod
-    def all_except(cls, disallowed_pattern: str, ignore_pattern: str = "", is_group: bool = False) -> str:
+    def all_except(cls, disallowed_pattern: str, /, ignore_pattern: str = "", *, is_group: bool = False) -> str:
         """Matches everything up to the `disallowed_pattern`, unless the
         `disallowed_pattern` is found inside a string/quotes (`'…'` or `"…"`).\n
         -------------------------------------------------------------------------------------
@@ -100,7 +102,7 @@ class Regex:
         )
 
     @classmethod
-    def func_call(cls, func_name: Optional[str] = None) -> str:
+    def func_call(cls, func_name: Optional[str] = None, /) -> str:
         """Match a function call, and get back two groups:
         1. function name
         2. the function's arguments\n
@@ -113,7 +115,7 @@ class Regex:
         return rf"""(?<=\b)({func_name})\s*{cls.brackets("(", ")", is_group=True)}"""
 
     @classmethod
-    def rgba_str(cls, fix_sep: Optional[str] = ",", allow_alpha: bool = True) -> str:
+    def rgba_str(cls, fix_sep: Optional[str] = ",", *, allow_alpha: bool = True) -> str:
         """Matches an RGBA color inside a string.\n
         ----------------------------------------------------------------------------------
         - `fix_sep` -⠀the fixed separator between the RGBA values (e.g. `,`, `;` …)<br>
@@ -155,7 +157,7 @@ class Regex:
             )
 
     @classmethod
-    def hsla_str(cls, fix_sep: Optional[str] = ",", allow_alpha: bool = True) -> str:
+    def hsla_str(cls, fix_sep: Optional[str] = ",", *, allow_alpha: bool = True) -> str:
         """Matches a HSLA color inside a string.\n
         ----------------------------------------------------------------------------------
         - `fix_sep` -⠀the fixed separator between the HSLA values (e.g. `,`, `;` …)<br>
@@ -197,7 +199,7 @@ class Regex:
             )
 
     @classmethod
-    def hexa_str(cls, allow_alpha: bool = True) -> str:
+    def hexa_str(cls, *, allow_alpha: bool = True) -> str:
         """Matches a HEXA color inside a string.\n
         ----------------------------------------------------------------------
         - `allow_alpha` -⠀whether to include the alpha channel in the match\n
@@ -239,7 +241,7 @@ class LazyRegex:
     def __init__(self, **patterns: str):
         self._patterns = patterns
 
-    def __getattr__(self, name: str) -> _rx.Pattern:
+    def __getattr__(self, name: str, /) -> _rx.Pattern[str]:
         if name in self._patterns:
             setattr(self, name, compiled := _rx.compile(self._patterns[name]))
             return compiled

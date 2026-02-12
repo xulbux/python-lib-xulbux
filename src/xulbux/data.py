@@ -3,17 +3,19 @@ This module provides the `Data` class, which offers
 methods to work with nested data structures.
 """
 
-from .base.types import DataStructureTypes, IndexIterableTypes, DataStructure, IndexIterable
+from .base.types import IndexIterableTT, IndexIterable, DataObjTT, DataObj as DataObjType
 
 from .format_codes import FormatCodes
 from .string import String
 from .regex import Regex
 
-from typing import Optional, Literal, Final, Any, cast
+from typing import Optional, Literal, TypeVar, Final, Any, overload, cast
 import base64 as _base64
 import math as _math
 import re as _re
 
+
+DataObj = TypeVar("DataObj", bound=DataObjType)
 
 _DEFAULT_SYNTAX_HL: Final[dict[str, tuple[str, str]]] = {
     "str": ("[br:blue]", "[_c]"),
@@ -29,7 +31,7 @@ class Data:
     """This class includes methods to work with nested data structures (dictionaries and lists)."""
 
     @classmethod
-    def serialize_bytes(cls, data: bytes | bytearray) -> dict[str, str]:
+    def serialize_bytes(cls, data: bytes | bytearray, /) -> dict[str, str]:
         """Converts bytes or bytearray to a JSON-compatible format (dictionary) with explicit keys.\n
         ----------------------------------------------------------------------------------------------
         - `data` -⠀the bytes or bytearray to serialize"""
@@ -43,7 +45,7 @@ class Data:
         return {key: _base64.b64encode(data).decode("utf-8"), "encoding": "base64"}
 
     @classmethod
-    def deserialize_bytes(cls, obj: dict[str, str]) -> bytes | bytearray:
+    def deserialize_bytes(cls, obj: dict[str, str], /) -> bytes | bytearray:
         """Tries to converts a JSON-compatible bytes/bytearray format (dictionary) back to its original type.\n
         --------------------------------------------------------------------------------------------------------
         - `obj` -⠀the dictionary to deserialize\n
@@ -64,71 +66,91 @@ class Data:
         raise ValueError(f"Invalid serialized data:\n  {obj}")
 
     @classmethod
-    def chars_count(cls, data: DataStructure) -> int:
+    def chars_count(cls, data: DataObjType, /) -> int:
         """The sum of all the characters amount including the keys in dictionaries.\n
         ------------------------------------------------------------------------------
         - `data` -⠀the data structure to count the characters from"""
         chars_count = 0
 
         if isinstance(data, dict):
-            for k, v in data.items():
-                chars_count += len(str(k)) + (cls.chars_count(v) if isinstance(v, DataStructureTypes) else len(str(v)))
-
-        elif isinstance(data, IndexIterableTypes):
+            for key, val in data.items():
+                chars_count += len(str(key)) + (
+                    cls.chars_count(cast(DataObjType, val)) \
+                    if isinstance(val, DataObjTT)
+                    else len(str(val))
+                )
+        else:
             for item in data:
-                chars_count += cls.chars_count(item) if isinstance(item, DataStructureTypes) else len(str(item))
+                chars_count += (
+                    cls.chars_count(cast(DataObjType, item)) \
+                    if isinstance(item, DataObjTT)
+                    else len(str(item))
+                )
 
         return chars_count
 
     @classmethod
-    def strip(cls, data: DataStructure) -> DataStructure:
+    def strip(cls, data: DataObj, /) -> DataObj:
         """Removes leading and trailing whitespaces from the data structure's items.\n
         -------------------------------------------------------------------------------
         - `data` -⠀the data structure to strip the items from"""
         if isinstance(data, dict):
-            return {k.strip(): cls.strip(v) if isinstance(v, DataStructureTypes) else v.strip() for k, v in data.items()}
+            return type(data)({key.strip(): (
+                cls.strip(cast(DataObjType, val)) \
+                if isinstance(val, DataObjTT)
+                else val.strip()
+            ) for key, val in data.items()})
 
-        if isinstance(data, IndexIterableTypes):
-            return type(data)(cls.strip(item) if isinstance(item, DataStructureTypes) else item.strip() for item in data)
-
-        raise TypeError(f"Unsupported data structure type: {type(data)}")
+        else:
+            return cast(DataObj, type(data)((
+                cls.strip(cast(DataObjType, item)) \
+                if isinstance(item, DataObjTT)
+                else item.strip()
+            ) for item in data))
 
     @classmethod
-    def remove_empty_items(cls, data: DataStructure, spaces_are_empty: bool = False) -> DataStructure:
+    def remove_empty_items(cls, data: DataObj, /, *, spaces_are_empty: bool = False) -> DataObj:
         """Removes empty items from the data structure.\n
         ---------------------------------------------------------------------------------
         - `data` -⠀the data structure to remove empty items from.
         - `spaces_are_empty` -⠀if true, it will count items with only spaces as empty"""
         if isinstance(data, dict):
-            return {
-                k: (v if not isinstance(v, DataStructureTypes) else cls.remove_empty_items(v, spaces_are_empty))
-                for k, v in data.items() if not String.is_empty(v, spaces_are_empty)
-            }
-
-        if isinstance(data, IndexIterableTypes):
-            return type(data)(
-                item for item in
-                (
-                    (item if not isinstance(item, DataStructureTypes) else cls.remove_empty_items(item, spaces_are_empty)) \
-                    for item in data if not (isinstance(item, (str, type(None))) and String.is_empty(item, spaces_are_empty))
+            return type(data)({
+                key: (
+                    val if not isinstance(val, DataObjTT) else
+                    cls.remove_empty_items(cast(DataObjType, val), spaces_are_empty=spaces_are_empty)
                 )
-                if item not in ([], (), {}, set(), frozenset())
-            )
+                for key, val in data.items() if not String.is_empty(val, spaces_are_empty=spaces_are_empty)
+            })
 
-        raise TypeError(f"Unsupported data structure type: {type(data)}")
+        else:
+            return cast(DataObj, type(data)(
+                item for item in (
+                    (
+                        item \
+                        if not isinstance(item, DataObjTT)
+                        else cls.remove_empty_items(cast(DataObjType, item), spaces_are_empty=spaces_are_empty)
+                    )
+                    for item in data
+                    if not (isinstance(item, (str, type(None))) and String.is_empty(item, spaces_are_empty=spaces_are_empty))
+                ) if item not in ([], (), {}, set(), frozenset())
+            ))
 
     @classmethod
-    def remove_duplicates(cls, data: DataStructure) -> DataStructure:
+    def remove_duplicates(cls, data: DataObj, /) -> DataObj:
         """Removes all duplicates from the data structure.\n
         -----------------------------------------------------------
         - `data` -⠀the data structure to remove duplicates from"""
         if isinstance(data, dict):
-            return {k: cls.remove_duplicates(v) if isinstance(v, DataStructureTypes) else v for k, v in data.items()}
+            return type(data)({
+                key: cls.remove_duplicates(cast(DataObjType, val)) if isinstance(val, DataObjTT) else val
+                for key, val in data.items()
+            })
 
-        if isinstance(data, (list, tuple)):
+        elif isinstance(data, (list, tuple)):
             result: list[Any] = []
             for item in data:
-                processed_item = cls.remove_duplicates(item) if isinstance(item, DataStructureTypes) else item
+                processed_item = cls.remove_duplicates(cast(DataObjType, item)) if isinstance(item, DataObjTT) else item
                 is_duplicate: bool = False
 
                 for existing_item in result:
@@ -139,25 +161,25 @@ class Data:
                 if not is_duplicate:
                     result.append(processed_item)
 
-            return type(data)(result)
+            return cast(DataObj, type(data)(result))
 
-        if isinstance(data, (set, frozenset)):
-            processed_elements = set()
+        else:
+            processed_elements: set[Any] = set()
             for item in data:
-                processed_item = cls.remove_duplicates(item) if isinstance(item, DataStructureTypes) else item
+                processed_item = cls.remove_duplicates(cast(DataObjType, item)) if isinstance(item, DataObjTT) else item
                 processed_elements.add(processed_item)
-            return type(data)(processed_elements)
-
-        raise TypeError(f"Unsupported data structure type: {type(data)}")
+            return cast(DataObj, type(data)(processed_elements))
 
     @classmethod
     def remove_comments(
         cls,
-        data: DataStructure,
+        data: DataObj,
+        /,
+        *,
         comment_start: str = ">>",
         comment_end: str = "<<",
         comment_sep: str = "",
-    ) -> DataStructure:
+    ) -> DataObj:
         """Remove comments from a list, tuple or dictionary.\n
         ---------------------------------------------------------------------------------------------------------------
         - `data` -⠀list, tuple or dictionary, where the comments should get removed from
@@ -209,19 +231,21 @@ class Data:
         if len(comment_start) == 0:
             raise ValueError("The 'comment_start' parameter string must not be empty.")
 
-        return _DataRemoveCommentsHelper(
-            data=data,
+        return cast(DataObj, _DataRemoveCommentsHelper(
+            data,
             comment_start=comment_start,
             comment_end=comment_end,
             comment_sep=comment_sep,
-        )()
+        )())
 
     @classmethod
     def is_equal(
         cls,
-        data1: DataStructure,
-        data2: DataStructure,
+        data1: DataObjType,
+        data2: DataObjType,
+        /,
         ignore_paths: str | list[str] = "",
+        *,
         path_sep: str = "->",
         comment_start: str = ">>",
         comment_end: str = "<<",
@@ -247,16 +271,63 @@ class Data:
             ignore_paths = [ignore_paths]
 
         return cls._compare_nested(
-            data1=cls.remove_comments(data1, comment_start, comment_end),
-            data2=cls.remove_comments(data2, comment_start, comment_end),
+            cls.remove_comments(data1, comment_start=comment_start, comment_end=comment_end),
+            cls.remove_comments(data2, comment_start=comment_start, comment_end=comment_end),
             ignore_paths=[str(path).split(path_sep) for path in ignore_paths if path],
         )
+
+    @overload
+    @classmethod
+    def get_path_id(
+        cls,
+        data: DataObjType,
+        value_paths: str,
+        /,
+        *,
+        path_sep: str = "->",
+        comment_start: str = ">>",
+        comment_end: str = "<<",
+        ignore_not_found: bool = False,
+    ) -> Optional[str]:
+        ...
+
+    @overload
+    @classmethod
+    def get_path_id(
+        cls,
+        data: DataObjType,
+        value_paths: list[str],
+        /,
+        *,
+        path_sep: str = "->",
+        comment_start: str = ">>",
+        comment_end: str = "<<",
+        ignore_not_found: bool = False,
+    ) -> list[Optional[str]]:
+        ...
+
+    @overload
+    @classmethod
+    def get_path_id(
+        cls,
+        data: DataObjType,
+        value_paths: str | list[str],
+        /,
+        *,
+        path_sep: str = "->",
+        comment_start: str = ">>",
+        comment_end: str = "<<",
+        ignore_not_found: bool = False,
+    ) -> Optional[str | list[Optional[str]]]:
+        ...
 
     @classmethod
     def get_path_id(
         cls,
-        data: DataStructure,
+        data: DataObjType,
         value_paths: str | list[str],
+        /,
+        *,
         path_sep: str = "->",
         comment_start: str = ">>",
         comment_end: str = "<<",
@@ -288,40 +359,45 @@ class Data:
         if len(path_sep) == 0:
             raise ValueError("The 'path_sep' parameter string must not be empty.")
 
-        data = cls.remove_comments(data, comment_start, comment_end)
+        data = cls.remove_comments(data, comment_start=comment_start, comment_end=comment_end)
         if isinstance(value_paths, str):
-            return _DataGetPathIdHelper(value_paths, path_sep, data, ignore_not_found)()
+            return _DataGetPathIdHelper(value_paths, path_sep=path_sep, data_obj=data, ignore_not_found=ignore_not_found)()
 
-        results = [_DataGetPathIdHelper(path, path_sep, data, ignore_not_found)() for path in value_paths]
+        results = [
+            _DataGetPathIdHelper(path, path_sep=path_sep, data_obj=data, ignore_not_found=ignore_not_found)()
+            for path in value_paths
+        ]
         return results if len(results) > 1 else results[0] if results else None
 
     @classmethod
-    def get_value_by_path_id(cls, data: DataStructure, path_id: str, get_key: bool = False) -> Any:
+    def get_value_by_path_id(cls, data: DataObjType, path_id: str, /, *, get_key: bool = False) -> Any:
         """Retrieves the value from `data` using the provided `path_id`, as long as the data structure
         hasn't changed since creating the path ID.\n
         --------------------------------------------------------------------------------------------------
         - `data` -⠀the list, tuple, or dictionary to retrieve the value from
         - `path_id` -⠀the path ID to the value to retrieve, created before using `Data.get_path_id()`
         - `get_key` -⠀if true and the final item is in a dict, it returns the key instead of the value"""
-        parent: Optional[DataStructure] = None
+        parent: Optional[DataObjType] = None
         path = cls._sep_path_id(path_id)
         current_data: Any = data
 
         for i, path_idx in enumerate(path):
             if isinstance(current_data, dict):
-                keys = list(current_data.keys())
+                dict_data = cast(dict[Any, Any], current_data)
+                keys: list[str] = list(dict_data.keys())
                 if i == len(path) - 1 and get_key:
                     return keys[path_idx]
-                parent = current_data
-                current_data = current_data[keys[path_idx]]
+                parent = dict_data
+                current_data = dict_data[keys[path_idx]]
 
-            elif isinstance(current_data, IndexIterableTypes):
+            elif isinstance(current_data, IndexIterableTT):
+                idx_iterable_data = cast(IndexIterable, current_data)
                 if i == len(path) - 1 and get_key:
                     if parent is None or not isinstance(parent, dict):
                         raise ValueError(f"Cannot get key from a non-dict parent at path '{path[:i + 1]}'")
-                    return next(key for key, value in parent.items() if value is current_data)
-                parent = current_data
-                current_data = list(current_data)[path_idx]  # CONVERT TO LIST FOR INDEXING
+                    return next(key for key, value in parent.items() if value is idx_iterable_data)
+                parent = idx_iterable_data
+                current_data = list(idx_iterable_data)[path_idx]  # CONVERT TO LIST FOR INDEXING
 
             else:
                 raise TypeError(f"Unsupported type '{type(current_data)}' at path '{path[:i + 1]}'")
@@ -329,7 +405,7 @@ class Data:
         return current_data
 
     @classmethod
-    def set_value_by_path_id(cls, data: DataStructure, update_values: dict[str, Any]) -> DataStructure:
+    def set_value_by_path_id(cls, data: DataObj, update_values: dict[str, Any], /) -> DataObj:
         """Updates the value/s from `update_values` in the `data`, as long as the data structure
         hasn't changed since creating the path ID to that value.\n
         -----------------------------------------------------------------------------------------
@@ -344,14 +420,16 @@ class Data:
             raise ValueError(f"No valid 'update_values' found in dictionary:\n{update_values!r}")
 
         for path_id, new_val in valid_update_values:
-            data = cls._set_nested_val(data, id_path=cls._sep_path_id(path_id), value=new_val)
+            data = cls._set_nested_val(data, cls._sep_path_id(path_id), new_val)
 
         return data
 
     @classmethod
     def render(
         cls,
-        data: DataStructure,
+        data: DataObjType,
+        /,
+        *,
         indent: int = 4,
         compactness: Literal[0, 1, 2] = 1,
         max_width: int = 127,
@@ -395,7 +473,7 @@ class Data:
 
         return _DataRenderHelper(
             cls,
-            data=data,
+            data,
             indent=indent,
             compactness=compactness,
             max_width=max_width,
@@ -407,7 +485,9 @@ class Data:
     @classmethod
     def print(
         cls,
-        data: DataStructure,
+        data: DataObjType,
+        /,
+        *,
         indent: int = 4,
         compactness: Literal[0, 1, 2] = 1,
         max_width: int = 127,
@@ -448,7 +528,7 @@ class Data:
         For more detailed information about formatting codes, see the `format_codes` module documentation."""
         FormatCodes.print(
             cls.render(
-                data=data,
+                data,
                 indent=indent,
                 compactness=compactness,
                 max_width=max_width,
@@ -464,6 +544,7 @@ class Data:
         cls,
         data1: Any,
         data2: Any,
+        /,
         ignore_paths: list[list[str]],
         current_path: list[str] = [],
     ) -> bool:
@@ -474,24 +555,26 @@ class Data:
             return False
 
         if isinstance(data1, dict) and isinstance(data2, dict):
-            if set(data1.keys()) != set(data2.keys()):
+            dict_data1, dict_data2 = cast(dict[Any, Any], data1), cast(dict[Any, Any], data2)
+            if set(dict_data1.keys()) != set(dict_data2.keys()):
                 return False
             return all(cls._compare_nested( \
-                data1=data1[key],
-                data2=data2[key],
+                dict_data1[key],
+                dict_data2[key],
                 ignore_paths=ignore_paths,
                 current_path=current_path + [key],
-            ) for key in data1)
+            ) for key in dict_data1)
 
-        elif isinstance(data1, (list, tuple)):
-            if len(data1) != len(data2):
+        elif isinstance(data1, (list, tuple)) and isinstance(data2, (list, tuple)):
+            array_data1, array_data2 = cast(IndexIterable, data1), cast(IndexIterable, data2)
+            if len(array_data1) != len(array_data2):
                 return False
             return all(cls._compare_nested( \
-                data1=item1,
-                data2=item2,
+                item1,
+                item2,
                 ignore_paths=ignore_paths,
                 current_path=current_path + [str(i)],
-            ) for i, (item1, item2) in enumerate(zip(data1, data2)))
+            ) for i, (item1, item2) in enumerate(zip(array_data1, array_data2)))
 
         elif isinstance(data1, (set, frozenset)):
             return data1 == data2
@@ -499,7 +582,7 @@ class Data:
         return data1 == data2
 
     @staticmethod
-    def _sep_path_id(path_id: str) -> list[int]:
+    def _sep_path_id(path_id: str, /) -> list[int]:
         """Internal method to separate a path-ID string into its ID parts as a list of integers."""
         if len(split_id := path_id.split(">")) == 2:
             id_part_len, path_id_parts = split_id
@@ -513,29 +596,33 @@ class Data:
         raise ValueError(f"Path ID '{path_id}' is an invalid format.")
 
     @classmethod
-    def _set_nested_val(cls, data: DataStructure, id_path: list[int], value: Any) -> Any:
+    def _set_nested_val(cls, data: DataObjType, id_path: list[int], value: Any, /) -> Any:
         """Internal method to set a value in a nested data structure based on the provided ID path."""
         current_data: Any = data
 
         if len(id_path) == 1:
             if isinstance(current_data, dict):
-                keys, data_dict = list(current_data.keys()), dict(current_data)
-                data_dict[keys[id_path[0]]] = value
-                return data_dict
-            elif isinstance(current_data, IndexIterableTypes):
-                was_t, data_list = type(current_data), list(current_data)
-                data_list[id_path[0]] = value
-                return was_t(data_list)
+                dict_data = cast(dict[Any, Any], current_data)
+                keys, dict_data = list(dict_data.keys()), dict(dict_data)
+                dict_data[keys[id_path[0]]] = value
+                return dict_data
+            elif isinstance(current_data, IndexIterableTT):
+                idx_iterable_data = cast(IndexIterable, current_data)
+                was_t, idx_iterable_data = type(idx_iterable_data), list(idx_iterable_data)
+                idx_iterable_data[id_path[0]] = value
+                return was_t(idx_iterable_data)
 
         else:
             if isinstance(current_data, dict):
-                keys, data_dict = list(current_data.keys()), dict(current_data)
-                data_dict[keys[id_path[0]]] = cls._set_nested_val(data_dict[keys[id_path[0]]], id_path[1:], value)
-                return data_dict
-            elif isinstance(current_data, IndexIterableTypes):
-                was_t, data_list = type(current_data), list(current_data)
-                data_list[id_path[0]] = cls._set_nested_val(data_list[id_path[0]], id_path[1:], value)
-                return was_t(data_list)
+                dict_data = cast(dict[Any, Any], current_data)
+                keys, dict_data = list(dict_data.keys()), dict(dict_data)
+                dict_data[keys[id_path[0]]] = cls._set_nested_val(dict_data[keys[id_path[0]]], id_path[1:], value)
+                return dict_data
+            elif isinstance(current_data, IndexIterableTT):
+                idx_iterable_data = cast(IndexIterable, current_data)
+                was_t, idx_iterable_data = type(idx_iterable_data), list(idx_iterable_data)
+                idx_iterable_data[id_path[0]] = cls._set_nested_val(idx_iterable_data[id_path[0]], id_path[1:], value)
+                return was_t(idx_iterable_data)
 
         return current_data
 
@@ -543,13 +630,13 @@ class Data:
 class _DataRemoveCommentsHelper:
     """Internal, callable helper class to remove all comments from nested data structures."""
 
-    def __init__(self, data: DataStructure, comment_start: str, comment_end: str, comment_sep: str):
+    def __init__(self, data: DataObjType, /, *, comment_start: str, comment_end: str, comment_sep: str):
         self.data = data
         self.comment_start = comment_start
         self.comment_end = comment_end
         self.comment_sep = comment_sep
 
-        self.pattern = _re.compile(Regex._clean( \
+        self.pattern = _re.compile(Regex._clean(  # type: ignore[protected-access]
             rf"""^(
                 (?:(?!{_re.escape(comment_start)}).)*
             )
@@ -559,21 +646,23 @@ class _DataRemoveCommentsHelper:
             (.*?)$"""
         )) if len(comment_end) > 0 else None
 
-    def __call__(self) -> DataStructure:
+    def __call__(self) -> DataObjType:
         return self.remove_nested_comments(self.data)
 
-    def remove_nested_comments(self, item: Any) -> Any:
+    def remove_nested_comments(self, item: Any, /) -> Any:
         if isinstance(item, dict):
+            dict_item = cast(dict[Any, Any], item)
             return {
                 key: val
                 for key, val in ( \
-                    (self.remove_nested_comments(k), self.remove_nested_comments(v)) for k, v in item.items()
+                    (self.remove_nested_comments(k), self.remove_nested_comments(v)) for k, v in dict_item.items()
                 ) if key is not None
             }
 
-        if isinstance(item, IndexIterableTypes):
-            processed = (v for v in map(self.remove_nested_comments, item) if v is not None)
-            return type(item)(processed)
+        if isinstance(item, IndexIterableTT):
+            idx_iterable_item = cast(IndexIterable, item)
+            processed = (val for val in map(self.remove_nested_comments, idx_iterable_item) if val is not None)
+            return type(idx_iterable_item)(processed)
 
         if isinstance(item, str):
             if self.pattern:
@@ -590,7 +679,7 @@ class _DataRemoveCommentsHelper:
 class _DataGetPathIdHelper:
     """Internal, callable helper class to process a data path and generate its unique path ID."""
 
-    def __init__(self, path: str, path_sep: str, data_obj: DataStructure, ignore_not_found: bool):
+    def __init__(self, path: str, /, *, path_sep: str, data_obj: DataObjType, ignore_not_found: bool):
         self.keys = path.split(path_sep)
         self.data_obj = data_obj
         self.ignore_not_found = ignore_not_found
@@ -608,14 +697,14 @@ class _DataGetPathIdHelper:
             return None
         return f"{self.max_id_length}>{''.join(id.zfill(self.max_id_length) for id in self.path_ids)}"
 
-    def process_key(self, key: str) -> bool:
+    def process_key(self, key: str, /) -> bool:
         """Process a single key and update `path_ids`. Returns `False` if processing should stop."""
         idx: Optional[int] = None
 
         if isinstance(self.current_data, dict):
             if (idx := self.process_dict_key(key)) is None:
                 return False
-        elif isinstance(self.current_data, IndexIterableTypes):
+        elif isinstance(self.current_data, IndexIterableTT):
             if (idx := self.process_iterable_key(key)) is None:
                 return False
         else:
@@ -625,7 +714,7 @@ class _DataGetPathIdHelper:
         self.max_id_length = max(self.max_id_length, len(str(idx)))
         return True
 
-    def process_dict_key(self, key: str) -> Optional[int]:
+    def process_dict_key(self, key: str, /) -> Optional[int]:
         """Process a key for dictionary data. Returns the index or `None` if not found."""
         if key.isdigit():
             if self.ignore_not_found:
@@ -641,7 +730,7 @@ class _DataGetPathIdHelper:
                 return None
             raise KeyError(f"Key '{key}' not found in dict.")
 
-    def process_iterable_key(self, key: str) -> Optional[int]:
+    def process_iterable_key(self, key: str, /) -> Optional[int]:
         """Process a key for iterable data. Returns the index or `None` if not found."""
         try:
             idx = int(key)
@@ -664,7 +753,9 @@ class _DataRenderHelper:
     def __init__(
         self,
         cls: type[Data],
-        data: DataStructure,
+        data: DataObjType,
+        /,
+        *,
         indent: int,
         compactness: Literal[0, 1, 2],
         max_width: int,
@@ -689,8 +780,8 @@ class _DataRenderHelper:
                 raise TypeError(f"Expected 'syntax_highlighting' to be a dict or bool. Got: {type(syntax_highlighting)}")
 
             self.syntax_hl.update({
-                k: (f"[{v}]", "[_]") if k in self.syntax_hl and v not in {"", None} else ("", "")
-                for k, v in syntax_highlighting.items()
+                key: (f"[{val}]", "[_]") if key in self.syntax_hl and val not in {"", None} else ("", "")
+                for key, val in syntax_highlighting.items()
             })
 
             sep = f"{self.syntax_hl['punctuation'][0]}{sep}{self.syntax_hl['punctuation'][1]}"
@@ -699,10 +790,12 @@ class _DataRenderHelper:
 
         punct_map: dict[str, str | tuple[str, str]] = {"(": ("/(", "("), **{c: c for c in "'\":)[]{}"}}
         self.punct: dict[str, str] = {
-            k: ((f"{self.syntax_hl['punctuation'][0]}{v[0]}{self.syntax_hl['punctuation'][1]}" if self.do_syntax_hl else v[1])
-                if isinstance(v, (list, tuple)) else
-                (f"{self.syntax_hl['punctuation'][0]}{v}{self.syntax_hl['punctuation'][1]}" if self.do_syntax_hl else v))
-            for k, v in punct_map.items()
+            key: ((
+                f"{self.syntax_hl['punctuation'][0]}{val[0]}{self.syntax_hl['punctuation'][1]}"
+                if self.do_syntax_hl else val[1]
+            ) if isinstance(val, (list, tuple)) else
+                  (f"{self.syntax_hl['punctuation'][0]}{val}{self.syntax_hl['punctuation'][1]}" if self.do_syntax_hl else val))
+            for key, val in punct_map.items()
         }
 
     def __call__(self) -> str:
@@ -711,21 +804,21 @@ class _DataRenderHelper:
             self.format_dict(self.data, 0) if isinstance(self.data, dict) else self.format_sequence(self.data, 0)
         )
 
-    def format_value(self, value: Any, current_indent: Optional[int] = None) -> str:
+    def format_value(self, value: Any, /, current_indent: Optional[int] = None) -> str:
         if current_indent is not None and isinstance(value, dict):
-            return self.format_dict(value, current_indent + self.indent)
+            return self.format_dict(cast(dict[Any, Any], value), current_indent + self.indent)
         elif current_indent is not None and hasattr(value, "__dict__"):
             return self.format_dict(value.__dict__, current_indent + self.indent)
-        elif current_indent is not None and isinstance(value, IndexIterableTypes):
-            return self.format_sequence(value, current_indent + self.indent)
+        elif current_indent is not None and isinstance(value, IndexIterableTT):
+            return self.format_sequence(cast(IndexIterable, value), current_indent + self.indent)
         elif current_indent is not None and isinstance(value, (bytes, bytearray)):
             obj_dict = self.cls.serialize_bytes(value)
             return (
                 self.format_dict(obj_dict, current_indent + self.indent) if self.as_json else (
-                    f"{self.syntax_hl['type'][0]}{(k := next(iter(obj_dict)))}{self.syntax_hl['type'][1]}"
-                    + self.format_sequence((obj_dict[k], obj_dict["encoding"]), current_indent + self.indent)
-                    if self.do_syntax_hl else (k := next(iter(obj_dict)))
-                    + self.format_sequence((obj_dict[k], obj_dict["encoding"]), current_indent + self.indent)
+                    f"{self.syntax_hl['type'][0]}{(key := next(iter(obj_dict)))}{self.syntax_hl['type'][1]}"
+                    + self.format_sequence((obj_dict[key], obj_dict["encoding"]), current_indent + self.indent)
+                    if self.do_syntax_hl else (key := next(iter(obj_dict)))
+                    + self.format_sequence((obj_dict[key], obj_dict["encoding"]), current_indent + self.indent)
                 )
             )
         elif isinstance(value, bool):
@@ -754,7 +847,7 @@ class _DataRenderHelper:
                 + self.punct["'"] if self.do_syntax_hl else self.punct["'"] + String.escape(str(value), "'") + self.punct["'"]
             ))
 
-    def should_expand(self, seq: IndexIterable) -> bool:
+    def should_expand(self, seq: IndexIterable, /) -> bool:
         if self.compactness == 0:
             return True
         if self.compactness == 2:
@@ -770,20 +863,21 @@ class _DataRenderHelper:
             or (complex_items == 1 and len(seq) > 1) \
             or self.cls.chars_count(seq) + (len(seq) * len(self.sep)) > self.max_width
 
-    def format_dict(self, d: dict, current_indent: int) -> str:
-        if self.compactness == 2 or not d or not self.should_expand(list(d.values())):
+    def format_dict(self, data_dict: dict[Any, Any], current_indent: int, /) -> str:
+        if self.compactness == 2 or not data_dict or not self.should_expand(list(data_dict.values())):
             return self.punct["{"] + self.sep.join(
-                f"{self.format_value(k)}{self.punct[':']} {self.format_value(v, current_indent)}" for k, v in d.items()
+                f"{self.format_value(key)}{self.punct[':']} {self.format_value(val, current_indent)}"
+                for key, val in data_dict.items()
             ) + self.punct["}"]
 
-        items = []
-        for k, val in d.items():
+        items: list[str] = []
+        for key, val in data_dict.items():
             formatted_value = self.format_value(val, current_indent)
-            items.append(f"{' ' * (current_indent + self.indent)}{self.format_value(k)}{self.punct[':']} {formatted_value}")
+            items.append(f"{' ' * (current_indent + self.indent)}{self.format_value(key)}{self.punct[':']} {formatted_value}")
 
         return self.punct["{"] + "\n" + f"{self.sep}\n".join(items) + f"\n{' ' * current_indent}" + self.punct["}"]
 
-    def format_sequence(self, seq, current_indent: int) -> str:
+    def format_sequence(self, seq: IndexIterable, current_indent: int, /) -> str:
         if self.as_json:
             seq = list(seq)
 

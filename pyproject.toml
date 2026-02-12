@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xulbux"
-version = "1.9.5"
+version = "1.9.6"
 description = "A Python library to simplify common programming tasks."
 readme = "README.md"
 authors = [{ name = "XulbuX", email = "xulbux.real@gmail.com" }]
@@ -129,6 +129,9 @@ package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+xulbux = ["py.typed", "*.pyi", "**/*.pyi"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"

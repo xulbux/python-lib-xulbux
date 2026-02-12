@@ -17,6 +17,8 @@ class File:
         cls,
         file_path: Path | str,
         new_extension: str,
+        /,
+        *,
         full_extension: bool = False,
         camel_case_filename: bool = False,
     ) -> Path:
@@ -48,7 +50,7 @@ class File:
         return path.parent / f"{filename}{new_extension}"
 
     @classmethod
-    def create(cls, file_path: Path | str, content: str = "", force: bool = False) -> Path:
+    def create(cls, file_path: Path | str, content: str = "", /, *, force: bool = False) -> Path:
         """Create a file with ot without content.\n
         ------------------------------------------------------------------
         - `file_path` -⠀the path where the file should be created
