@@ -546,24 +546,6 @@ class hexa:
     - `with_alpha(alpha)` to create a new color with different alpha
     - `complementary()` to get the complementary color"""
 
-    @overload
-    def __init__(self, color: str | int, /) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self,
-        color: None = None,
-        /,
-        *,
-        _r: int,
-        _g: int,
-        _b: int,
-        _a: Optional[float] = None,
-    ) -> None:
-        """Internal API: all `_r`, `_g`, `_b` required when color is `None`."""
-        ...
-
     def __init__(
         self,
         color: Optional[str | int] = None,
@@ -1477,10 +1459,11 @@ class Color:
             dict_color = cast(dict[str, Any], color)
             return rgba(int(dict_color["r"]), int(dict_color["g"]), int(dict_color["b"]), dict_color.get("a"), _validate=False)
 
-        else:
+        elif isinstance(color, str):
             if parsed := cls.str_to_rgba(color, only_first=True):
                 return parsed
-            raise ValueError(f"Could not parse RGBA color: {color!r}")
+
+        raise ValueError(f"Could not parse RGBA color: {color!r}")
 
     @classmethod
     def _parse_hsla(cls, color: Hsla, /) -> hsla:
@@ -1502,10 +1485,11 @@ class Color:
             dict_color = cast(dict[str, Any], color)
             return hsla(int(dict_color["h"]), int(dict_color["s"]), int(dict_color["l"]), dict_color.get("a"), _validate=False)
 
-        else:
+        elif isinstance(color, str):
             if parsed := cls.str_to_hsla(color, only_first=True):
                 return parsed
-            raise ValueError(f"Could not parse HSLA color: {color!r}")
+
+        raise ValueError(f"Could not parse HSLA color: {color!r}")
 
     @staticmethod
     def _linearize_srgb(c: float, /) -> float:

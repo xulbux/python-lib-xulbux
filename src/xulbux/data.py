@@ -102,11 +102,12 @@ class Data:
             ) for key, val in data.items()})
 
         else:
-            return cast(DataObj, type(data)((
+            return cast(DataObj, type(data)([
                 cls.strip(cast(DataObjType, item)) \
                 if isinstance(item, DataObjTT)
                 else item.strip()
-            ) for item in data))
+                for item in data
+            ]))
 
     @classmethod
     def remove_empty_items(cls, data: DataObj, /, *, spaces_are_empty: bool = False) -> DataObj:
@@ -124,8 +125,8 @@ class Data:
             })
 
         else:
-            return cast(DataObj, type(data)(
-                item for item in (
+            return cast(DataObj, type(data)([
+                item for item in [
                     (
                         item \
                         if not isinstance(item, DataObjTT)
@@ -133,8 +134,8 @@ class Data:
                     )
                     for item in data
                     if not (isinstance(item, (str, type(None))) and String.is_empty(item, spaces_are_empty=spaces_are_empty))
-                ) if item not in ([], (), {}, set(), frozenset())
-            ))
+                ] if item not in ([], (), {}, set(), frozenset())
+            ]))
 
     @classmethod
     def remove_duplicates(cls, data: DataObj, /) -> DataObj:
@@ -654,14 +655,14 @@ class _DataRemoveCommentsHelper:
             dict_item = cast(dict[Any, Any], item)
             return {
                 key: val
-                for key, val in ( \
-                    (self.remove_nested_comments(k), self.remove_nested_comments(v)) for k, v in dict_item.items()
-                ) if key is not None
+                for key, val in [
+                    (self.remove_nested_comments(k), self.remove_nested_comments(v)) for k, v in dict_item.items() \
+                ] if key is not None
             }
 
         if isinstance(item, IndexIterableTT):
             idx_iterable_item = cast(IndexIterable, item)
-            processed = (val for val in map(self.remove_nested_comments, idx_iterable_item) if val is not None)
+            processed = [val for val in map(self.remove_nested_comments, idx_iterable_item) if val is not None]
             return type(idx_iterable_item)(processed)
 
         if isinstance(item, str):

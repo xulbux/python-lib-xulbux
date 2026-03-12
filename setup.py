@@ -1,6 +1,7 @@
 from setuptools import setup
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 import os
 
@@ -34,8 +35,12 @@ def generate_stubs_for_package():
                 skipped_count += 1
                 continue
 
+            stubgen_exe = (
+                shutil.which("stubgen")
+                or str(Path(sys.executable).parent / ("stubgen.exe" if sys.platform == "win32" else "stubgen"))
+            )
             result = subprocess.run(
-                [sys.executable, "-m", "mypy.stubgen",
+                [stubgen_exe,
                  str(py_file),
                  "-o", "src",
                  "--include-private",

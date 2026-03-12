@@ -10,11 +10,11 @@ from .format_codes import FormatCodes
 from .console import Console
 
 from typing import Optional
-import subprocess as _subprocess
 import multiprocessing as _multiprocessing
+import subprocess as _subprocess
 import platform as _platform
-import ctypes as _ctypes
 import getpass as _getpass
+import ctypes as _ctypes
 import socket as _socket
 import time as _time
 import sys as _sys
@@ -232,9 +232,9 @@ class _SystemRestartHelper:
         self.check_running_processes("tasklist", skip_lines=3)
 
         if self.prompt:
-            _os.system(f'shutdown /r /t {self.wait} /c "{self.prompt}"')
+            _subprocess.run(["shutdown", "/r", "/t", str(self.wait), "/c", str(self.prompt)])
         else:
-            _os.system("shutdown /r /t 0")
+            _subprocess.run(["shutdown", "/r", "/t", "0"])
 
         if self.continue_program:
             self.wait_for_restart()

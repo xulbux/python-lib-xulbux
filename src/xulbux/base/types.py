@@ -2,14 +2,10 @@
 This module contains all custom type definitions used throughout the library.
 """
 
-from typing import TYPE_CHECKING, Annotated, TypeAlias, TypedDict, Optional, Protocol, Literal, Union, Any
+from typing import Annotated, TypeAlias, TypedDict, Optional, Protocol, Literal, Union, Any
 from pathlib import Path
 
-# PREVENT CIRCULAR IMPORTS
-if TYPE_CHECKING:
-    from ..color import rgba, hsla, hexa
 
-#
 ################################################## Annotated ##################################################
 
 Int_0_100 = Annotated[int, "Integer constrained to the range [0, 100] inclusive."]
@@ -24,7 +20,7 @@ Float_0_1 = Annotated[float, "Float constrained to the range [0.0, 1.0] inclusiv
 FormattableString = Annotated[str, "String made to be formatted with the `.format()` method."]
 """String made to be formatted with the `.format()` method."""
 
-#
+
 ################################################## TypeAlias ##################################################
 
 PathsList: TypeAlias = Union[list[Path], list[str], list[Union[Path, str]]]
@@ -40,13 +36,34 @@ IndexIterable: TypeAlias = Union[list[Any], tuple[Any, ...], set[Any], frozenset
 IndexIterableTT = (list, tuple, set, frozenset)
 """Tuple of all iterable types that support indexing operations."""
 
+class _RgbaObj(Protocol):
+    """Protocol for rgba-like color objects (structurally matches `rgba`)."""
+    r: int
+    g: int
+    b: int
+    a: Optional[float]
+
+class _HslaObj(Protocol):
+    """Protocol for hsla-like color objects (structurally matches `hsla`)."""
+    h: int
+    s: int
+    l: int
+    a: Optional[float]
+
+class _HexaObj(Protocol):
+    """Protocol for hexa-like color objects (structurally matches `hexa`)."""
+    r: int
+    g: int
+    b: int
+    a: Optional[float]
+
 Rgba: TypeAlias = Union[
     tuple[Int_0_255, Int_0_255, Int_0_255],
     tuple[Int_0_255, Int_0_255, Int_0_255, Optional[Float_0_1]],
     list[Int_0_255],
     list[Union[Int_0_255, Optional[Float_0_1]]],
     "RgbaDict",
-    "rgba",
+    _RgbaObj,
     str,
 ]
 """Matches all supported RGBA color value formats."""
@@ -56,11 +73,11 @@ Hsla: TypeAlias = Union[
     list[Union[Int_0_360, Int_0_100]],
     list[Union[Int_0_360, Int_0_100, Optional[Float_0_1]]],
     "HslaDict",
-    "hsla",
+    _HslaObj,
     str,
 ]
 """Matches all supported HSLA color value formats."""
-Hexa: TypeAlias = Union[str, int, "hexa"]
+Hexa: TypeAlias = Union[str, int, _HexaObj]
 """Matches all supported HEXA color value formats."""
 
 AnyRgba: TypeAlias = Any
@@ -75,9 +92,8 @@ ArgParseConfig: TypeAlias = Union[set[str], "ArgConfigWithDefault", Literal["bef
 ArgParseConfigs: TypeAlias = dict[str, ArgParseConfig]
 """Matches the command-line-parsing configurations of multiple arguments, packed in a dictionary."""
 
-#
-################################################## Sentinel ##################################################
 
+################################################## Sentinel ##################################################
 
 class AllTextChars:
     """Sentinel class indicating all characters are allowed."""
@@ -86,12 +102,10 @@ class AllTextChars:
 
 ################################################## TypedDict ##################################################
 
-
 class ArgConfigWithDefault(TypedDict):
     """Configuration schema for a flagged command-line argument that has a specified default value."""
     flags: set[str]
     default: str
-
 
 class ArgData(TypedDict):
     """Schema for the resulting data of parsing a single command-line argument."""
@@ -100,14 +114,12 @@ class ArgData(TypedDict):
     values: list[str]
     flag: Optional[str]
 
-
 class RgbaDict(TypedDict):
     """Dictionary schema for RGBA color components."""
     r: Int_0_255
     g: Int_0_255
     b: Int_0_255
     a: Optional[Float_0_1]
-
 
 class HslaDict(TypedDict):
     """Dictionary schema for HSLA color components."""
@@ -116,14 +128,12 @@ class HslaDict(TypedDict):
     l: Int_0_100
     a: Optional[Float_0_1]
 
-
 class HexaDict(TypedDict):
     """Dictionary schema for HEXA color components."""
     r: str
     g: str
     b: str
     a: Optional[str]
-
 
 class MissingLibsMsgs(TypedDict):
     """Configuration schema for custom messages in `System.check_libs()` when checking library dependencies."""
@@ -132,7 +142,6 @@ class MissingLibsMsgs(TypedDict):
 
 
 ################################################## Protocol ##################################################
-
 
 class ProgressUpdater(Protocol):
     """Protocol for a progress updater function used in console progress bars."""

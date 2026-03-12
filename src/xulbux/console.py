@@ -21,6 +21,7 @@ from prompt_toolkit.keys import Keys
 from contextlib import contextmanager
 from io import StringIO
 import prompt_toolkit as _pt
+import subprocess as _subprocess
 import threading as _threading
 import keyboard as _keyboard
 import getpass as _getpass
@@ -354,9 +355,9 @@ class Console(metaclass=_ConsoleMeta):
     def cls(cls) -> None:
         """Will clear the console in addition to completely resetting the ANSI formats."""
         if _shutil.which("cls"):
-            _os.system("cls")
+            _subprocess.run(["cls"])
         elif _shutil.which("clear"):
-            _os.system("clear")
+            _subprocess.run(["clear"])
         print("\033[0m", end="", flush=True)
 
     @classmethod
@@ -409,12 +410,10 @@ class Console(metaclass=_ConsoleMeta):
         if format_linebreaks:
             clean_prompt, removals = *FormatCodes.remove(str(prompt), get_removals=True, _ignore_linebreaks=True),
             prompt_lst: list[str] = [
-                item for lst in
-                (
+                item for lst in [
                     String.split_count(line, cls.w - (title_len + len(tab) + 2 * len(mx))) \
                     for line in str(clean_prompt).splitlines()
-                )
-                for item in ([""] if lst == [] else lst)
+                ] for item in ([""] if lst == [] else lst)
             ]
             prompt = f"\n{mx}{' ' * title_len}{mx}{tab}".join(cls._add_back_removed_parts(prompt_lst, removals))
 
@@ -976,7 +975,7 @@ class Console(metaclass=_ConsoleMeta):
     def _add_back_removed_parts(cls, split_string: list[str], removals: tuple[tuple[int, str], ...], /) -> list[str]:
         """Adds back the removed parts into the split string parts at their original positions."""
         cumulative_pos = [0]
-        for length in (len(part) for part in split_string):
+        for length in [len(part) for part in split_string]:
             cumulative_pos.append(cumulative_pos[-1] + length)
 
         result, offset_adjusts = split_string.copy(), [0] * len(split_string)
