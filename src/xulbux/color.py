@@ -6,6 +6,8 @@ This module also provides the `Color` class, which
 includes methods to work with colors in various formats.
 """
 
+from __future__ import annotations
+
 from .base.types import RgbaDict, HslaDict, HexaDict, AnyRgba, AnyHsla, AnyHexa, Rgba, Hsla, Hexa
 from .regex import Regex
 
