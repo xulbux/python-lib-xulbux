@@ -7,6 +7,7 @@ from .file_sys import FileSys
 
 from typing import Optional, Literal, overload
 from pathlib import Path
+import subprocess as _subprocess
 import sys as _sys
 import os as _os
 
@@ -135,4 +136,4 @@ class EnvPath:
 
                 file.truncate()
 
-            _os.system(f"source {shell_rc_file}")
+            _subprocess.run(f"source {shell_rc_file}", shell=True, executable='/bin/bash')

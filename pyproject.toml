@@ -30,6 +30,7 @@ dependencies = [
 optional-dependencies = { dev = [
   "flake8-pyproject>=1.2.3",
   "flake8>=6.1.0",
+  "pyright>=1.1.408",
   "pytest>=7.4.2",
   "toml>=0.10.2",
 ] }
@@ -155,4 +156,5 @@ testpaths = [
 ]
 
 [tool.pyright]
+include = ["src", "tests"]
 typeCheckingMode = "strict"
