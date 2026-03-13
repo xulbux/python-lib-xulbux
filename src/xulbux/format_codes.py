@@ -133,12 +133,12 @@ the formatting code:
 ------------------------------------------------------------------------------------------------------------------------------------
 #### Additional Formatting Codes when a `default_color` is set
 
-1. `[*]` resets everything, just like `[_]`, but the text color will remain in `default_color`
-  (if no `default_color` is set, it resets everything, exactly like `[_]`)
-2. `[default]` will just color the text in `default_color`
-  (if no `default_color` is set, it's treated as an invalid formatting code)
-3. `[background:default]` `[BG:default]` will color the background in `default_color`
-  (if no `default_color` is set, both are treated as invalid formatting codes)\n
+1.  `[*]` resets everything, just like `[_]`, but the text color will remain in `default_color`
+    (if no `default_color` is set, it resets everything, exactly like `[_]`)
+2.  `[default]` will just color the text in `default_color`
+    (if no `default_color` is set, it's treated as an invalid formatting code)
+3.  `[background:default]` `[BG:default]` will color the background in `default_color`
+    (if no `default_color` is set, both are treated as invalid formatting codes)\n
 
 Unlike the standard console colors, the default color can be changed by using the following modifiers:
 

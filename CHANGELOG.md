@@ -27,7 +27,7 @@
 * All methods that should use positional-only and/or keyword-only params, now actually enforce that by using the `/` and `*` syntax in the method definitions.
 * Renamed the `Spinner` class from the `console` module to `Throbber`, since that name is closer to what it's actually used for.
 * Changed the name of the TypeAlias `DataStructure` to `DataObj` because that name is shorter and more general.
-* Changed both names `DataStructureTypes` and `IndexIterableTypes` to `DataObjTT` and `IndexIterableTT` respectively (`TT` *stands for types-tuple*).
+* Changed both names `DataStructureTypes` and `IndexIterableTypes` to `DataObjTT` and `IndexIterableTT` respectively (`TT` *stands for type-tuple*).
 * Made the return value of `String.single_char_repeats()` always be *`int`* and not <code>*int* | *bool*</code>.
 
 
@@ -498,10 +498,10 @@
 ## 21.12.2024 `v1.5.9`
 
 * Fixed bugs in method `to_ansi()` in module `xx_format_codes`:<br>
-  1. The method always returned an empty string, because the color validation was broken, and it would identify all colors as invalid.<br>
-    Now the validation `Color.is_valid_rgba()` and `Color.is_valid_hexa()` are fixed and now, if a color is identified as invalid, the method returns the original string instead of an empty string.
-  2. Previously the method `to_ansi()` couldn't handle formats inside `[]` because everything inside the brackets was recognized as an invalid format.<br>
-    Now you are able to use formats inside `[]` (*e.g.* `"[[red](Red text [b](inside) square brackets!)]"`).
+  1.  The method always returned an empty string, because the color validation was broken, and it would identify all colors as invalid.<br>
+      Now the validation `Color.is_valid_rgba()` and `Color.is_valid_hexa()` are fixed and now, if a color is identified as invalid, the method returns the original string instead of an empty string.
+  2.  Previously the method `to_ansi()` couldn't handle formats inside `[]` because everything inside the brackets was recognized as an invalid format.<br>
+      Now you are able to use formats inside `[]` (*e.g.* `"[[red](Red text [b](inside) square brackets!)]"`).
 * Introduced a new test for the `xx_format_codes` module.
 * Fixed a small bug in the help client-command:<br>
   Added back the default text color.
@@ -865,8 +865,8 @@
 ## 15.10.2024 `v1.0.1` `v1.0.2` `v1.0.3` `v1.0.4` `v1.0.5`
 
 * Fixed `f-string` issues for Python 3.10:
-  1. Not making use of same quotes inside f-strings any more.
-  2. No backslash escaping in f-strings.
+  1.  Not making use of same quotes inside f-strings any more.
+  2.  No backslash escaping in f-strings.
 
 
 <span id="release" /><span id="v1-0-0" />

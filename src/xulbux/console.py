@@ -271,24 +271,24 @@ class Console(metaclass=_ConsoleMeta):
         - `flag_value_sep` - the character/s used to separate flags from their values\n
         -------------------------------------------------------------------------------------------------
         The `arg_parse_configs` dictionary can have the following structures for each item:
-        1. Simple set of flags (when no default value is needed):
-           ```python
+        1.  Simple set of flags (when no default value is needed):
+          ```python
             "alias_name": {"-f", "--flag"}
-           ```
-        2. Dictionary with the`"flags"` set, plus a specified `"default"` value:
-           ```python
+          ```
+        2.  Dictionary with the`"flags"` set, plus a specified `"default"` value:
+          ```python
             "alias_name": {
                 "flags": {"-f", "--flag"},
                 "default": "some_value",
             }
-           ```
-        3. Positional value collection using the literals `"before"` or `"after"`:
-           ```python
+          ```
+        3.  Positional value collection using the literals `"before"` or `"after"`:
+          ```python
             # COLLECT ALL NON-FLAGGED VALUES THAT APPEAR BEFORE THE FIRST FLAG
             "alias_name": "before"
             # COLLECT ALL NON-FLAGGED VALUES THAT APPEAR AFTER THE LAST FLAG'S VALUE
             "alias_name": "after"
-           ```
+          ```
         #### Example usage:
         If you call the `get_args()` method in your script like this:
         ```python
@@ -699,15 +699,15 @@ class Console(metaclass=_ConsoleMeta):
         - `"strong" = ('┏', '━', '┓', '┃', '┛', '━', '┗', '┃', '┣', '━', '┫')`
         - `"double" = ('╔', '═', '╗', '║', '╝', '═', '╚', '║', '╠', '═', '╣')`\n
         The order of the characters is always:
-        1. top-left corner
-        2. top border
-        3. top-right corner
-        4. right border
-        5. bottom-right corner
-        6. bottom border
-        7. bottom-left corner
-        8. left border
-        9. left horizontal rule connector
+        1.  top-left corner
+        2.  top border
+        3.  top-right corner
+        4.  right border
+        5.  bottom-right corner
+        6.  bottom border
+        7.  bottom-left corner
+        8.  left border
+        9.  left horizontal rule connector
         10. horizontal rule
         11. right horizontal rule connector"""
         if w_padding < 0:

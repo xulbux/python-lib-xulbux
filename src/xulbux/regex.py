@@ -104,8 +104,8 @@ class Regex:
     @classmethod
     def func_call(cls, func_name: Optional[str] = None, /) -> str:
         """Match a function call, and get back two groups:
-        1. function name
-        2. the function's arguments\n
+        1.  The function name
+        2.  The function's arguments (content inside the parentheses)\n
         If no `func_name` is given, it will match any function call.\n
         ---------------------------------------------------------------------------------
         Attention: Requires non-standard library `regex`, not standard library `re`!"""

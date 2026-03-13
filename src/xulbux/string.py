@@ -70,7 +70,7 @@ class String:
     @classmethod
     def single_char_repeats(cls, string: str, char: str, /) -> int:
         """- If the string consists of only the same `char`, it returns the number of times it is present.
-        - If the string doesn't consist of only the same character, it returns `0`.\n
+        - If the string is empty or doesn't consist of only the same character, it returns `0`.\n
         ---------------------------------------------------------------------------------------------------
         - `string` -⠀the string to check
         - `char` -⠀the character to check for repetition"""
@@ -80,7 +80,7 @@ class String:
         if len(string) == string.count(char):
             return string.count(char)
         else:
-            return False
+            return 0
 
     @classmethod
     def decompose(cls, case_string: str, /, seps: str = "-_", *, lower_all: bool = True) -> list[str]:
