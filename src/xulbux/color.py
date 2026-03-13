@@ -799,7 +799,7 @@ class Color:
                     and len(array_color) == 4
                     and all(isinstance(val, int) for val in array_color[:3])
                     and isinstance(array_color[3], (float, type(None)))
-                ):
+                    ):
                     return (
                         0 <= array_color[0] <= 255 and 0 <= array_color[1] <= 255 and 0 <= array_color[2] <= 255
                         and (array_color[3] is None or 0 <= array_color[3] <= 1)
@@ -816,7 +816,7 @@ class Color:
                     and len(dict_color) == 4
                     and all(isinstance(dict_color.get(ch), int) for ch in ("r", "g", "b"))
                     and isinstance(dict_color.get("a", "no alpha"), (float, type(None)))
-                ):
+                    ):
                     return (
                         0 <= dict_color["r"] <= 255 and 0 <= dict_color["g"] <= 255 and 0 <= dict_color["b"] <= 255
                         and (dict_color["a"] is None or 0 <= dict_color["a"] <= 1)
@@ -850,7 +850,7 @@ class Color:
                     and len(array_color) == 4
                     and all(isinstance(val, int) for val in array_color[:3])
                     and isinstance(array_color[3], (float, type(None)))
-                ):
+                    ):
                     return (
                         0 <= array_color[0] <= 360 and 0 <= array_color[1] <= 100 and 0 <= array_color[2] <= 100
                         and (array_color[3] is None or 0 <= array_color[3] <= 1)
@@ -867,7 +867,7 @@ class Color:
                     and len(dict_color) == 4
                     and all(isinstance(dict_color.get(ch), int) for ch in ("h", "s", "l"))
                     and isinstance(dict_color.get("a", "no alpha"), (float, type(None)))
-                ):
+                    ):
                     return (
                         0 <= dict_color["h"] <= 360 and 0 <= dict_color["s"] <= 100 and 0 <= dict_color["l"] <= 100
                         and (dict_color["a"] is None or 0 <= dict_color["a"] <= 1)

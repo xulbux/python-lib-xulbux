@@ -380,7 +380,6 @@ class FormatCodes:
     ) -> str:
         ...
 
-
     @overload
     @classmethod
     def remove(

@@ -7,7 +7,6 @@ import pytest
 import json
 
 
-
 def create_test_json(tmp_path: Path, filename: str, data: Any) -> Path:
     file_path = tmp_path / filename
     with open(file_path, "w") as file:

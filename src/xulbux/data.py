@@ -791,12 +791,19 @@ class _DataRenderHelper:
 
         punct_map: dict[str, str | tuple[str, str]] = {"(": ("/(", "("), **{c: c for c in "'\":)[]{}"}}
         self.punct: dict[str, str] = {
-            key: ((
-                f"{self.syntax_hl['punctuation'][0]}{val[0]}{self.syntax_hl['punctuation'][1]}"
-                if self.do_syntax_hl else val[1]
-            ) if isinstance(val, (list, tuple)) else
-                  (f"{self.syntax_hl['punctuation'][0]}{val}{self.syntax_hl['punctuation'][1]}" if self.do_syntax_hl else val))
-            for key, val in punct_map.items()
+            key: (
+                (
+                    f"{self.syntax_hl['punctuation'][0]}{val[0]}{self.syntax_hl['punctuation'][1]}" \
+                    if self.do_syntax_hl
+                    else val[1]
+                ) \
+                if isinstance(val, (list, tuple))
+                else (
+                    f"{self.syntax_hl['punctuation'][0]}{val}{self.syntax_hl['punctuation'][1]}" \
+                    if self.do_syntax_hl
+                    else val
+                )
+            ) for key, val in punct_map.items()
         }
 
     def __call__(self) -> str:

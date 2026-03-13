@@ -15,7 +15,6 @@ import os
 @pytest.fixture
 def mock_terminal_size(monkeypatch: pytest.MonkeyPatch):
 
-
     def mock_get_terminal_size():
         return os.terminal_size((80, 24))
 
