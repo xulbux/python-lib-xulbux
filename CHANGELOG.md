@@ -24,7 +24,7 @@
 * Removed leftover unnecessary runtime type-checks in several methods throughout the whole library.
 
 **BREAKING CHANGES:**
-* All methods that should use positional-only params up to a certain point, now actually enforce that by using the `/` syntax.
+* All methods that should use positional-only and/or keyword-only params, now actually enforce that by using the `/` and `*` syntax in the method definitions.
 * Renamed the `Spinner` class from the `console` module to `Throbber`, since that name is closer to what it's actually used for.
 * Changed the name of the TypeAlias `DataStructure` to `DataObj` because that name is shorter and more general.
 * Changed both names `DataStructureTypes` and `IndexIterableTypes` to `DataObjTT` and `IndexIterableTT` respectively (`TT` *stands for types-tuple*).

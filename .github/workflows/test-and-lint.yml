@@ -49,7 +49,7 @@ jobs:
 
       - name: Type check with pyright
         run: |
-          pyright .
+          pyright
 
       - name: Test with pytest
         run: |
