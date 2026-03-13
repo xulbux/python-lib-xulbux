@@ -106,13 +106,13 @@ keywords = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/XulbuX/PythonLibraryXulbuX"
-"Documentation" = "https://github.com/XulbuX/PythonLibraryXulbuX/wiki"
-"Source Code" = "https://github.com/XulbuX/PythonLibraryXulbuX/tree/main/src"
-"Changelog" = "https://github.com/XulbuX/PythonLibraryXulbuX/blob/main/CHANGELOG.md"
-"Bug Reports" = "https://github.com/XulbuX/PythonLibraryXulbuX/issues"
+"Homepage" = "https://github.com/xulbux/python-lib-xulbux"
+"Documentation" = "https://github.com/xulbux/python-lib-xulbux/wiki"
+"Source Code" = "https://github.com/xulbux/python-lib-xulbux/tree/main/src"
+"Changelog" = "https://github.com/xulbux/python-lib-xulbux/blob/main/CHANGELOG.md"
+"Bug Reports" = "https://github.com/xulbux/python-lib-xulbux/issues"
 "Stats" = "https://clickpy.clickhouse.com/dashboard/xulbux"
-"License" = "https://github.com/XulbuX/PythonLibraryXulbuX/blob/main/LICENSE"
+"License" = "https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE"
 
 [project.scripts]
 xulbux-help = "xulbux.cli.help:show_help"

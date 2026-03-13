@@ -550,7 +550,7 @@
 
 **Again 𝓢𝓲𝓷𝓰𝓵𝓮𝓼 𝓓𝓪𝔂 🥇😉**
 
-* Moved the whole library to its own repository: **[PythonLibraryXulbuX](https://github.com/XulbuX/PythonLibraryXulbuX)**
+* Moved the whole library to its own repository: **[PythonLibraryXulbuX](https://github.com/xulbux/python-lib-xulbux)**
 * Updated all connections and links correspondingly.
 
 
