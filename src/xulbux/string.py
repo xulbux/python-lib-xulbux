@@ -77,10 +77,10 @@ class String:
         if len(char) != 1:
             raise ValueError(f"The 'char' parameter must be a single character, got {char!r}")
 
-        if len(string) == (len(char) * string.count(char)):
+        if len(string) == string.count(char):
             return string.count(char)
         else:
-            return 0
+            return False
 
     @classmethod
     def decompose(cls, case_string: str, /, seps: str = "-_", *, lower_all: bool = True) -> list[str]:

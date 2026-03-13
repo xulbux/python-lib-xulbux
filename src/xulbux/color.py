@@ -770,7 +770,7 @@ class hexa:
         elif not (0.0 <= alpha <= 1.0):
             raise ValueError(f"The 'alpha' parameter must be in range [0.0, 1.0] inclusive, got {alpha!r}")
 
-        return hexa(_r=self.r, _g=self.g, _b=self.b, _a=self.a)
+        return hexa(_r=self.r, _g=self.g, _b=self.b, _a=alpha)
 
     def complementary(self) -> hexa:
         """Returns the complementary color (180 degrees on the color wheel)."""
