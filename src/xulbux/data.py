@@ -38,7 +38,7 @@ class Data:
         key = "bytearray" if isinstance(data, bytearray) else "bytes"
 
         try:
-            return {key: cast(bytes | bytearray, data).decode("utf-8"), "encoding": "utf-8"}
+            return {key: data.decode("utf-8"), "encoding": "utf-8"}
         except UnicodeDecodeError:
             pass
 

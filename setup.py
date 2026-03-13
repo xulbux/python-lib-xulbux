@@ -19,6 +19,7 @@ def generate_stubs_for_package():
     try:
         skip_stubgen = {
             Path("src/xulbux/base/types.py"),  # COMPLEX TYPE DEFINITIONS
+            Path("src/xulbux/__init__.py"),  # PRESERVE PACKAGE METADATA CONSTANTS
         }
 
         src_dir = Path("src/xulbux")

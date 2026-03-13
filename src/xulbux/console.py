@@ -12,7 +12,7 @@ from .string import String
 from .color import Color, hexa
 from .regex import LazyRegex
 
-from typing import Generator, Callable, Optional, Literal, TypeVar, TextIO, Any, overload, cast
+from typing import ValuesView, Generator, Callable, KeysView, Optional, Literal, TypeVar, TextIO, Any, overload, cast
 from prompt_toolkit.key_binding import KeyPressEvent, KeyBindings
 from prompt_toolkit.validation import ValidationError, Validator
 from prompt_toolkit.document import Document
@@ -166,11 +166,11 @@ class ParsedArgs:
         """Returns the argument result for the given alias, or `default` if not found."""
         return getattr(self, key, default)
 
-    def keys(self):
+    def keys(self) -> KeysView[str]:
         """Returns the argument aliases as `dict_keys([…])`."""
         return vars(self).keys()
 
-    def values(self):
+    def values(self) -> ValuesView[ParsedArgData]:
         """Returns the argument results as `dict_values([…])`."""
         return vars(self).values()
 

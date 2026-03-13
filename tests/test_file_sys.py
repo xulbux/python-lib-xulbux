@@ -9,7 +9,7 @@ import os
 
 
 @pytest.fixture
-def setup_test_environment(tmp_path, monkeypatch):
+def setup_test_environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
     """Sets up a controlled environment for path tests."""
     mock_cwd = tmp_path / "mock_cwd"
     mock_script_dir = tmp_path / "mock_script_dir"
@@ -34,7 +34,11 @@ def setup_test_environment(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, "cwd", staticmethod(lambda: mock_cwd))
     monkeypatch.setattr(Path, "home", staticmethod(lambda: mock_home))
     monkeypatch.setattr(sys.modules["__main__"], "__file__", str(mock_script_dir / "mock_script.py"))
-    monkeypatch.setattr(os.path, "expanduser", lambda path: str(mock_home) if path == "~" else path)
+
+    def mock_expanduser(path: str) -> str:
+        return str(mock_home) if path == "~" else path
+
+    monkeypatch.setattr(os.path, "expanduser", mock_expanduser)
     monkeypatch.setattr(tempfile, "gettempdir", lambda: str(mock_temp))
 
     return {
@@ -50,13 +54,13 @@ def setup_test_environment(tmp_path, monkeypatch):
 ################################################## Path TESTS ##################################################
 
 
-def test_path_cwd(setup_test_environment):
+def test_path_cwd(setup_test_environment: dict[str, Path]):
     cwd_output = FileSys.cwd
     assert isinstance(cwd_output, Path)
     assert str(cwd_output) == str(setup_test_environment["cwd"])
 
 
-def test_path_script_dir(setup_test_environment):
+def test_path_script_dir(setup_test_environment: dict[str, Path]):
     script_dir_output = FileSys.script_dir
     assert isinstance(script_dir_output, Path)
     assert str(script_dir_output) == str(setup_test_environment["script_dir"])
@@ -70,7 +74,7 @@ def test_path_home():
     assert home.is_dir()
 
 
-def test_extend(setup_test_environment):
+def test_extend(setup_test_environment: dict[str, Path]):
     env = setup_test_environment
     search_dir = str(env["search_in"])
     search_dirs = [str(env["cwd"]), search_dir]
@@ -112,7 +116,7 @@ def test_extend(setup_test_environment):
     assert FileSys.extend_path("CompletelyWrong/no_file_here.dat", search_in=search_dir, fuzzy_match=True) is None
 
 
-def test_extend_or_make(setup_test_environment):
+def test_extend_or_make(setup_test_environment: dict[str, Path]):
     env = setup_test_environment
     search_dir = str(env["search_in"])
 
@@ -142,7 +146,7 @@ def test_extend_or_make(setup_test_environment):
     assert str(FileSys.extend_or_make_path(rel_path_wrong, search_in=search_dir, fuzzy_match=True)) == str(expected_made)
 
 
-def test_remove(tmp_path):
+def test_remove(tmp_path: Path):
     # NON-EXISTENT
     non_existent_path = tmp_path / "does_not_exist"
     assert not non_existent_path.exists()

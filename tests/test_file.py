@@ -38,13 +38,13 @@ import pytest
         ("no_dot_file", ".txt", True, True, "NoDotFile.txt"),
     ]
 )
-def test_rename_extension(input_file, new_extension, full_extension, camel_case, expected_output):
-    result = File.rename_extension(input_file, new_extension, full_extension, camel_case)
+def test_rename_extension(input_file: str | Path, new_extension: str, full_extension: bool, camel_case: bool, expected_output: str):
+    result = File.rename_extension(input_file, new_extension, full_extension=full_extension, camel_case_filename=camel_case)
     assert isinstance(result, Path)
     assert str(result) == expected_output
 
 
-def test_create_new_file(tmp_path):
+def test_create_new_file(tmp_path: Path):
     file_path = tmp_path / "new_file.txt"
     abs_path = File.create(str(file_path))
     assert isinstance(abs_path, Path)
@@ -54,10 +54,10 @@ def test_create_new_file(tmp_path):
         assert file.read() == ""
 
 
-def test_create_file_with_content(tmp_path):
+def test_create_file_with_content(tmp_path: Path):
     file_path = tmp_path / "content_file.log"
     content = "This is the file content.\nWith multiple lines."
-    abs_path = File.create(str(file_path), content=content)
+    abs_path = File.create(str(file_path), content)
     assert isinstance(abs_path, Path)
     assert file_path.exists()
     assert abs_path.resolve() == file_path.resolve()
@@ -65,31 +65,31 @@ def test_create_file_with_content(tmp_path):
         assert file.read() == content
 
 
-def test_create_file_exists_error(tmp_path):
+def test_create_file_exists_error(tmp_path: Path):
     file_path = tmp_path / "existing_file.txt"
     with open(file_path, "w", encoding="utf-8") as file:
         file.write("Initial content")
     with pytest.raises(FileExistsError):
-        File.create(str(file_path), content="New content", force=False)
+        File.create(str(file_path), "New content", force=False)
 
 
-def test_create_file_same_content_exists_error(tmp_path):
+def test_create_file_same_content_exists_error(tmp_path: Path):
     file_path = tmp_path / "same_content_file.data"
     content = "Identical content"
-    File.create(str(file_path), content=content)
+    File.create(str(file_path), content)
     with pytest.raises(SameContentFileExistsError):
-        File.create(str(file_path), content=content, force=False)
+        File.create(str(file_path), content, force=False)
 
 
-def test_create_file_force_overwrite_different_content(tmp_path):
+def test_create_file_force_overwrite_different_content(tmp_path: Path):
     file_path = tmp_path / "overwrite_file.cfg"
     initial_content = "Old config"
     new_content = "New configuration values"
 
-    File.create(str(file_path), content=initial_content)
+    File.create(str(file_path), initial_content)
     assert open(file_path, "r", encoding="utf-8").read() == initial_content
 
-    abs_path = File.create(str(file_path), content=new_content, force=True)
+    abs_path = File.create(str(file_path), new_content, force=True)
     assert isinstance(abs_path, Path)
     assert file_path.exists()
     assert abs_path.resolve() == file_path.resolve()
@@ -97,14 +97,14 @@ def test_create_file_force_overwrite_different_content(tmp_path):
         assert file.read() == new_content
 
 
-def test_create_file_force_overwrite_same_content(tmp_path):
+def test_create_file_force_overwrite_same_content(tmp_path: Path):
     file_path = tmp_path / "overwrite_same_file.ini"
     content = "[Settings]\nValue=1"
 
-    File.create(str(file_path), content=content)
+    File.create(str(file_path), content)
     assert open(file_path, "r", encoding="utf-8").read() == content
 
-    abs_path = File.create(str(file_path), content=content, force=True)
+    abs_path = File.create(str(file_path), content, force=True)
     assert isinstance(abs_path, Path)
     assert file_path.exists()
     assert abs_path.resolve() == file_path.resolve()
@@ -112,16 +112,16 @@ def test_create_file_force_overwrite_same_content(tmp_path):
         assert file.read() == content
 
 
-def test_create_file_in_subdirectory(tmp_path):
+def test_create_file_in_subdirectory(tmp_path: Path):
     dir_path = tmp_path / "subdir"
     file_path = dir_path / "sub_file.txt"
     content = "Content in subdirectory"
 
     with pytest.raises(FileNotFoundError):
-        File.create(str(file_path), content=content)
+        File.create(str(file_path), content)
 
     dir_path.mkdir()
-    abs_path = File.create(str(file_path), content=content)
+    abs_path = File.create(str(file_path), content)
     assert isinstance(abs_path, Path)
     assert file_path.exists()
     assert abs_path.resolve() == file_path.resolve()

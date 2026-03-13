@@ -3,46 +3,47 @@ from xulbux.console import Throbber, ProgressBar
 from xulbux.console import Console
 from xulbux import console
 
+from typing import Any
 from unittest.mock import MagicMock, patch
-from collections import namedtuple
 import builtins
 import pytest
 import sys
 import io
+import os
 
 
 @pytest.fixture
-def mock_terminal_size(monkeypatch):
-    TerminalSize = namedtuple("TerminalSize", ["columns", "lines"])
+def mock_terminal_size(monkeypatch: pytest.MonkeyPatch):
+
 
     def mock_get_terminal_size():
-        return TerminalSize(columns=80, lines=24)
+        return os.terminal_size((80, 24))
 
-    monkeypatch.setattr(console._os, "get_terminal_size", mock_get_terminal_size)
+    monkeypatch.setattr("xulbux.console._os.get_terminal_size", mock_get_terminal_size)
 
 
 @pytest.fixture
-def mock_formatcodes_print(monkeypatch):
+def mock_formatcodes_print(monkeypatch: pytest.MonkeyPatch):
     mock = MagicMock()
     # PATCH IN THE ORIGINAL MODULE WHERE IT IS DEFINED
     import xulbux.format_codes
     monkeypatch.setattr(xulbux.format_codes.FormatCodes, "print", mock)
     # ALSO PATCH IN CONSOLE MODULE JUST IN CASE
-    monkeypatch.setattr(console.FormatCodes, "print", mock)
+    monkeypatch.setattr("xulbux.console.FormatCodes.print", mock)
     return mock
 
 
 @pytest.fixture
-def mock_builtin_input(monkeypatch):
+def mock_builtin_input(monkeypatch: pytest.MonkeyPatch):
     mock = MagicMock()
     monkeypatch.setattr(builtins, "input", mock)
     return mock
 
 
 @pytest.fixture
-def mock_prompt_toolkit(monkeypatch):
+def mock_prompt_toolkit(monkeypatch: pytest.MonkeyPatch):
     mock = MagicMock(return_value="mocked multiline input")
-    monkeypatch.setattr(console._pt, "prompt", mock)
+    monkeypatch.setattr("xulbux.console._pt.prompt", mock)
     return mock
 
 
@@ -55,19 +56,19 @@ def test_console_user():
     assert user_output != ""
 
 
-def test_console_width(mock_terminal_size):
+def test_console_width(mock_terminal_size: MagicMock):
     width_output = Console.w
     assert isinstance(width_output, int)
     assert width_output == 80
 
 
-def test_console_height(mock_terminal_size):
+def test_console_height(mock_terminal_size: MagicMock):
     height_output = Console.h
     assert isinstance(height_output, int)
     assert height_output == 24
 
 
-def test_console_size(mock_terminal_size):
+def test_console_size(mock_terminal_size: MagicMock):
     size_output = Console.size
     assert isinstance(size_output, tuple)
     assert len(size_output) == 2
@@ -249,7 +250,7 @@ def test_console_supports_color():
         ),
     ]
 )
-def test_get_args(monkeypatch, argv, arg_parse_configs, expected_parsed_args):
+def test_get_args(monkeypatch: pytest.MonkeyPatch, argv: list[str], arg_parse_configs: dict[str, Any], expected_parsed_args: dict[str, dict[str, Any]]):
     monkeypatch.setattr(sys, "argv", argv)
     args_result = Console.get_args(arg_parse_configs)
     assert isinstance(args_result, ParsedArgs)
@@ -273,7 +274,7 @@ def test_get_args_invalid_params():
         Console.get_args({"arg": {"-a"}}, flag_value_sep="")
 
 
-def test_get_args_custom_sep(monkeypatch):
+def test_get_args_custom_sep(monkeypatch: pytest.MonkeyPatch):
     """Test custom flag-value separator handling"""
     monkeypatch.setattr(sys, "argv", ["script.py", "--msg::This is a message", "-d::42"])
     result = Console.get_args({"message": {"--msg"}, "data": {"-d"}}, flag_value_sep="::")
@@ -294,7 +295,7 @@ def test_get_args_custom_sep(monkeypatch):
     }
 
 
-def test_get_args_mixed_dash_scenarios(monkeypatch):
+def test_get_args_mixed_dash_scenarios(monkeypatch: pytest.MonkeyPatch):
     """Test complex scenario mixing defined flags with dash-prefixed values"""
     monkeypatch.setattr(
         sys, "argv", \
@@ -369,7 +370,7 @@ def test_args_dunder_methods():
     assert (args != ParsedArgs()) is True
 
 
-def test_multiline_input(mock_prompt_toolkit, capsys):
+def test_multiline_input(mock_prompt_toolkit: MagicMock, capsys: pytest.CaptureFixture[str]):
     expected_input = "mocked multiline input"
     result = Console.multiline_input("Enter text:", show_keybindings=True, default_color="#BCA")
 
@@ -388,7 +389,7 @@ def test_multiline_input(mock_prompt_toolkit, capsys):
     assert "key_bindings" in pt_kwargs
 
 
-def test_multiline_input_no_bindings(mock_prompt_toolkit, capsys):
+def test_multiline_input_no_bindings(mock_prompt_toolkit: MagicMock, capsys: pytest.CaptureFixture[str]):
     Console.multiline_input("Enter text:", show_keybindings=False, end="DONE")
 
     captured = capsys.readouterr()
@@ -399,24 +400,24 @@ def test_multiline_input_no_bindings(mock_prompt_toolkit, capsys):
     mock_prompt_toolkit.assert_called_once()
 
 
-def test_pause_exit_pause_only(monkeypatch, capsys):
+def test_pause_exit_pause_only(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
     mock_keyboard = MagicMock()
-    monkeypatch.setattr(console._keyboard, "read_key", mock_keyboard)
+    monkeypatch.setattr("xulbux.console._keyboard.read_key", mock_keyboard)
 
-    Console.pause_exit(pause=True, exit=False, prompt="Press any key...")
+    Console.pause_exit("Press any key...", pause=True, exit=False)
 
     captured = capsys.readouterr()
     assert "Press any key..." in captured.out
     mock_keyboard.assert_called_once_with(suppress=True)
 
 
-def test_pause_exit_with_exit(monkeypatch, capsys):
+def test_pause_exit_with_exit(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
     mock_keyboard = MagicMock()
     mock_sys_exit = MagicMock()
-    monkeypatch.setattr(console._keyboard, "read_key", mock_keyboard)
-    monkeypatch.setattr(console._sys, "exit", mock_sys_exit)
+    monkeypatch.setattr("xulbux.console._keyboard.read_key", mock_keyboard)
+    monkeypatch.setattr("xulbux.console._sys.exit", mock_sys_exit)
 
-    Console.pause_exit(pause=True, exit=True, prompt="Exiting...", exit_code=1)
+    Console.pause_exit("Exiting...", pause=True, exit=True, exit_code=1)
 
     captured = capsys.readouterr()
     assert "Exiting..." in captured.out
@@ -424,9 +425,9 @@ def test_pause_exit_with_exit(monkeypatch, capsys):
     mock_sys_exit.assert_called_once_with(1)
 
 
-def test_pause_exit_reset_ansi(monkeypatch, capsys):
+def test_pause_exit_reset_ansi(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
     mock_keyboard = MagicMock()
-    monkeypatch.setattr(console._keyboard, "read_key", mock_keyboard)
+    monkeypatch.setattr("xulbux.console._keyboard.read_key", mock_keyboard)
 
     Console.pause_exit(pause=True, exit=False, reset_ansi=True)
 
@@ -435,15 +436,15 @@ def test_pause_exit_reset_ansi(monkeypatch, capsys):
     assert "\033[0m" in captured.out or captured.out.strip() == ""
 
 
-def test_cls(monkeypatch):
+def test_cls(monkeypatch: pytest.MonkeyPatch):
     mock_shutil = MagicMock()
     mock_subprocess_run = MagicMock()
     mock_print = MagicMock()
-    monkeypatch.setattr(console._shutil, "which", mock_shutil)
-    monkeypatch.setattr(console._subprocess, "run", mock_subprocess_run)
+    monkeypatch.setattr("xulbux.console._shutil.which", mock_shutil)
+    monkeypatch.setattr("xulbux.console._subprocess.run", mock_subprocess_run)
     monkeypatch.setattr(builtins, "print", mock_print)
 
-    mock_shutil.side_effect = lambda cmd: "/bin/cls" if cmd == "cls" else None
+    mock_shutil.side_effect = lambda cmd: "/bin/cls" if cmd == "cls" else None  # type: ignore
     Console.cls()
     mock_subprocess_run.assert_called_with(["cls"])
     mock_print.assert_called_with("\033[0m", end="", flush=True)
@@ -451,13 +452,13 @@ def test_cls(monkeypatch):
     mock_subprocess_run.reset_mock()
     mock_print.reset_mock()
 
-    mock_shutil.side_effect = lambda cmd: "/bin/clear" if cmd == "clear" else None
+    mock_shutil.side_effect = lambda cmd: "/bin/clear" if cmd == "clear" else None  # type: ignore
     Console.cls()
     mock_subprocess_run.assert_called_with(["clear"])
     mock_print.assert_called_with("\033[0m", end="", flush=True)
 
 
-def test_log_basic(capsys):
+def test_log_basic(capsys: pytest.CaptureFixture[str]):
     Console.log("INFO", "Test message")
 
     captured = capsys.readouterr()
@@ -465,14 +466,14 @@ def test_log_basic(capsys):
     assert "Test message" in captured.out
 
 
-def test_log_no_title(capsys):
-    Console.log(title=None, prompt="Just a message")
+def test_log_no_title(capsys: pytest.CaptureFixture[str]):
+    Console.log(None, "Just a message")
 
     captured = capsys.readouterr()
     assert "Just a message" in captured.out
 
 
-def test_debug_active(capsys):
+def test_debug_active(capsys: pytest.CaptureFixture[str]):
     Console.debug("Debug message", active=True)
 
     captured = capsys.readouterr()
@@ -480,13 +481,13 @@ def test_debug_active(capsys):
     assert "Debug message" in captured.out
 
 
-def test_debug_inactive(mock_formatcodes_print):
+def test_debug_inactive(mock_formatcodes_print: MagicMock):
     Console.debug("Debug message", active=False)
 
     mock_formatcodes_print.assert_not_called()
 
 
-def test_info(capsys):
+def test_info(capsys: pytest.CaptureFixture[str]):
     Console.info("Info message")
 
     captured = capsys.readouterr()
@@ -494,7 +495,7 @@ def test_info(capsys):
     assert "Info message" in captured.out
 
 
-def test_done(capsys):
+def test_done(capsys: pytest.CaptureFixture[str]):
     Console.done("Task completed")
 
     captured = capsys.readouterr()
@@ -502,7 +503,7 @@ def test_done(capsys):
     assert "Task completed" in captured.out
 
 
-def test_warn(capsys):
+def test_warn(capsys: pytest.CaptureFixture[str]):
     Console.warn("Warning message")
 
     captured = capsys.readouterr()
@@ -510,9 +511,9 @@ def test_warn(capsys):
     assert "Warning message" in captured.out
 
 
-def test_fail(capsys, monkeypatch):
+def test_fail(capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch):
     mock_sys_exit = MagicMock()
-    monkeypatch.setattr(console._sys, "exit", mock_sys_exit)
+    monkeypatch.setattr("xulbux.console._sys.exit", mock_sys_exit)
 
     Console.fail("Error occurred")
 
@@ -522,9 +523,9 @@ def test_fail(capsys, monkeypatch):
     mock_sys_exit.assert_called_once_with(1)
 
 
-def test_exit_method(capsys, monkeypatch):
+def test_exit_method(capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch):
     mock_sys_exit = MagicMock()
-    monkeypatch.setattr(console._sys, "exit", mock_sys_exit)
+    monkeypatch.setattr("xulbux.console._sys.exit", mock_sys_exit)
 
     Console.exit("Program ending")
 
@@ -534,7 +535,7 @@ def test_exit_method(capsys, monkeypatch):
     mock_sys_exit.assert_called_once_with(0)
 
 
-def test_log_box_filled(capsys):
+def test_log_box_filled(capsys: pytest.CaptureFixture[str]):
     Console.log_box_filled("Line 1", "Line 2", box_bg_color="green")
 
     captured = capsys.readouterr()
@@ -542,7 +543,7 @@ def test_log_box_filled(capsys):
     assert "Line 2" in captured.out
 
 
-def test_log_box_bordered(capsys):
+def test_log_box_bordered(capsys: pytest.CaptureFixture[str]):
     Console.log_box_bordered("Content line", border_type="rounded")
 
     captured = capsys.readouterr()
@@ -550,43 +551,43 @@ def test_log_box_bordered(capsys):
 
 
 @patch("xulbux.console.Console.input")
-def test_confirm_yes(mock_input):
+def test_confirm_yes(mock_input: MagicMock):
     mock_input.return_value = "y"
     result = Console.confirm("Continue?")
     assert result is True
 
 
 @patch("xulbux.console.Console.input")
-def test_confirm_no(mock_input):
+def test_confirm_no(mock_input: MagicMock):
     mock_input.return_value = "n"
     result = Console.confirm("Continue?")
     assert result is False
 
 
 @patch("xulbux.console.Console.input")
-def test_confirm_default_yes(mock_input):
+def test_confirm_default_yes(mock_input: MagicMock):
     mock_input.return_value = ""
     result = Console.confirm("Continue?", default_is_yes=True)
     assert result is True
 
 
 @patch("xulbux.console.Console.input")
-def test_confirm_default_no(mock_input):
+def test_confirm_default_no(mock_input: MagicMock):
     mock_input.return_value = ""
     result = Console.confirm("Continue?", default_is_yes=False)
     assert result is False
 
 
 @pytest.fixture
-def mock_prompt_session(monkeypatch):
+def mock_prompt_session(monkeypatch: pytest.MonkeyPatch):
     mock_session = MagicMock()
     mock_session_class = MagicMock(return_value=mock_session)
     mock_session.prompt.return_value = None
-    monkeypatch.setattr(console._pt, "PromptSession", mock_session_class)
+    monkeypatch.setattr("xulbux.console._pt.PromptSession", mock_session_class)
     return mock_session_class, mock_session
 
 
-def test_input_creates_prompt_session(mock_prompt_session, mock_formatcodes_print):
+def test_input_creates_prompt_session(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that Console.input creates a PromptSession with correct parameters."""
     mock_session_class, mock_session = mock_prompt_session
 
@@ -603,7 +604,7 @@ def test_input_creates_prompt_session(mock_prompt_session, mock_formatcodes_prin
     mock_session.prompt.assert_called_once()
 
 
-def test_input_with_placeholder(mock_prompt_session, mock_formatcodes_print):
+def test_input_with_placeholder(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that placeholder is correctly passed to PromptSession."""
     mock_session_class, _ = mock_prompt_session
 
@@ -615,7 +616,7 @@ def test_input_with_placeholder(mock_prompt_session, mock_formatcodes_print):
     assert call_kwargs["placeholder"] != ""
 
 
-def test_input_without_placeholder(mock_prompt_session, mock_formatcodes_print):
+def test_input_without_placeholder(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that placeholder is empty when not provided."""
     mock_session_class, _ = mock_prompt_session
 
@@ -627,11 +628,11 @@ def test_input_without_placeholder(mock_prompt_session, mock_formatcodes_print):
     assert call_kwargs["placeholder"] == ""
 
 
-def test_input_with_validator_function(mock_prompt_session, mock_formatcodes_print):
+def test_input_with_validator_function(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that a custom validator function is properly handled."""
     mock_session_class, _ = mock_prompt_session
 
-    def email_validator(text):
+    def email_validator(text: str) -> str | None:
         if "@" not in text:
             return "Invalid email"
         return None
@@ -645,7 +646,7 @@ def test_input_with_validator_function(mock_prompt_session, mock_formatcodes_pri
     assert hasattr(validator_instance, "validate")
 
 
-def test_input_with_length_constraints(mock_prompt_session, mock_formatcodes_print):
+def test_input_with_length_constraints(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that min_len and max_len are properly handled."""
     mock_session_class, _ = mock_prompt_session
 
@@ -658,7 +659,7 @@ def test_input_with_length_constraints(mock_prompt_session, mock_formatcodes_pri
     assert hasattr(validator_instance, "validate")
 
 
-def test_input_with_allowed_chars(mock_prompt_session, mock_formatcodes_print):
+def test_input_with_allowed_chars(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that allowed_chars parameter is handled."""
     mock_session_class, _ = mock_prompt_session
 
@@ -670,7 +671,7 @@ def test_input_with_allowed_chars(mock_prompt_session, mock_formatcodes_print):
     assert call_kwargs["key_bindings"] is not None
 
 
-def test_input_disable_paste(mock_prompt_session, mock_formatcodes_print):
+def test_input_disable_paste(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that allow_paste=False is handled."""
     mock_session_class, _ = mock_prompt_session
 
@@ -682,7 +683,7 @@ def test_input_disable_paste(mock_prompt_session, mock_formatcodes_print):
     assert call_kwargs["key_bindings"] is not None
 
 
-def test_input_with_start_end_formatting(mock_prompt_session, capsys):
+def test_input_with_start_end_formatting(mock_prompt_session: tuple[MagicMock, MagicMock], capsys: pytest.CaptureFixture[str]):
     """Test that start and end parameters trigger FormatCodes.print calls."""
     mock_session_class, _ = mock_prompt_session
 
@@ -694,7 +695,7 @@ def test_input_with_start_end_formatting(mock_prompt_session, capsys):
     assert captured.out != "" or True  # OUTPUT MAY BE CAPTURED OR GO TO REAL STDOUT
 
 
-def test_input_message_formatting(mock_prompt_session, mock_formatcodes_print):
+def test_input_message_formatting(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that the prompt message is properly formatted."""
     mock_session_class, _ = mock_prompt_session
 
@@ -706,7 +707,7 @@ def test_input_message_formatting(mock_prompt_session, mock_formatcodes_print):
     assert call_kwargs["message"] is not None
 
 
-def test_input_bottom_toolbar_function(mock_prompt_session, capsys):
+def test_input_bottom_toolbar_function(mock_prompt_session: tuple[MagicMock, MagicMock], capsys: pytest.CaptureFixture[str]):
     """Test that bottom toolbar function is set up."""
     mock_session_class, _ = mock_prompt_session
 
@@ -725,7 +726,7 @@ def test_input_bottom_toolbar_function(mock_prompt_session, capsys):
         pass
 
 
-def test_input_style_configuration(mock_prompt_session, capsys):
+def test_input_style_configuration(mock_prompt_session: tuple[MagicMock, MagicMock], capsys: pytest.CaptureFixture[str]):
     """Test that custom style is applied."""
     mock_session_class, _ = mock_prompt_session
 
@@ -737,7 +738,7 @@ def test_input_style_configuration(mock_prompt_session, capsys):
     assert call_kwargs["style"] is not None
 
 
-def test_input_validate_while_typing_enabled(mock_prompt_session, mock_formatcodes_print):
+def test_input_validate_while_typing_enabled(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that validate_while_typing is enabled."""
     mock_session_class, _ = mock_prompt_session
 
@@ -749,7 +750,7 @@ def test_input_validate_while_typing_enabled(mock_prompt_session, mock_formatcod
     assert call_kwargs["validate_while_typing"] is True
 
 
-def test_input_validator_class_creation(mock_prompt_session, mock_formatcodes_print):
+def test_input_validator_class_creation(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that InputValidator class is properly instantiated."""
     mock_session_class, _ = mock_prompt_session
 
@@ -763,7 +764,7 @@ def test_input_validator_class_creation(mock_prompt_session, mock_formatcodes_pr
     assert callable(getattr(validator_instance, "validate", None))
 
 
-def test_input_key_bindings_setup(mock_prompt_session, mock_formatcodes_print):
+def test_input_key_bindings_setup(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that key bindings are properly set up."""
     mock_session_class, _ = mock_prompt_session
 
@@ -777,7 +778,7 @@ def test_input_key_bindings_setup(mock_prompt_session, mock_formatcodes_print):
     assert hasattr(kb, "bindings")
 
 
-def test_input_mask_char_single_character(mock_prompt_session, mock_formatcodes_print):
+def test_input_mask_char_single_character(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that mask_char works with single characters."""
     mock_session_class, _ = mock_prompt_session
 
@@ -786,7 +787,7 @@ def test_input_mask_char_single_character(mock_prompt_session, mock_formatcodes_
     assert mock_session_class.called
 
 
-def test_input_output_type_int(mock_prompt_session, mock_formatcodes_print):
+def test_input_output_type_int(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that output_type parameter is handled for int conversion."""
     mock_session_class, _ = mock_prompt_session
 
@@ -795,7 +796,7 @@ def test_input_output_type_int(mock_prompt_session, mock_formatcodes_print):
     assert mock_session_class.called
 
 
-def test_input_default_val_handling(mock_prompt_session, mock_formatcodes_print):
+def test_input_default_val_handling(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that default_val parameter is properly handled."""
     mock_session_class, _ = mock_prompt_session
 
@@ -804,7 +805,7 @@ def test_input_default_val_handling(mock_prompt_session, mock_formatcodes_print)
     assert mock_session_class.called
 
 
-def test_input_custom_style_object(mock_prompt_session, mock_formatcodes_print):
+def test_input_custom_style_object(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
     """Test that a custom Style object is created."""
     mock_session_class, _ = mock_prompt_session
 
@@ -887,7 +888,7 @@ def test_progressbar_show_progress_invalid_total():
 
 
 @patch("sys.stdout", new_callable=io.StringIO)
-def test_progressbar_show_progress(mock_stdout):
+def test_progressbar_show_progress(mock_stdout: MagicMock):
     pb = ProgressBar()
     # MANUALLY SET AND RESTORE _original_stdout TO AVOID PATCHING ISSUES WITH COMPILED CLASSES
     original = pb._original_stdout
@@ -911,7 +912,7 @@ def test_progressbar_hide_progress():
     assert pb._original_stdout is None
 
 
-def test_progressbar_progress_context(capsys):
+def test_progressbar_progress_context(capsys: pytest.CaptureFixture[str]):
     pb = ProgressBar()
 
     # TEST CONTEXT MANAGER BEHAVIOR BY CHECKING ACTUAL EFFECTS
@@ -958,7 +959,7 @@ def test_progressbar_create_bar():
 
 def test_progressbar_intercepted_output():
     pb = ProgressBar()
-    intercepted = console._InterceptedOutput(pb)
+    intercepted = console._InterceptedOutput(pb)  # type: ignore
     result = intercepted.write("test content")
     assert result == len("test content")
     assert "test content" in pb._buffer
@@ -974,7 +975,7 @@ def test_progressbar_emergency_cleanup():
     assert pb.active is False
 
 
-def test_progressbar_get_formatted_info_and_bar_width(mock_terminal_size):
+def test_progressbar_get_formatted_info_and_bar_width(mock_terminal_size: MagicMock):
     pb = ProgressBar()
     formatted, bar_width = pb._get_formatted_info_and_bar_width(
         ["{l}", "|{b}|", "{c}/{t}", "({p}%)"],
@@ -998,7 +999,7 @@ def test_progressbar_start_stop_intercepting():
     pb._start_intercepting()
     assert pb.active is True
     assert pb._original_stdout == original_stdout
-    assert isinstance(sys.stdout, console._InterceptedOutput)
+    assert isinstance(sys.stdout, console._InterceptedOutput)  # type: ignore
 
     pb._stop_intercepting()
     assert pb.active is False
@@ -1089,7 +1090,7 @@ def test_throbber_set_interval_invalid():
 @patch("xulbux.console._threading.Thread")
 @patch("xulbux.console._threading.Event")
 @patch("sys.stdout", new_callable=MagicMock)
-def test_throbber_start(mock_stdout, mock_event, mock_thread):
+def test_throbber_start(mock_stdout: MagicMock, mock_event: MagicMock, mock_thread: MagicMock):
     mock_thread.return_value.start.return_value = None
     throbber = Throbber()
     throbber.start("Test")
@@ -1106,7 +1107,7 @@ def test_throbber_start(mock_stdout, mock_event, mock_thread):
 
 @patch("xulbux.console._threading.Thread")
 @patch("xulbux.console._threading.Event")
-def test_throbber_stop(mock_event, mock_thread):
+def test_throbber_stop(mock_event: MagicMock, mock_thread: MagicMock):
     throbber = Throbber()
     # MANUALLY SET ACTIVE TO SIMULATE RUNNING
     throbber.active = True
