@@ -127,8 +127,8 @@ def test_str_to_rgba():
 
 def test_luminance():
     assert Color.luminance(255, 0, 0) == 54
-    assert Color.luminance(255, 0, 0, int) == 21
-    assert 0.20 < Color.luminance(255, 0, 0, float) < 0.22
+    assert Color.luminance(255, 0, 0, output_type=int) == 21
+    assert 0.20 < Color.luminance(255, 0, 0, output_type=float) < 0.22
     assert Color.luminance(0, 0, 0) == 0
     assert Color.luminance(255, 255, 255) == 255
     assert Color.luminance(128, 128, 128) == 55

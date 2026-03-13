@@ -153,3 +153,6 @@ testpaths = [
   "tests/test_string.py",
   "tests/test_system.py",
 ]
+
+[tool.pyright]
+typeCheckingMode = "strict"

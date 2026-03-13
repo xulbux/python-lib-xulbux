@@ -437,23 +437,23 @@ def test_pause_exit_reset_ansi(monkeypatch, capsys):
 
 def test_cls(monkeypatch):
     mock_shutil = MagicMock()
-    mock_os_system = MagicMock()
+    mock_subprocess_run = MagicMock()
     mock_print = MagicMock()
     monkeypatch.setattr(console._shutil, "which", mock_shutil)
-    monkeypatch.setattr(console._os, "system", mock_os_system)
+    monkeypatch.setattr(console._subprocess, "run", mock_subprocess_run)
     monkeypatch.setattr(builtins, "print", mock_print)
 
     mock_shutil.side_effect = lambda cmd: "/bin/cls" if cmd == "cls" else None
     Console.cls()
-    mock_os_system.assert_called_with("cls")
+    mock_subprocess_run.assert_called_with(["cls"])
     mock_print.assert_called_with("\033[0m", end="", flush=True)
 
-    mock_os_system.reset_mock()
+    mock_subprocess_run.reset_mock()
     mock_print.reset_mock()
 
     mock_shutil.side_effect = lambda cmd: "/bin/clear" if cmd == "clear" else None
     Console.cls()
-    mock_os_system.assert_called_with("clear")
+    mock_subprocess_run.assert_called_with(["clear"])
     mock_print.assert_called_with("\033[0m", end="", flush=True)
 
 
