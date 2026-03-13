@@ -17,7 +17,7 @@
 
 <span id="v1-9-6" />
 
-## 13.03.2026 `v1.9.6`
+## 13.04.2026 `v1.9.6`
 
 * The compiled version of the library now includes the type stub files (`.pyi`), so type checkers can properly check types.
 * Made all type hints in the whole library way more strict and accurate.
