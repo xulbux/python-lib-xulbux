@@ -1,6 +1,3 @@
-> [!IMPORTANT]<br>
-> This library is compatible with Python 3.14, but **some dependencies may not yet support this version**.
-
 # **xulbux**
 
 [![](https://img.shields.io/pypi/v/xulbux?style=flat&labelColor=404560&color=7075FF)](https://pypi.org/project/xulbux) [![](https://img.shields.io/pepy/dt/xulbux?style=flat&labelColor=404560&color=7075FF)](https://clickpy.clickhouse.com/dashboard/xulbux) [![](https://img.shields.io/github/license/XulbuX/PythonLibraryXulbuX?style=flat&labelColor=405555&color=70FFEE)](https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE) [![](https://img.shields.io/github/last-commit/XulbuX/PythonLibraryXulbuX?style=flat&labelColor=554045&color=FF6065)](https://github.com/xulbux/python-lib-xulbux/commits) [![](https://img.shields.io/github/issues/XulbuX/PythonLibraryXulbuX?style=flat&labelColor=554045&color=FF6065)](https://github.com/xulbux/python-lib-xulbux/issues) [![](https://img.shields.io/github/stars/XulbuX/PythonLibraryXulbuX?label=★&style=flat&labelColor=604A40&color=FF9673)](https://github.com/xulbux/python-lib-xulbux/stargazers)
