@@ -3,7 +3,7 @@ __pycache__/
 __pypackages__/
 .mypy_cache/
 .pytest_cache/
-*.py[cod]
+*.py[cdio]
 *$py.class
 
 # BUILD ARTIFACTS

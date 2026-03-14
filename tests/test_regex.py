@@ -1,5 +1,6 @@
 from xulbux.regex import LazyRegex, Regex
 
+from typing import cast
 import regex as rx
 import pytest
 import re
@@ -341,9 +342,9 @@ def test_regex_hsla_str_valid_values():
 
     # VERIFY THAT % AND ° SYMBOLS ARE NOT IN THE CAPTURED GROUPS
     for match in matches:
-        groups = match if isinstance(match, tuple) else (match, )
+        groups = cast(tuple[str], match if isinstance(match, tuple) else (match, ))
         for group in groups:
-            if group:  # Skip empty groups
+            if group:  # SKIP EMPTY GROUPS
                 assert "%" not in group, f"Percent sign should not be in captured group: {group}"
                 assert "°" not in group, f"Degree sign should not be in captured group: {group}"
 

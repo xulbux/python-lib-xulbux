@@ -52,7 +52,9 @@ class FileSys(metaclass=_FileSysMeta):
     def extend_path(
         cls,
         rel_path: Path | str,
+        /,
         search_in: Optional[Path | str | PathsList] = None,
+        *,
         fuzzy_match: bool = False,
         raise_error: bool = False,
     ) -> Optional[Path]:
@@ -89,26 +91,18 @@ class FileSys(metaclass=_FileSysMeta):
         if search_in is not None:
             if isinstance(search_in, (str, Path)):
                 search_dirs.extend([Path(search_in)])
-            elif isinstance(search_in, list):
-                search_dirs.extend([Path(path) for path in search_in])
             else:
-                raise TypeError(
-                    f"The 'search_in' parameter must be a string, Path, or a list of strings/Paths, got {type(search_in)}"
-                )
+                search_dirs.extend([Path(path) for path in search_in])
 
-        return _ExtendPathHelper(
-            cls,
-            rel_path=path,
-            search_dirs=search_dirs,
-            fuzzy_match=fuzzy_match,
-            raise_error=raise_error,
-        )()
+        return _ExtendPathHelper(cls, path, search_dirs=search_dirs, fuzzy_match=fuzzy_match, raise_error=raise_error)()
 
     @classmethod
     def extend_or_make_path(
         cls,
         rel_path: Path | str,
+        /,
         search_in: Optional[Path | str | list[Path | str]] = None,
+        *,
         prefer_script_dir: bool = True,
         fuzzy_match: bool = False,
     ) -> Path:
@@ -131,12 +125,7 @@ class FileSys(metaclass=_FileSysMeta):
         If `prefer_script_dir` is false, it will instead make a path
         that points to where the `rel_path` would be in the CWD."""
         try:
-            result = cls.extend_path(
-                rel_path=rel_path,
-                search_in=search_in,
-                raise_error=True,
-                fuzzy_match=fuzzy_match,
-            )
+            result = cls.extend_path(rel_path, search_in=search_in, raise_error=True, fuzzy_match=fuzzy_match)
             return result if result is not None else Path()
 
         except PathNotFoundError:
@@ -145,7 +134,7 @@ class FileSys(metaclass=_FileSysMeta):
             return base_dir / path
 
     @classmethod
-    def remove(cls, path: Path | str, only_content: bool = False) -> None:
+    def remove(cls, path: Path | str, /, *, only_content: bool = False) -> None:
         """Removes the directory or the directory's content at the specified path.\n
         -----------------------------------------------------------------------------
         - `path` -⠀the path to the directory or file to remove
@@ -179,7 +168,9 @@ class _ExtendPathHelper:
         self,
         cls: type[FileSys],
         rel_path: Path,
+        /,
         search_dirs: list[Path],
+        *,
         fuzzy_match: bool,
         raise_error: bool,
     ):
@@ -213,7 +204,7 @@ class _ExtendPathHelper:
         return self.search_in_dirs(expanded_path)
 
     @staticmethod
-    def expand_env_vars(path: Path) -> Path:
+    def expand_env_vars(path: Path, /) -> Path:
         """Expand all environment variables in the given path."""
         if "%" not in (str_path := str(path)):
             return path
@@ -224,24 +215,20 @@ class _ExtendPathHelper:
 
         return Path("".join(parts))
 
-    def search_in_dirs(self, path: Path) -> Optional[Path]:
+    def search_in_dirs(self, path: Path, /) -> Optional[Path]:
         """Search for the path in all configured directories."""
         for search_dir in self.search_dirs:
             if (full_path := search_dir / path).exists():
                 return full_path
             elif self.fuzzy_match:
-                if (match := self.find_path( \
-                    base_dir=search_dir,
-                    target_path=path,
-                    fuzzy_match=self.fuzzy_match,
-                )) is not None:
+                if (match := self.find_path(search_dir, path, fuzzy_match=self.fuzzy_match)) is not None:
                     return match
 
         if self.raise_error:
             raise PathNotFoundError(f"Path {self.rel_path!r} not found in specified directories.")
         return None
 
-    def find_path(self, base_dir: Path, target_path: Path, fuzzy_match: bool) -> Optional[Path]:
+    def find_path(self, base_dir: Path, target_path: Path, /, *, fuzzy_match: bool) -> Optional[Path]:
         """Find a path by traversing the given parts from the base directory,
         optionally using closest matches for each part."""
         current_path: Path = base_dir
@@ -256,7 +243,7 @@ class _ExtendPathHelper:
         return current_path if current_path.exists() and current_path != base_dir else None
 
     @staticmethod
-    def get_closest_match(dir: Path, path_part: str) -> Optional[str]:
+    def get_closest_match(dir: Path, path_part: str, /) -> Optional[str]:
         """Internal method to get the closest matching file or folder name
         in the given directory for the given path part."""
         try:

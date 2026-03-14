@@ -4,9 +4,8 @@ This module contains all custom exception classes used throughout the library.
 
 from .decorators import mypyc_attr
 
-#
-################################################## FILE ##################################################
 
+################################################## FILE ##################################################
 
 @mypyc_attr(native_class=False)
 class SameContentFileExistsError(FileExistsError):
@@ -15,7 +14,6 @@ class SameContentFileExistsError(FileExistsError):
 
 
 ################################################## PATH ##################################################
-
 
 @mypyc_attr(native_class=False)
 class PathNotFoundError(FileNotFoundError):

@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xulbux"
-version = "1.9.5"
+version = "1.9.6"
 description = "A Python library to simplify common programming tasks."
 readme = "README.md"
 authors = [{ name = "XulbuX", email = "xulbux.real@gmail.com" }]
@@ -30,6 +30,7 @@ dependencies = [
 optional-dependencies = { dev = [
   "flake8-pyproject>=1.2.3",
   "flake8>=6.1.0",
+  "pyright>=1.1.408",
   "pytest>=7.4.2",
   "toml>=0.10.2",
 ] }
@@ -121,14 +122,17 @@ xulbux-help = "xulbux.cli.help:show_help"
 max-complexity = 12
 max-line-length = 127
 select = ["E", "F", "W", "C90"]
-extend-ignore = ["E203", "E266", "E502", "W503"]
-per-file-ignores = ["__init__.py:F403,F405"]
+extend-ignore = ["E124", "E203", "E266", "E502", "W503"]
+per-file-ignores = ["__init__.py:F403,F405", "types.py:E302,E305"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+xulbux = ["py.typed", "*.pyi", "**/*.pyi"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -150,3 +154,7 @@ testpaths = [
   "tests/test_string.py",
   "tests/test_system.py",
 ]
+
+[tool.pyright]
+include = ["src", "tests"]
+typeCheckingMode = "strict"

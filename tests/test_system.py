@@ -1,6 +1,6 @@
 from xulbux.system import System
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 import platform
 import pytest
 import os
@@ -101,7 +101,7 @@ def test_check_libs_nonexistent_module():
 
 @patch("xulbux.system._subprocess.check_call")
 @patch("xulbux.console.Console.confirm", return_value=False)  # DECLINE INSTALLATION
-def test_check_libs_decline_install(mock_confirm, mock_subprocess):
+def test_check_libs_decline_install(mock_confirm: MagicMock, mock_subprocess: MagicMock):
     """Test check_libs when user declines installation"""
     result = System.check_libs(["nonexistent_module_12345"], install_missing=True)
     assert isinstance(result, list)
@@ -111,18 +111,18 @@ def test_check_libs_decline_install(mock_confirm, mock_subprocess):
 
 @patch("xulbux.system._platform.system")
 @patch("xulbux.system._subprocess.check_output")
-@patch("xulbux.system._os.system")
-def test_restart_windows_simple(mock_os_system, mock_subprocess, mock_platform):
+@patch("xulbux.system._subprocess.run")
+def test_restart_windows_simple(mock_subprocess_run: MagicMock, mock_check_output: MagicMock, mock_platform: MagicMock):
     """Test simple restart on Windows"""
     mock_platform.return_value = "Windows"
-    mock_subprocess.return_value = b"minimal\nprocess\nlist\n"
+    mock_check_output.return_value = b"minimal\nprocess\nlist\n"
     System.restart()
-    mock_os_system.assert_called_once_with("shutdown /r /t 0")
+    mock_subprocess_run.assert_called_once_with(["shutdown", "/r", "/t", "0"])
 
 
 @patch("xulbux.system._platform.system")
 @patch("xulbux.system._subprocess.check_output")
-def test_restart_too_many_processes(mock_subprocess, mock_platform):
+def test_restart_too_many_processes(mock_subprocess: MagicMock, mock_platform: MagicMock):
     """Test restart fails when too many processes running"""
     mock_platform.return_value = "Windows"
     mock_subprocess.return_value = b"many\nprocess\nlines\nhere\nmore\nprocesses\neven\nmore\n"
@@ -132,7 +132,7 @@ def test_restart_too_many_processes(mock_subprocess, mock_platform):
 
 @patch("xulbux.system._platform.system")
 @patch("xulbux.system._subprocess.check_output")
-def test_restart_unsupported_system(mock_subprocess, mock_platform):
+def test_restart_unsupported_system(mock_subprocess: MagicMock, mock_platform: MagicMock):
     """Test restart on unsupported system"""
     mock_platform.return_value = "Unknown"
     mock_subprocess.return_value = b"some output"
@@ -142,7 +142,7 @@ def test_restart_unsupported_system(mock_subprocess, mock_platform):
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows-specific test")
 @patch("xulbux.system._ctypes")
-def test_elevate_windows_already_elevated(mock_ctypes):
+def test_elevate_windows_already_elevated(mock_ctypes: MagicMock):
     """Test elevate on WINDOWS when already elevated"""
     # SETUP THE MOCK TO RETURN 1 (True) FOR IsUserAnAdmin
     mock_ctypes.windll.shell32.IsUserAnAdmin.return_value = 1
@@ -153,7 +153,7 @@ def test_elevate_windows_already_elevated(mock_ctypes):
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX-specific test")
 @patch("xulbux.system._os.geteuid")
-def test_elevate_posix_already_elevated(mock_geteuid):
+def test_elevate_posix_already_elevated(mock_geteuid: MagicMock):
     """Test elevate on POSIX when already elevated"""
     mock_geteuid.return_value = 0
     result = System.elevate()

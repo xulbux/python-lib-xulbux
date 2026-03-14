@@ -64,13 +64,13 @@ def test_is_empty():
 
 
 def test_single_char_repeats():
-    assert String.single_char_repeats("aaaaa", "a") == 5
     assert String.single_char_repeats("-----", "-") == 5
-    assert String.single_char_repeats("bbbbb", "a") is False
-    assert String.single_char_repeats("abcde", "a") is False
     assert String.single_char_repeats("", "a") == 0
     assert String.single_char_repeats("a", "a") == 1
-    assert String.single_char_repeats("aaaba", "a") is False
+    assert String.single_char_repeats("aaaaa", "a") == 5
+    assert String.single_char_repeats("aaaba", "a") == 0
+    assert String.single_char_repeats("abcde", "a") == 0
+    assert String.single_char_repeats("bbbbb", "a") == 0
 
 
 def test_decompose():

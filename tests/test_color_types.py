@@ -1,7 +1,9 @@
 from xulbux.color import rgba, hexa, hsla
 
+from typing import Optional
 
-def assert_rgba_equal(actual: rgba, expected: tuple):
+
+def assert_rgba_equal(actual: rgba, expected: tuple[int, int, int, Optional[float]]):
     assert isinstance(actual, rgba)
     assert actual[0] == expected[0]
     assert actual[1] == expected[1]
@@ -9,7 +11,7 @@ def assert_rgba_equal(actual: rgba, expected: tuple):
     assert actual[3] == expected[3]
 
 
-def assert_hsla_equal(actual: hsla, expected: tuple):
+def assert_hsla_equal(actual: hsla, expected: tuple[int, int, int, Optional[float]]):
     assert isinstance(actual, hsla)
     assert actual[0] == expected[0]
     assert actual[1] == expected[1]
@@ -177,7 +179,7 @@ def test_hexa_return_values():
 
 def test_hexa_construction():
     assert hexa("#F00").values() == (255, 0, 0, None)
-    assert hexa("#F008").values(True) == (255, 0, 0, 0.53)
+    assert hexa("#F008").values(round_alpha=True) == (255, 0, 0, 0.53)
     assert hexa("#FF0000").values() == (255, 0, 0, None)
     assert hexa("#FF000080").values() == (255, 0, 0, 0.5)
     assert hexa(0xFF0000).values() == (255, 0, 0, None)

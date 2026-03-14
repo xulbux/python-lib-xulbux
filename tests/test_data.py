@@ -1,9 +1,11 @@
+from xulbux.base.types import DataObj
 from xulbux.data import Data
 
+from typing import Literal, Any, cast
 import pytest
 
 # ! DON'T CHANGE THIS DATA !
-d_comments = {
+d_comments: dict[str, Any] = {
     "key1": [
         ">> COMMENT IN THE BEGINNING OF THE STRING <<  value1",
         "value2  >> COMMENT IN THE END OF THE STRING",
@@ -15,12 +17,12 @@ d_comments = {
     ">> ALL THE KEYS VALUES ARE COMMENTS  value",
 }
 
-d1_equal = {
+d1_equal: dict[str, Any] = {
     "key1": ["value1", "value2", "value3", ["value1", "value2", "value3"]],
     "key2": ["value1", "value2", "value3", ["value1", "value2", "value3"]],
     "key3": "value",
 }
-d2_equal = {
+d2_equal: dict[str, Any] = {
     "key1": ["value1", "value2", "value3", ["value1", "value2", "value3"]],
     "key2": ["value1", "value2", "value3", ["value1", "value2", "value3"]],
     "key3": "CHANGED value",
@@ -76,7 +78,7 @@ def test_deserialize_bytes():
         ({}, 0),
     ]
 )
-def test_chars_count(input_data, expected_count):
+def test_chars_count(input_data: DataObj, expected_count: int):
     assert Data.chars_count(input_data) == expected_count
 
 
@@ -88,27 +90,30 @@ def test_chars_count(input_data, expected_count):
         ([" a ", [" b ", " c"]], ["a", ["b", "c"]]),
     ]
 )
-def test_strip(input_data, expected_output):
+def test_strip(input_data: DataObj, expected_output: DataObj):
     assert Data.strip(input_data) == expected_output
 
 
 @pytest.mark.parametrize(
-    "input_data, spaces_are_empty, expected_output", [
-        (["a", "", "b", None, "  "], False, ["a", "b", "  "]),
-        (["a", "", "b", None, "  "], True, ["a", "b"]),
-        (("a", "", "b", None, "  "), False, ("a", "b", "  ")),
-        (("a", "", "b", None, "  "), True, ("a", "b")),
-        ({"k1": "a", "k2": "", "k3": "b", "k4": None, "k5": "  "}, False, {"k1": "a", "k3": "b", "k5": "  "}),
-        ({"k1": "a", "k2": "", "k3": "b", "k4": None, "k5": "  "}, True, {"k1": "a", "k3": "b"}),
-        (["a", ["", "b"], "c"], False, ["a", ["b"], "c"]),
-        (["a", ["", "b"], "c"], True, ["a", ["b"], "c"]),
-        (["a", {"x": "", "y": "b"}, "c"], False, ["a", {"y": "b"}, "c"]),
-        (["a", {"x": "", "y": "b"}, "c"], True, ["a", {"y": "b"}, "c"]),
-        (["a", [], {}], False, ["a"]),
-    ]
+    "input_data, spaces_are_empty, expected_output", cast(
+        list[tuple[DataObj, bool, DataObj]],
+        [
+            (["a", "", "b", None, "  "], False, ["a", "b", "  "]),
+            (["a", "", "b", None, "  "], True, ["a", "b"]),
+            (("a", "", "b", None, "  "), False, ("a", "b", "  ")),
+            (("a", "", "b", None, "  "), True, ("a", "b")),
+            ({"k1": "a", "k2": "", "k3": "b", "k4": None, "k5": "  "}, False, {"k1": "a", "k3": "b", "k5": "  "}),
+            ({"k1": "a", "k2": "", "k3": "b", "k4": None, "k5": "  "}, True, {"k1": "a", "k3": "b"}),
+            (["a", ["", "b"], "c"], False, ["a", ["b"], "c"]),
+            (["a", ["", "b"], "c"], True, ["a", ["b"], "c"]),
+            (["a", {"x": "", "y": "b"}, "c"], False, ["a", {"y": "b"}, "c"]),
+            (["a", {"x": "", "y": "b"}, "c"], True, ["a", {"y": "b"}, "c"]),
+            (["a", [], {}], False, ["a"]),
+        ]
+    )
 )
-def test_remove_empty_items(input_data, spaces_are_empty, expected_output):
-    assert Data.remove_empty_items(input_data, spaces_are_empty) == expected_output
+def test_remove_empty_items(input_data: DataObj, spaces_are_empty: bool, expected_output: DataObj):
+    assert Data.remove_empty_items(input_data, spaces_are_empty=spaces_are_empty) == expected_output
 
 
 @pytest.mark.parametrize(
@@ -121,7 +126,7 @@ def test_remove_empty_items(input_data, spaces_are_empty, expected_output):
         ({"k": ["v", "v"]}, {"k": ["v"]}),
     ]
 )
-def test_remove_duplicates(input_data, expected_output):
+def test_remove_duplicates(input_data: DataObj, expected_output: DataObj):
     assert Data.remove_duplicates(input_data) == expected_output
 
 
@@ -153,7 +158,7 @@ def test_get_path_id():
 
 
 def test_get_value_by_path_id():
-    data = {"a": [1, {"b": "c"}], "d": ("e", "f")}
+    data: dict[str, Any] = {"a": [1, {"b": "c"}], "d": ("e", "f")}
     path_id_1 = str(Data.get_path_id(data, "a->1->b"))
     path_id_2 = str(Data.get_path_id(data, "d->1"))
 
@@ -171,16 +176,16 @@ def test_get_value_by_path_id():
 
 
 def test_set_value_by_path_id():
-    data = {"a": [1, {"b": "c"}], "d": ("e", "f")}
+    data: dict[str, Any] = {"a": [1, {"b": "c"}], "d": ("e", "f")}
     path_id_c = Data.get_path_id(data, "a->1->b")
     path_id_f = Data.get_path_id(data, "d->1")
 
     updated_data = Data.set_value_by_path_id(data, {path_id_c: "NEW_C", path_id_f: "NEW_F"})  # type: ignore[assignment]
-    expected_data = {"a": [1, {"b": "NEW_C"}], "d": ("e", "NEW_F")}
+    expected_data: dict[str, Any] = {"a": [1, {"b": "NEW_C"}], "d": ("e", "NEW_F")}
     assert updated_data == expected_data
 
     updated_data_types = Data.set_value_by_path_id(data, {path_id_c: [1, 2], path_id_f: {"x": 1}})  # type: ignore[assignment]
-    expected_data_types = {"a": [1, {"b": [1, 2]}], "d": ("e", {"x": 1})}
+    expected_data_types: dict[str, Any] = {"a": [1, {"b": [1, 2]}], "d": ("e", {"x": 1})}
     assert updated_data_types == expected_data_types
 
     with pytest.raises(ValueError):
@@ -206,8 +211,24 @@ def test_set_value_by_path_id():
         ({"data": b"hello"}, 4, 1, 80, ", ", False, "{'data': bytes('hello', 'utf-8')}"),
     ]
 )
-def test_render(data, indent, compactness, max_width, sep, as_json, expected_str):
-    result = Data.render(data, indent, compactness, max_width, sep, as_json, syntax_highlighting=False)
+def test_render(
+    data: DataObj,
+    indent: int,
+    compactness: Literal[1, 0, 2],
+    max_width: int,
+    sep: str,
+    as_json: bool,
+    expected_str: str
+):
+    result = Data.render(
+        data,
+        indent=indent,
+        compactness=compactness,
+        max_width=max_width,
+        sep=sep,
+        as_json=as_json,
+        syntax_highlighting=False
+    )
     normalized_result = "\n".join(line.rstrip() for line in result.splitlines())
     normalized_expected = "\n".join(line.rstrip() for line in expected_str.splitlines())
     assert normalized_result == normalized_expected
