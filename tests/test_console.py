@@ -249,7 +249,12 @@ def test_console_supports_color():
         ),
     ]
 )
-def test_get_args(monkeypatch: pytest.MonkeyPatch, argv: list[str], arg_parse_configs: dict[str, Any], expected_parsed_args: dict[str, dict[str, Any]]):
+def test_get_args(
+    monkeypatch: pytest.MonkeyPatch,
+    argv: list[str],
+    arg_parse_configs: dict[str, Any],
+    expected_parsed_args: dict[str, dict[str, Any]],
+):
     monkeypatch.setattr(sys, "argv", argv)
     args_result = Console.get_args(arg_parse_configs)
     assert isinstance(args_result, ParsedArgs)
@@ -367,6 +372,20 @@ def test_args_dunder_methods():
 
     assert (args == args) is True
     assert (args != ParsedArgs()) is True
+
+
+def test_parsed_arg_data_get():
+    data = ParsedArgData(exists=True, values=["first", "second", "third"], is_pos=False)
+    assert data.get(0) == "first"
+    assert data.get(1) == "second"
+    assert data.get(2) == "third"
+    assert data.get(3) is None
+    assert data.get(3, "fallback") == "fallback"
+    assert data.get(-1) is None
+
+    empty = ParsedArgData(exists=True, values=[], is_pos=False)
+    assert empty.get(0) is None
+    assert empty.get(0, "default") == "default"
 
 
 def test_multiline_input(mock_prompt_toolkit: MagicMock, capsys: pytest.CaptureFixture[str]):
@@ -737,7 +756,10 @@ def test_input_style_configuration(mock_prompt_session: tuple[MagicMock, MagicMo
     assert call_kwargs["style"] is not None
 
 
-def test_input_validate_while_typing_enabled(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
+def test_input_validate_while_typing_enabled(
+    mock_prompt_session: tuple[MagicMock, MagicMock],
+    mock_formatcodes_print: MagicMock,
+):
     """Test that validate_while_typing is enabled."""
     mock_session_class, _ = mock_prompt_session
 

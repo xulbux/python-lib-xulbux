@@ -98,6 +98,17 @@ class ParsedArgData:
         """Returns the argument result as a dictionary."""
         return ArgData(exists=self.exists, is_pos=self.is_pos, values=self.values, flag=self.flag)
 
+    def get(self, index: int, /, default: Optional[str] = None) -> Optional[str]:
+        """Safely access a value from the `values` list by index.\n
+        -------------------------------------------------------------------
+        - `index` -⠀the index of the value to access
+        - `default` -⠀the fallback value if the index is out of range\n
+        -------------------------------------------------------------------
+        Returns the value at `index` if it exists, otherwise `default`."""
+        if 0 <= index < len(self.values):
+            return self.values[index]
+        return default
+
 
 @mypyc_attr(native_class=False)
 class ParsedArgs:

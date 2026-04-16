@@ -38,7 +38,13 @@ import pytest
         ("no_dot_file", ".txt", True, True, "NoDotFile.txt"),
     ]
 )
-def test_rename_extension(input_file: str | Path, new_extension: str, full_extension: bool, camel_case: bool, expected_output: str):
+def test_rename_extension(
+    input_file: str | Path,
+    new_extension: str,
+    full_extension: bool,
+    camel_case: bool,
+    expected_output: str,
+):
     result = File.rename_extension(input_file, new_extension, full_extension=full_extension, camel_case_filename=camel_case)
     assert isinstance(result, Path)
     assert str(result) == expected_output

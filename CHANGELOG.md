@@ -15,6 +15,17 @@
 # <br><b>Changelog</b><br>
 
 
+<span id="v1-9-7" />
+
+## ... `v1.9.7`
+
+* Created a new CLI command `xulbux-fc`, which allows you to parse and render the format codes of a provided string as ANSI console output.
+* Added `.get()` method to `ParsedArgData` for safe index access on parsed argument values.
+* Added missing `__init__.py` files to the `base` and `cli` subpackages.
+* Fixed `ModuleNotFoundError` caused by `mypyc` compiling `__init__.py` files, which broke subpackage imports.
+* Simplified CI workflows to use `pip`'s build isolation instead of manually specifying build dependencies.
+
+
 <span id="v1-9-6" />
 
 ## 13.04.2026 `v1.9.6`

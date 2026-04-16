@@ -6,10 +6,8 @@ def render_format_codes():
     args = Console.get_args({"input": "before"})
 
     if not args.input.values:
-        FormatCodes.print(
-            "\n[_|i|dim]Provide a string to parse and render\n"
-            "it's format codes as ANSI console output.[_]\n"
-        )
+        FormatCodes.print("\n[_|i|dim]Provide a string to parse and render\n"
+                          "its format codes as ANSI console output.[_]\n")
 
     else:
         ansi = FormatCodes.to_ansi("".join(args.input.values))

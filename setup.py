@@ -9,6 +9,8 @@ import os
 def find_python_files(directory: str) -> list[str]:
     python_files: list[str] = []
     for file in Path(directory).rglob("*.py"):
+        if file.name == "__init__.py":
+            continue
         python_files.append(str(file))
     return python_files
 
