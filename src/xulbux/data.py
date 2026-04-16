@@ -232,12 +232,15 @@ class Data:
         if len(comment_start) == 0:
             raise ValueError("The 'comment_start' parameter string must not be empty.")
 
-        return cast(DataObj, _DataRemoveCommentsHelper(
-            data,
-            comment_start=comment_start,
-            comment_end=comment_end,
-            comment_sep=comment_sep,
-        )())
+        return cast(
+            DataObj,
+            _DataRemoveCommentsHelper(
+                data,
+                comment_start=comment_start,
+                comment_end=comment_end,
+                comment_sep=comment_sep,
+            )()
+        )
 
     @classmethod
     def is_equal(

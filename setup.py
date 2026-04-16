@@ -41,13 +41,9 @@ def generate_stubs_for_package():
                 or str(Path(sys.executable).parent / ("stubgen.exe" if sys.platform == "win32" else "stubgen"))
             )
             result = subprocess.run(
-                [stubgen_exe,
-                 str(py_file),
-                 "-o", "src",
-                 "--include-private",
-                 "--export-less"],
+                [stubgen_exe, str(py_file), "-o", "src", "--include-private", "--export-less"],
                 capture_output=True,
-                text=True
+                text=True,
             )
 
             if result.returncode == 0:

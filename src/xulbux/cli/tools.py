@@ -3,7 +3,7 @@ from ..console import Console
 
 
 def render_format_codes():
-    args = Console.get_args({ "input": "before" })
+    args = Console.get_args({"input": "before"})
 
     if not args.input.values:
         FormatCodes.print(

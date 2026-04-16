@@ -5,6 +5,8 @@ This module contains all custom type definitions used throughout the library.
 from typing import Annotated, TypeAlias, TypedDict, Optional, Protocol, Literal, Union, Any
 from pathlib import Path
 
+# yapf: disable
+
 
 ################################################## Annotated ##################################################
 
