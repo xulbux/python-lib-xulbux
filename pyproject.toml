@@ -1,5 +1,4 @@
 [build-system]
-# SAME BUILD-DEPS ALSO NEED TO BE SPECIFIED IN CIBW_BEFORE_BUILD IN .github/workflows/build-and-publish.yml
 requires = [
   "setuptools>=80.0.0",
   "wheel>=0.45.0",
