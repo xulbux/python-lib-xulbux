@@ -419,33 +419,33 @@ def test_multiline_input_no_bindings(mock_prompt_toolkit: MagicMock, capsys: pyt
 
 
 def test_pause_exit_pause_only(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
-    mock_keyboard = MagicMock()
-    monkeypatch.setattr("xulbux.console._keyboard.read_key", mock_keyboard)
+    mock_read_key = MagicMock()
+    monkeypatch.setattr("xulbux.console._read_single_key", mock_read_key)
 
     Console.pause_exit("Press any key...", pause=True, exit=False)
 
     captured = capsys.readouterr()
     assert "Press any key..." in captured.out
-    mock_keyboard.assert_called_once_with(suppress=True)
+    mock_read_key.assert_called_once_with()
 
 
 def test_pause_exit_with_exit(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
-    mock_keyboard = MagicMock()
+    mock_read_key = MagicMock()
     mock_sys_exit = MagicMock()
-    monkeypatch.setattr("xulbux.console._keyboard.read_key", mock_keyboard)
+    monkeypatch.setattr("xulbux.console._read_single_key", mock_read_key)
     monkeypatch.setattr("xulbux.console._sys.exit", mock_sys_exit)
 
     Console.pause_exit("Exiting...", pause=True, exit=True, exit_code=1)
 
     captured = capsys.readouterr()
     assert "Exiting..." in captured.out
-    mock_keyboard.assert_called_once_with(suppress=True)
+    mock_read_key.assert_called_once_with()
     mock_sys_exit.assert_called_once_with(1)
 
 
 def test_pause_exit_reset_ansi(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
-    mock_keyboard = MagicMock()
-    monkeypatch.setattr("xulbux.console._keyboard.read_key", mock_keyboard)
+    mock_read_key = MagicMock()
+    monkeypatch.setattr("xulbux.console._read_single_key", mock_read_key)
 
     Console.pause_exit(pause=True, exit=False, reset_ansi=True)
 

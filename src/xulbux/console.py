@@ -23,7 +23,6 @@ from io import StringIO
 import prompt_toolkit as _pt
 import subprocess as _subprocess
 import threading as _threading
-import keyboard as _keyboard
 import getpass as _getpass
 import ctypes as _ctypes
 import shutil as _shutil
@@ -358,7 +357,7 @@ class Console(metaclass=_ConsoleMeta):
         if reset_ansi:
             FormatCodes.print("[_]", end="")
         if pause:
-            _keyboard.read_key(suppress=True)
+            cls._read_single_key()
         if exit:
             _sys.exit(exit_code)
 
@@ -981,6 +980,27 @@ class Console(metaclass=_ConsoleMeta):
                 if default_val is not None:
                     return default_val
                 raise
+
+    @staticmethod
+    def _read_single_key() -> None:
+        """Wait for a single key press without requiring elevated privileges.<br>
+        Falls back to reading a line when stdin is not a TTY (e.g. piped input)."""
+        if not _sys.stdin.isatty():
+            _sys.stdin.readline()
+            return
+        if _sys.platform == "win32":
+            import msvcrt as _msvcrt
+            _msvcrt.getch()
+        else:
+            import tty as _tty  # type: ignore[import-not-found]
+            import termios as _termios  # type: ignore[import-not-found]
+            fd = _sys.stdin.fileno()
+            old_settings = _termios.tcgetattr(fd)  # type: ignore[attr-defined]
+            try:
+                _tty.setraw(fd)  # type: ignore[attr-defined]
+                _sys.stdin.read(1)
+            finally:
+                _termios.tcsetattr(fd, _termios.TCSADRAIN, old_settings)  # type: ignore[attr-defined]
 
     @classmethod
     def _add_back_removed_parts(cls, split_string: list[str], removals: tuple[tuple[int, str], ...], /) -> list[str]:

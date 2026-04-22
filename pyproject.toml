@@ -6,7 +6,6 @@ requires = [
   "mypy-extensions>=1.1.0",
   # TYPES FOR MyPy
   "types-regex",
-  "types-keyboard",
   "prompt_toolkit>=3.0.41",
 ]
 build-backend = "setuptools.build_meta"
@@ -21,11 +20,7 @@ maintainers = [{ name = "XulbuX", email = "xulbux.real@gmail.com" }]
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.10.0"
-dependencies = [
-  "keyboard>=0.13.5",
-  "prompt_toolkit>=3.0.41",
-  "regex>=2023.10.3",
-]
+dependencies = ["prompt_toolkit>=3.0.41", "regex>=2023.10.3"]
 optional-dependencies = { dev = [
   "flake8-pyproject>=1.2.3",
   "flake8>=6.1.0",
