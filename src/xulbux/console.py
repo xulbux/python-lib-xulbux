@@ -1002,8 +1002,8 @@ class Console(metaclass=_ConsoleMeta):
             _sys.stdin.readline()
             return
         if _sys.platform == "win32":
-            import msvcrt as _msvcrt
-            _msvcrt.getch()
+            import msvcrt as _msvcrt  # type: ignore[import-not-found]
+            _msvcrt.getch()  # type: ignore[attr-defined]
         else:
             import tty as _tty  # type: ignore[import-not-found]
             import termios as _termios  # type: ignore[import-not-found]
