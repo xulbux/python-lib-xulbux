@@ -97,8 +97,7 @@ class ANSI:
     SEQ_BG_COLOR: Final[FormattableString] = CHAR + START + "48" + SEP + "2" + SEP + "{}" + SEP + "{}" + SEP + "{}" + END
     """ANSI escape sequence with three placeholders for setting the RGB background color."""
 
-    COLOR_MAP: Final[tuple[str, ...]] = (
-        ########### DEFAULT CONSOLE COLOR NAMES ############
+    COLOR_MAP: Final[set[str]] = {
         "black",
         "red",
         "green",
@@ -107,8 +106,30 @@ class ANSI:
         "magenta",
         "cyan",
         "white",
-    )
+    }
     """The standard terminal color names."""
+    
+    POSSIBLE_COLOR_MAP: Final[set[str]] = COLOR_MAP | {
+        "default",
+        "br:black",
+        "br:red",
+        "br:green",
+        "br:yellow",
+        "br:blue",
+        "br:magenta",
+        "br:cyan",
+        "br:white",
+        "bright:black",
+        "bright:red",
+        "bright:green",
+        "bright:yellow",
+        "bright:blue",
+        "bright:magenta",
+        "bright:cyan",
+        "bright:white",
+    }
+    """All possible color names that can be used in
+    formatting, including bright variants and default."""
 
     CODES_MAP: Final[dict[str | tuple[str, ...], int]] = {
         ################# SPECIFIC RESETS ##################

@@ -24,6 +24,9 @@
 * Added missing `__init__.py` files to the `base` and `cli` subpackages.
 * Fixed `ModuleNotFoundError` caused by `mypyc` compiling `__init__.py` files, which broke subpackage imports.
 * Simplified CI workflows to use `pip`'s build isolation instead of manually specifying build dependencies.
+* Fixed a small bug in `ProgressBar`, where it would only overwrite and not actually clear the previous line.
+* Added a new constant `ANSI.POSSIBLE_COLOR_MAP`, which contains all possible color names that can be used in formatting, including bright variants and default.
+* Made it possible to also pass console color names to `title_bg_color` in `Console.log()`, to use console default colors, instead of only custom RGBA or HEXA colors.
 
 
 <span id="v1-9-6" />
