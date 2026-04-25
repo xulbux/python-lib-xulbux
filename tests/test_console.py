@@ -420,7 +420,7 @@ def test_multiline_input_no_bindings(mock_prompt_toolkit: MagicMock, capsys: pyt
 
 def test_pause_exit_pause_only(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
     mock_read_key = MagicMock()
-    monkeypatch.setattr("xulbux.console._read_single_key", mock_read_key)
+    monkeypatch.setattr("xulbux.console.Console._read_single_key", mock_read_key)
 
     Console.pause_exit("Press any key...", pause=True, exit=False)
 
@@ -432,7 +432,7 @@ def test_pause_exit_pause_only(monkeypatch: pytest.MonkeyPatch, capsys: pytest.C
 def test_pause_exit_with_exit(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
     mock_read_key = MagicMock()
     mock_sys_exit = MagicMock()
-    monkeypatch.setattr("xulbux.console._read_single_key", mock_read_key)
+    monkeypatch.setattr("xulbux.console.Console._read_single_key", mock_read_key)
     monkeypatch.setattr("xulbux.console._sys.exit", mock_sys_exit)
 
     Console.pause_exit("Exiting...", pause=True, exit=True, exit_code=1)
@@ -445,7 +445,7 @@ def test_pause_exit_with_exit(monkeypatch: pytest.MonkeyPatch, capsys: pytest.Ca
 
 def test_pause_exit_reset_ansi(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
     mock_read_key = MagicMock()
-    monkeypatch.setattr("xulbux.console._read_single_key", mock_read_key)
+    monkeypatch.setattr("xulbux.console.Console._read_single_key", mock_read_key)
 
     Console.pause_exit(pause=True, exit=False, reset_ansi=True)
 
@@ -462,7 +462,7 @@ def test_cls(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr("xulbux.console._subprocess.run", mock_subprocess_run)
     monkeypatch.setattr(builtins, "print", mock_print)
 
-    mock_shutil.side_effect = lambda cmd: "/bin/cls" if cmd == "cls" else None  # type: ignore
+    mock_shutil.side_effect = lambda cmd: "/bin/cls" if cmd == "cls" else None  # type: ignore[type-unknown]
     Console.cls()
     mock_subprocess_run.assert_called_with(["cls"])
     mock_print.assert_called_with("\033[0m", end="", flush=True)
@@ -470,7 +470,7 @@ def test_cls(monkeypatch: pytest.MonkeyPatch):
     mock_subprocess_run.reset_mock()
     mock_print.reset_mock()
 
-    mock_shutil.side_effect = lambda cmd: "/bin/clear" if cmd == "clear" else None  # type: ignore
+    mock_shutil.side_effect = lambda cmd: "/bin/clear" if cmd == "clear" else None  # type: ignore[type-unknown]
     Console.cls()
     mock_subprocess_run.assert_called_with(["clear"])
     mock_print.assert_called_with("\033[0m", end="", flush=True)
@@ -980,7 +980,7 @@ def test_progressbar_create_bar():
 
 def test_progressbar_intercepted_output():
     pb = ProgressBar()
-    intercepted = console._InterceptedOutput(pb)  # type: ignore
+    intercepted = console._InterceptedOutput(pb)
     result = intercepted.write("test content")
     assert result == len("test content")
     assert "test content" in pb._buffer
@@ -1020,7 +1020,7 @@ def test_progressbar_start_stop_intercepting():
     pb._start_intercepting()
     assert pb.active is True
     assert pb._original_stdout == original_stdout
-    assert isinstance(sys.stdout, console._InterceptedOutput)  # type: ignore
+    assert isinstance(sys.stdout, console._InterceptedOutput)
 
     pb._stop_intercepting()
     assert pb.active is False

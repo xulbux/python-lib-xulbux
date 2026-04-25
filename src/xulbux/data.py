@@ -640,15 +640,17 @@ class _DataRemoveCommentsHelper:
         self.comment_end = comment_end
         self.comment_sep = comment_sep
 
-        self.pattern = _re.compile(Regex._clean(  # type: ignore[protected-access]
-            rf"""^(
-                (?:(?!{_re.escape(comment_start)}).)*
+        self.pattern = _re.compile(
+            Regex._clean(
+                rf"""^(
+                    (?:(?!{_re.escape(comment_start)}).)*
+                )
+                {_re.escape(comment_start)}
+                (?:(?:(?!{_re.escape(comment_end)}).)*)
+                (?:{_re.escape(comment_end)})?
+                (.*?)$"""
             )
-            {_re.escape(comment_start)}
-            (?:(?:(?!{_re.escape(comment_end)}).)*)
-            (?:{_re.escape(comment_end)})?
-            (.*?)$"""
-        )) if len(comment_end) > 0 else None
+        ) if len(comment_end) > 0 else None
 
     def __call__(self) -> DataObjType:
         return self.remove_nested_comments(self.data)

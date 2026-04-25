@@ -7,7 +7,7 @@ from .base.types import ProgressUpdater, AllTextChars, ArgParseConfigs, ArgParse
 from .base.decorators import mypyc_attr
 from .base.consts import COLOR, CHARS, ANSI
 
-from .format_codes import _PATTERNS as _FC_PATTERNS, FormatCodes  # type: ignore[private-access]
+from .format_codes import _PATTERNS as _FC_PATTERNS, FormatCodes
 from .string import String
 from .color import Color
 from .regex import LazyRegex
@@ -387,18 +387,18 @@ class Console(metaclass=_ConsoleMeta):
         title_mx: int = 2,
     ) -> None:
         """Prints a nicely formatted log message.\n
-        ---------------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------
         - `title` -⠀the title of the log message (e.g. `DEBUG`, `WARN`, `FAIL`, etc.)
         - `prompt` -⠀the log message
         - `format_linebreaks` -⠀whether to format (indent after) the line breaks or not
         - `start` -⠀something to print before the log is printed
         - `end` -⠀something to print after the log is printed (e.g. `\\n`)
-        - `title_bg_color` -⠀the background color of the `title` (console color name, RGBA, or HEXA)
+        - `title_bg_color` -⠀the background color of the `title` (console color, RGBA, or HEXA)
         - `default_color` -⠀the default text color of the `prompt` (RGBA or HEXA)
         - `tab_size` -⠀the tab size used for the log (default is 8 like console tabs)
         - `title_px` -⠀the horizontal padding (in chars) to the title (if `title_bg_color` is set)
         - `title_mx` -⠀the horizontal margin (in chars) to the title\n
-        ---------------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------------
         The log message can be formatted with special formatting codes. For more detailed
         information about formatting codes, see `format_codes` module documentation."""
         if tab_size < 0:
@@ -409,17 +409,16 @@ class Console(metaclass=_ConsoleMeta):
             raise ValueError("The 'title_mx' parameter must be a non-negative integer.")
 
         title_fg: str = "_c"
-        has_title_bg: bool = False
         title = "" if title is None else title.strip().upper()
 
-        if title_bg_color is not None:
-            if str(title_bg_color).lower() in ANSI.POSSIBLE_COLOR_MAP:
-                has_title_bg = True
+        if has_title_bg := title_bg_color is not None:
+            if str(title_bg_color).replace(" ", "").lower() in ANSI.COLOR_VARIANTS_MAP:
                 title_fg = "black"
             elif Color.is_valid_rgba(title_bg_color) or Color.is_valid_hexa(title_bg_color):
-                has_title_bg = True
                 title_bg_color = Color.to_hexa(title_bg_color)
                 title_fg = str(Color.text_color_for_on_bg(title_bg_color))
+            else:
+                raise ValueError("The 'title_bg_color' parameter must be a valid console color, RGBA value, or HEXA value.")
 
         px, mx = (" " * title_px) if has_title_bg else "", " " * title_mx
         tab = " " * (tab_size - 1 - ((len(mx) + (title_len := len(title) + 2 * len(px))) % tab_size))
@@ -625,23 +624,23 @@ class Console(metaclass=_ConsoleMeta):
         *values: object,
         start: str = "",
         end: str = "\n",
-        box_bg_color: str | Rgba | Hexa = "br:green",
+        box_bg_color: Optional[str | Rgba | Hexa] = None,
         default_color: Optional[Rgba | Hexa] = None,
         w_padding: int = 2,
         w_full: bool = False,
         indent: int = 0,
     ) -> None:
         """Will print a box with a colored background, containing a formatted log message.\n
-        ---------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------
         - `*values` -⠀the box content (each value is on a new line)
         - `start` -⠀something to print before the log box is printed (e.g. `\\n`)
         - `end` -⠀something to print after the log box is printed (e.g. `\\n`)
-        - `box_bg_color` -⠀the background color of the box (console color name, RGBA, or HEXA)
+        - `box_bg_color` -⠀the background color of the box (console color, RGBA, or HEXA)
         - `default_color` -⠀the default text color of the `*values`
         - `w_padding` -⠀the horizontal padding (in chars) to the box content
         - `w_full` -⠀whether to make the box be the full console width or not
         - `indent` -⠀the indentation of the box (in chars)\n
-        ---------------------------------------------------------------------------------------
+        -------------------------------------------------------------------------------------
         The box content can be formatted with special formatting codes. For more detailed
         information about formatting codes, see `format_codes` module documentation."""
         if w_padding < 0:
@@ -649,15 +648,13 @@ class Console(metaclass=_ConsoleMeta):
         if indent < 0:
             raise ValueError("The 'indent' parameter must be a non-negative integer.")
 
-        if str(box_bg_color).lower() in ANSI.POSSIBLE_COLOR_MAP:
-            pass
-        elif Color.is_valid_rgba(box_bg_color) or Color.is_valid_hexa(box_bg_color):
-            box_bg_color = Color.to_hexa(box_bg_color)
-        else:
-            raise ValueError("The 'box_bg_color' parameter must be a valid console color name, RGBA value, or HEXA value.")
-
-        if Color.is_valid(box_bg_color):
-            box_bg_color = Color.to_hexa(box_bg_color)
+        if box_bg_color is not None:
+            if str(box_bg_color).replace(" ", "").lower() in ANSI.COLOR_VARIANTS_MAP:
+                pass
+            elif Color.is_valid_rgba(box_bg_color) or Color.is_valid_hexa(box_bg_color):
+                box_bg_color = Color.to_hexa(box_bg_color)
+            else:
+                raise ValueError("The 'box_bg_color' parameter must be a valid console color, RGBA value, or HEXA value.")
 
         lines, unfmt_lines, max_line_len = cls._prepare_log_box(values, default_color)
 
@@ -665,22 +662,24 @@ class Console(metaclass=_ConsoleMeta):
         pady = " " * (cls.w if w_full else max_line_len + (2 * w_padding))
         pad_w_full = (cls.w - (max_line_len + (2 * w_padding))) if w_full else 0
 
-        replacer = _ConsoleLogBoxBgReplacer(box_bg_color)
+        default_color = default_color or "#000"
+        bg_fc = f"_c|invert|bg:{default_color}" if box_bg_color is None else f"bg:{box_bg_color}"
+
         lines = [( \
-            f"{spaces_l}[bg:{box_bg_color}]{' ' * w_padding}"
-            + _FC_PATTERNS.formatting.sub(replacer, line)
+            f"{spaces_l}[{bg_fc}]{' ' * w_padding}"
+            + _FC_PATTERNS.formatting.sub(_ConsoleLogBoxBgReplacer(bg_fc), line)
             + (" " * ((w_padding + max_line_len - len(unfmt)) + pad_w_full))
             + "[*]"
         ) for line, unfmt in zip(lines, unfmt_lines)]
 
         FormatCodes.print(
             ( \
-                f"{start}{spaces_l}[bg:{box_bg_color}]{pady}[*]\n"
+                f"{start}{spaces_l}[{bg_fc}]{pady}[*]\n"
                 + "\n".join(lines)
                 + ("\n" if lines else "")
-                + f"{spaces_l}[bg:{box_bg_color}]{pady}[_]"
+                + f"{spaces_l}[{bg_fc}]{pady}[_]"
             ),
-            default_color=default_color or "#000",
+            default_color=default_color,
             sep="\n",
             end=end,
         )
@@ -1332,13 +1331,13 @@ class _ConsoleArgsParseHelper:
 
 
 class _ConsoleLogBoxBgReplacer:
-    """Internal, callable class to replace matched text with background-colored text for log boxes."""
+    """Internal, callable class to replace matched text with background-format-code text for log boxes."""
 
-    def __init__(self, box_bg_color: str | Rgba | Hexa, /) -> None:
-        self.box_bg_color = box_bg_color
+    def __init__(self, bg_fc: str, /) -> None:
+        self.bg_fc = bg_fc
 
     def __call__(self, m: _rx.Match[str], /) -> str:
-        return f"{m.group(0)}[bg:{self.box_bg_color}]"
+        return f"{m.group(0)}[{self.bg_fc}]"
 
 
 class _ConsoleInputHelper:
@@ -2118,20 +2117,20 @@ class _InterceptedOutput:
         self.string_io.write(content)
         try:
             if content and content != "\r":
-                cast(ProgressBar | Throbber, self.status_indicator)._buffer.append(content)  # type: ignore[protected-access]
+                self.status_indicator._buffer.append(content)
             return len(content)
         except Exception:
-            self.status_indicator._emergency_cleanup()  # type: ignore[protected-access]
+            self.status_indicator._emergency_cleanup()
             raise
 
     def flush(self) -> None:
         self.string_io.flush()
         try:
-            if self.status_indicator.active and self.status_indicator._buffer:  # type: ignore[protected-access]
-                self.status_indicator._flush_buffer()  # type: ignore[protected-access]
-                self.status_indicator._redraw_display()  # type: ignore[protected-access]
+            if self.status_indicator.active and self.status_indicator._buffer:
+                self.status_indicator._flush_buffer()
+                self.status_indicator._redraw_display()
         except Exception:
-            self.status_indicator._emergency_cleanup()  # type: ignore[protected-access]
+            self.status_indicator._emergency_cleanup()
             raise
 
     def __getattr__(self, name: str, /) -> Any:

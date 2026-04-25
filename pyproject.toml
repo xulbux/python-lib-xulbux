@@ -153,3 +153,4 @@ testpaths = [
 [tool.pyright]
 include = ["src", "tests"]
 typeCheckingMode = "strict"
+reportPrivateUsage = "none"

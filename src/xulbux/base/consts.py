@@ -108,9 +108,8 @@ class ANSI:
         "white",
     }
     """The standard terminal color names."""
-    
-    POSSIBLE_COLOR_MAP: Final[set[str]] = COLOR_MAP | {
-        "default",
+
+    COLOR_VARIANTS_MAP: Final[set[str]] = COLOR_MAP | {
         "br:black",
         "br:red",
         "br:green",
@@ -128,8 +127,7 @@ class ANSI:
         "bright:cyan",
         "bright:white",
     }
-    """All possible color names that can be used in
-    formatting, including bright variants and default."""
+    """All color variants that can be used in formatting."""
 
     CODES_MAP: Final[dict[str | tuple[str, ...], int]] = {
         ################# SPECIFIC RESETS ##################

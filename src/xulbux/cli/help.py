@@ -72,6 +72,6 @@ CLI_HELP = FormatCodes.to_ansi(
 
 
 def show_help() -> None:
-    FormatCodes._config_console()  # type: ignore[protected-access]
+    FormatCodes._config_console()
     print(CLI_HELP)
     Console.pause_exit("  [dim](Press any key to exit...)\n\n", pause=True)

@@ -510,7 +510,7 @@ class FormatCodes:
         if Color.is_valid_hexa(default_color, allow_alpha=False):
             return True, hexa(cast(str | int, default_color)).to_rgba()
         elif Color.is_valid_rgba(default_color, allow_alpha=False):
-            return True, Color._parse_rgba(cast(Rgba, default_color))  # type: ignore[protected-access]
+            return True, Color._parse_rgba(cast(Rgba, default_color))
         raise TypeError("The 'default_color' parameter must be either a valid RGBA or HEXA color, or None.")
 
     @staticmethod
@@ -633,9 +633,8 @@ class _EscapeFormatCodeHelper:
         else:
             _formats = _PATTERNS.star_reset_inside.sub(r"\1_\2", formats)
 
-        if all(self.cls._get_replacement(format_key, self.default_color) != format_key  # type: ignore[protected-access]
-               for format_key in self.cls._formats_to_keys(_formats)  # type: ignore[protected-access]
-               ):
+        if all(self.cls._get_replacement(format_key, self.default_color) != format_key
+               for format_key in self.cls._formats_to_keys(_formats)):
             # ESCAPE THE FORMATTING CODE
             escaped = f"[{self.escape_char}{formats}]"
             if auto_reset_txt:
@@ -735,10 +734,10 @@ class _ReplaceKeysHelper:
 
     def convert_to_ansi(self) -> None:
         """Convert format keys to ANSI codes and generate resets if needed."""
-        self.format_keys = self.cls._formats_to_keys(self.formats)  # type: ignore[protected-access]
+        self.format_keys = self.cls._formats_to_keys(self.formats)
         self.ansi_formats = [(
             ansi_code \
-            if (ansi_code := self.cls._get_replacement(format_key, self.default_color, self.brightness_steps)) != format_key  # type: ignore[protected-access]
+            if (ansi_code := self.cls._get_replacement(format_key, self.default_color, self.brightness_steps)) != format_key
             else f"[{format_key}]"
         ) for format_key in self.format_keys]
 
@@ -786,7 +785,7 @@ class _ReplaceKeysHelper:
         # CONVERT RESET KEYS TO ANSI CODES
         self.ansi_resets = [
             ansi_code for reset_key in reset_keys if ( \
-                ansi_code := self.cls._get_replacement(reset_key, self.default_color, self.brightness_steps)  # type: ignore[protected-access]
+                ansi_code := self.cls._get_replacement(reset_key, self.default_color, self.brightness_steps)
             ).startswith(f"{ANSI.CHAR}{ANSI.START}")
         ]
 
