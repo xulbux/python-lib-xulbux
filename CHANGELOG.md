@@ -30,6 +30,7 @@
 * Added a new format key `link:…` to `FormatCodes`, which allows you to create hyperlinks in the console output with the syntax `[link:URL](display text)`.
 
 **BREAKING CHANGES:**
+* The `ANSI.COLOR_MAP` constant is now a set for better lookup performance, as the color order doesn't matter there.
 * All `Console` methods that allow console default colors as input for their color params, now actually validate the given color, raising an error if it's not valid.
 * The default for `box_bg_color` in `Console.log_box_filled()` is now the console foreground color (`None`) instead of `br:green`.
 
