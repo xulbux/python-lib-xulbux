@@ -17,9 +17,11 @@
 
 <span id="v1-9-7" />
 
-## ... `v1.9.7`
+## 26.04.2026 `v1.9.7`
 
-* Created a new CLI command `xulbux-fc`, which allows you to parse and render a given string's format codes as ANSI console output.
+* Restructured CLI commands under a single `xulbux-lib` entry point:
+  - `xulbux-lib` shows library info.
+  - `xulbux-lib fc` (*new*) parses and renders a string's format codes as ANSI console output.
 * Added `.get()` method to `ParsedArgData` for safe index access on parsed argument values.
 * Added missing `__init__.py` files to the `base` and `cli` subpackages.
 * Fixed `ModuleNotFoundError` caused by `mypyc` compiling `__init__.py` files, which broke subpackage imports.

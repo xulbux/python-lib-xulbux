@@ -110,8 +110,7 @@ keywords = [
 "License" = "https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE"
 
 [project.scripts]
-xulbux-help = "xulbux.cli.help:show_help"
-xulbux-fc = "xulbux.cli.tools:render_format_codes"
+xulbux-lib = "xulbux.cli:main"
 
 [tool.flake8]
 max-complexity = 12
