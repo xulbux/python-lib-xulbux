@@ -27,6 +27,7 @@
 * Fixed a small bug in `ProgressBar`, where it would only overwrite and not actually clear the previous line.
 * Added a new constant `ANSI.COLOR_VARIANTS_MAP`, which contains all possible color variants that can be used in formatting.
 * Made it possible to also pass console default colors to `title_bg_color` in `Console.log()`, instead of only custom RGBA or HEXA colors.
+* Added a new format key `link:…` to `FormatCodes`, which allows you to create hyperlinks in the console output with the syntax `[link:URL](display text)`.
 
 **BREAKING CHANGES:**
 * All `Console` methods that allow console default colors as input for their color params, now actually validate the given color, raising an error if it's not valid.

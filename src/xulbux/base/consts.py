@@ -97,6 +97,11 @@ class ANSI:
     SEQ_BG_COLOR: Final[FormattableString] = CHAR + START + "48" + SEP + "2" + SEP + "{}" + SEP + "{}" + SEP + "{}" + END
     """ANSI escape sequence with three placeholders for setting the RGB background color."""
 
+    SEQ_LINK_OPEN: Final[FormattableString] = CHAR + "]8;;{}" + CHAR + "\\"
+    """OSC 8 hyperlink opening sequence with a placeholder for the URL."""
+    SEQ_LINK_CLOSE: Final[str] = CHAR + "]8;;" + CHAR + "\\"
+    """OSC 8 hyperlink closing sequence."""
+
     COLOR_MAP: Final[set[str]] = {
         "black",
         "red",

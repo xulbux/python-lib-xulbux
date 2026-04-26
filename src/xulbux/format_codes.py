@@ -129,6 +129,12 @@ the formatting code:
 - Total reset:
   This will reset all previously applied formatting codes.
   - `[_]`
+- Hyperlinks:
+  Create a clickable hyperlink using the `link:` prefix followed by any URL.
+  Auto-reset braces are required to define the visible, clickable text.
+  Examples:
+  - `[link:file:///C:/path/to/file.txt](open file)`
+  - `[link:https://example.com|br:blue](click here)`
 
 ------------------------------------------------------------------------------------------------------------------------------------
 #### Additional Formatting Codes when a `default_color` is set
@@ -192,7 +198,8 @@ _PREFIX_RX: Final[dict[str, str]] = {
 _PATTERNS = LazyRegex(
     star_reset=r"\[\s*([^]_]*?)\s*\*\s*([^]_]*?)\]",
     star_reset_inside=r"([^|]*?)\s*\*\s*([^|]*)",
-    ansi_seq=ANSI.CHAR + r"(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])",
+    ansi_seq=ANSI.CHAR + r"(?:\].*?(?:\x1b\\|\x07)|\[[0-?]*[ -/]*[@-~]|[@-Z\\-_])",
+    link=r"(?i)^\s*link\s*:\s*(.+?)\s*$",
     formatting=(
         Regex.brackets("[", "]", is_group=True, ignore_in_strings=False) + r"(?:([/\\]?)"
         + Regex.brackets("(", ")", is_group=True, strip_spaces=False, ignore_in_strings=False) + r")?"
@@ -633,8 +640,15 @@ class _EscapeFormatCodeHelper:
         else:
             _formats = _PATTERNS.star_reset_inside.sub(r"\1_\2", formats)
 
-        if all(self.cls._get_replacement(format_key, self.default_color) != format_key
-               for format_key in self.cls._formats_to_keys(_formats)):
+        has_link = False
+        has_invalid_key = False
+        for format_key in self.cls._formats_to_keys(_formats):
+            if _PATTERNS.link.match(format_key):
+                has_link = True
+            elif self.cls._get_replacement(format_key, self.default_color) == format_key:
+                has_invalid_key = True
+
+        if has_link or not has_invalid_key:
             # ESCAPE THE FORMATTING CODE
             escaped = f"[{self.escape_char}{formats}]"
             if auto_reset_txt:
@@ -702,13 +716,47 @@ class _ReplaceKeysHelper:
         if self.formats_escaped:
             self.original_formats = self.formats = _PATTERNS.escape_char.sub(r"\1", self.formats)
 
+        # HANDLE HYPERLINK FORMAT
+        all_keys = self.cls._formats_to_keys(self.formats)
+        if (result := self.handle_link(match, all_keys)) is not None:
+            return result
+
         self.process_formats_and_auto_reset()
 
+        # IF THERE ARE NO FORMATS OR ALL FORMATS ARE INVALID, RETURN THE ORIGINAL STRING
         if not self.formats:
             return match.group(0)
 
         self.convert_to_ansi()
         return self.build_output(match)
+
+    def handle_link(self, match: _rx.Match[str], all_keys: list[str], /) -> Optional[str]:
+        """Handle a hyperlink format code, returning the OSC 8 sequence or None if not a link."""
+        link_key = next((k for k in all_keys if _PATTERNS.link.match(k)), None)
+
+        if link_key is None:
+            return None
+        if self.auto_reset_txt is None:
+            return match.group(0)  # LINK WITHOUT DISPLAY BRACES IS INVALID
+        if self.formats_escaped:
+            return f"[{self.original_formats}]({self.auto_reset_txt})"
+
+        link_url = _PATTERNS.link.match(link_key).group(1)  # type: ignore[union-attr]
+        display = self.auto_reset_txt
+
+        if other_keys := [k for k in all_keys if k != link_key]:
+            # APPLY REMAINING FORMAT CODES TO DISPLAY TEXT WITH AUTO-RESET
+            display = "[{}]({})".format("|".join(other_keys), display)
+        if other_keys or ("[" in display and "]" in display):
+            display = self.cls.to_ansi(
+                display,
+                self.default_color,
+                self.brightness_steps,
+                _default_start=False,
+                _validate_default=False,
+            )
+
+        return ANSI.SEQ_LINK_OPEN.format(link_url) + display + ANSI.SEQ_LINK_CLOSE
 
     def process_formats_and_auto_reset(self) -> None:
         """Process nested formatting in both formats and auto-reset text."""
