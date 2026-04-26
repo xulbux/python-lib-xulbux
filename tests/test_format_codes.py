@@ -80,6 +80,40 @@ def test_escape():
     assert FormatCodes.escape("[--]Hello", default_color="#FFF") == "[/--]Hello"
 
 
+def test_hyperlinks():
+    url = "https://example.com"
+    file_url = "file:///C:/path/to/file.txt"
+    link_open = ANSI.SEQ_LINK_OPEN.format(url)
+    link_open_file = ANSI.SEQ_LINK_OPEN.format(file_url)
+    link_close = ANSI.SEQ_LINK_CLOSE
+
+    # BASIC LINK
+    assert FormatCodes.to_ansi(f"[link:{url}](click here)") == f"{link_open}click here{link_close}"
+
+    # FILE URL
+    assert FormatCodes.to_ansi(f"[link:{file_url}](open file)") == f"{link_open_file}open file{link_close}"
+
+    # LINK WITH NESTED FORMATTING IN DISPLAY TEXT
+    assert FormatCodes.to_ansi(f"[link:{url}]([b](bold link))") == f"{link_open}{bold}bold link{reset_bold}{link_close}"
+
+    # LINK COMBINED WITH OTHER FORMAT KEYS
+    assert FormatCodes.to_ansi(f"[link:{url}|b](click here)") == f"{link_open}{bold}click here{reset_bold}{link_close}"
+    bright_blue = f"{ANSI.CHAR}{ANSI.START}{ANSI.CODES_MAP['br:blue']}{ANSI.END}"
+    assert FormatCodes.to_ansi(f"[link:{url}|br:blue](click here)"
+                               ) == (f"{link_open}{bright_blue}click here{reset_color}{link_close}")
+
+    # LINK WITHOUT DISPLAY BRACES IS INVALID (LEFT AS-IS)
+    assert FormatCodes.to_ansi(f"[link:{url}]") == f"[link:{url}]"
+
+    # ESCAPE: LINK SHOULD BE ESCAPED
+    assert FormatCodes.escape(f"[link:{url}](click here)") == f"[/link:{url}](click here)"
+    assert FormatCodes.escape(f"[link:{url}|b](click here)") == f"[/link:{url}|b](click here)"
+
+    # REMOVE: OSC SEQUENCES FROM LINK SHOULD BE STRIPPED, LEAVING ONLY DISPLAY TEXT
+    assert FormatCodes.remove(f"[link:{url}](click here)") == "click here"
+    assert FormatCodes.remove_ansi(f"{link_open}click here{link_close}") == "click here"
+
+
 def test_remove_ansi():
     ansi_string = f"{bold}Hello {orange}World!{reset}"
     clean_string = "Hello World!"

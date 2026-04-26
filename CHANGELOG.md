@@ -15,6 +15,28 @@
 # <br><b>Changelog</b><br>
 
 
+<span id="v1-9-7" />
+
+## 26.04.2026 `v1.9.7`
+
+* Restructured CLI commands under a single `xulbux-lib` entry point:
+  - `xulbux-lib` shows library info.
+  - `xulbux-lib fc` (*new*) parses and renders a string's format codes as ANSI console output.
+* Added `.get()` method to `ParsedArgData` for safe index access on parsed argument values.
+* Added missing `__init__.py` files to the `base` and `cli` subpackages.
+* Fixed `ModuleNotFoundError` caused by `mypyc` compiling `__init__.py` files, which broke subpackage imports.
+* Simplified CI workflows to use `pip`'s build isolation instead of manually specifying build dependencies.
+* Fixed a small bug in `ProgressBar`, where it would only overwrite and not actually clear the previous line.
+* Added a new constant `ANSI.COLOR_VARIANTS_MAP`, which contains all possible color variants that can be used in formatting.
+* Made it possible to also pass console default colors to `title_bg_color` in `Console.log()`, instead of only custom RGBA or HEXA colors.
+* Added a new format key `link:…` to `FormatCodes`, which allows you to create hyperlinks in the console output with the syntax `[link:URL](display text)`.
+
+**BREAKING CHANGES:**
+* The `ANSI.COLOR_MAP` constant is now a set for better lookup performance, as the color order doesn't matter there.
+* All `Console` methods that allow console default colors as input for their color params, now actually validate the given color, raising an error if it's not valid.
+* The default for `box_bg_color` in `Console.log_box_filled()` is now the console foreground color (`None`) instead of `br:green`.
+
+
 <span id="v1-9-6" />
 
 ## 13.04.2026 `v1.9.6`

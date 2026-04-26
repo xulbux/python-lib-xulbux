@@ -1,5 +1,4 @@
 [build-system]
-# SAME BUILD-DEPS ALSO NEED TO BE SPECIFIED IN CIBW_BEFORE_BUILD IN .github/workflows/build-and-publish.yml
 requires = [
   "setuptools>=80.0.0",
   "wheel>=0.45.0",
@@ -7,14 +6,13 @@ requires = [
   "mypy-extensions>=1.1.0",
   # TYPES FOR MyPy
   "types-regex",
-  "types-keyboard",
   "prompt_toolkit>=3.0.41",
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "xulbux"
-version = "1.9.6"
+version = "1.9.7"
 description = "A Python library to simplify common programming tasks."
 readme = "README.md"
 authors = [{ name = "XulbuX", email = "xulbux.real@gmail.com" }]
@@ -22,11 +20,7 @@ maintainers = [{ name = "XulbuX", email = "xulbux.real@gmail.com" }]
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.10.0"
-dependencies = [
-  "keyboard>=0.13.5",
-  "prompt_toolkit>=3.0.41",
-  "regex>=2023.10.3",
-]
+dependencies = ["prompt_toolkit>=3.0.41", "regex>=2023.10.3"]
 optional-dependencies = { dev = [
   "flake8-pyproject>=1.2.3",
   "flake8>=6.1.0",
@@ -116,7 +110,7 @@ keywords = [
 "License" = "https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE"
 
 [project.scripts]
-xulbux-help = "xulbux.cli.help:show_help"
+xulbux-lib = "xulbux.cli:main"
 
 [tool.flake8]
 max-complexity = 12
@@ -158,3 +152,4 @@ testpaths = [
 [tool.pyright]
 include = ["src", "tests"]
 typeCheckingMode = "strict"
+reportPrivateUsage = "none"

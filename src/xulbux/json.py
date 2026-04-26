@@ -213,7 +213,7 @@ class Json:
                 if isinstance(current, dict):
                     if key not in current:
                         current[key] = [] if next_key.isdigit() else {}
-                    current = current[key]
+                    current = cast(dict[str, Any], current)[key]  # type: ignore[unnecessary-cast]
                 elif isinstance(current, list) and key.isdigit():
                     idx = int(key)
                     while len(cast(list[Any], current)) <= idx:

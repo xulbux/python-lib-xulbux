@@ -1,5 +1,5 @@
 __package_name__ = "xulbux"
-__version__ = "1.9.6"
+__version__ = "1.9.7"
 __description__ = "A Python library to simplify common programming tasks."
 __status__ = "Production/Stable"
 
@@ -12,7 +12,6 @@ __copyright__ = "Copyright (c) 2024 XulbuX"
 
 __requires_python__ = ">=3.10.0"
 __dependencies__ = [
-    "keyboard>=0.13.5",
     "prompt_toolkit>=3.0.41",
     "regex>=2023.10.3",
 ]

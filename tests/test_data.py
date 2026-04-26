@@ -95,9 +95,9 @@ def test_strip(input_data: DataObj, expected_output: DataObj):
 
 
 @pytest.mark.parametrize(
-    "input_data, spaces_are_empty, expected_output", cast(
-        list[tuple[DataObj, bool, DataObj]],
-        [
+    "input_data, spaces_are_empty, expected_output",
+    cast(
+        list[tuple[DataObj, bool, DataObj]], [
             (["a", "", "b", None, "  "], False, ["a", "b", "  "]),
             (["a", "", "b", None, "  "], True, ["a", "b"]),
             (("a", "", "b", None, "  "), False, ("a", "b", "  ")),
@@ -218,7 +218,7 @@ def test_render(
     max_width: int,
     sep: str,
     as_json: bool,
-    expected_str: str
+    expected_str: str,
 ):
     result = Data.render(
         data,
@@ -227,7 +227,7 @@ def test_render(
         max_width=max_width,
         sep=sep,
         as_json=as_json,
-        syntax_highlighting=False
+        syntax_highlighting=False,
     )
     normalized_result = "\n".join(line.rstrip() for line in result.splitlines())
     normalized_expected = "\n".join(line.rstrip() for line in expected_str.splitlines())

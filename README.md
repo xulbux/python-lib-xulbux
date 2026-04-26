@@ -34,9 +34,11 @@ pip install --upgrade xulbux
 ## CLI Commands
 
 When the library is installed, the following commands are available in the console:
-| Command       | Description                              |
-| :------------ | :--------------------------------------- |
-| `xulbux-help` | shows some information about the library |
+
+| Command           | Description                                                      |
+| :---------------- | :--------------------------------------------------------------- |
+| `xulbux-lib`      | Show some information about the library.                         |
+| `xulbux-lib fc`   | Parse and render a string's format codes as ANSI console output. |
 
 <br>
 

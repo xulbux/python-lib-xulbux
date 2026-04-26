@@ -4,6 +4,8 @@ This module contains all custom exception classes used throughout the library.
 
 from .decorators import mypyc_attr
 
+# yapf: disable
+
 
 ################################################## FILE ##################################################
 

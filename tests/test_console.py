@@ -249,7 +249,12 @@ def test_console_supports_color():
         ),
     ]
 )
-def test_get_args(monkeypatch: pytest.MonkeyPatch, argv: list[str], arg_parse_configs: dict[str, Any], expected_parsed_args: dict[str, dict[str, Any]]):
+def test_get_args(
+    monkeypatch: pytest.MonkeyPatch,
+    argv: list[str],
+    arg_parse_configs: dict[str, Any],
+    expected_parsed_args: dict[str, dict[str, Any]],
+):
     monkeypatch.setattr(sys, "argv", argv)
     args_result = Console.get_args(arg_parse_configs)
     assert isinstance(args_result, ParsedArgs)
@@ -369,6 +374,20 @@ def test_args_dunder_methods():
     assert (args != ParsedArgs()) is True
 
 
+def test_parsed_arg_data_get():
+    data = ParsedArgData(exists=True, values=["first", "second", "third"], is_pos=False)
+    assert data.get(0) == "first"
+    assert data.get(1) == "second"
+    assert data.get(2) == "third"
+    assert data.get(3) is None
+    assert data.get(3, "fallback") == "fallback"
+    assert data.get(-1) is None
+
+    empty = ParsedArgData(exists=True, values=[], is_pos=False)
+    assert empty.get(0) is None
+    assert empty.get(0, "default") == "default"
+
+
 def test_multiline_input(mock_prompt_toolkit: MagicMock, capsys: pytest.CaptureFixture[str]):
     expected_input = "mocked multiline input"
     result = Console.multiline_input("Enter text:", show_keybindings=True, default_color="#BCA")
@@ -400,33 +419,33 @@ def test_multiline_input_no_bindings(mock_prompt_toolkit: MagicMock, capsys: pyt
 
 
 def test_pause_exit_pause_only(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
-    mock_keyboard = MagicMock()
-    monkeypatch.setattr("xulbux.console._keyboard.read_key", mock_keyboard)
+    mock_read_key = MagicMock()
+    monkeypatch.setattr("xulbux.console.Console._read_single_key", mock_read_key)
 
     Console.pause_exit("Press any key...", pause=True, exit=False)
 
     captured = capsys.readouterr()
     assert "Press any key..." in captured.out
-    mock_keyboard.assert_called_once_with(suppress=True)
+    mock_read_key.assert_called_once_with()
 
 
 def test_pause_exit_with_exit(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
-    mock_keyboard = MagicMock()
+    mock_read_key = MagicMock()
     mock_sys_exit = MagicMock()
-    monkeypatch.setattr("xulbux.console._keyboard.read_key", mock_keyboard)
+    monkeypatch.setattr("xulbux.console.Console._read_single_key", mock_read_key)
     monkeypatch.setattr("xulbux.console._sys.exit", mock_sys_exit)
 
     Console.pause_exit("Exiting...", pause=True, exit=True, exit_code=1)
 
     captured = capsys.readouterr()
     assert "Exiting..." in captured.out
-    mock_keyboard.assert_called_once_with(suppress=True)
+    mock_read_key.assert_called_once_with()
     mock_sys_exit.assert_called_once_with(1)
 
 
 def test_pause_exit_reset_ansi(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
-    mock_keyboard = MagicMock()
-    monkeypatch.setattr("xulbux.console._keyboard.read_key", mock_keyboard)
+    mock_read_key = MagicMock()
+    monkeypatch.setattr("xulbux.console.Console._read_single_key", mock_read_key)
 
     Console.pause_exit(pause=True, exit=False, reset_ansi=True)
 
@@ -443,7 +462,7 @@ def test_cls(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr("xulbux.console._subprocess.run", mock_subprocess_run)
     monkeypatch.setattr(builtins, "print", mock_print)
 
-    mock_shutil.side_effect = lambda cmd: "/bin/cls" if cmd == "cls" else None  # type: ignore
+    mock_shutil.side_effect = lambda cmd: "/bin/cls" if cmd == "cls" else None  # type: ignore[type-unknown]
     Console.cls()
     mock_subprocess_run.assert_called_with(["cls"])
     mock_print.assert_called_with("\033[0m", end="", flush=True)
@@ -451,7 +470,7 @@ def test_cls(monkeypatch: pytest.MonkeyPatch):
     mock_subprocess_run.reset_mock()
     mock_print.reset_mock()
 
-    mock_shutil.side_effect = lambda cmd: "/bin/clear" if cmd == "clear" else None  # type: ignore
+    mock_shutil.side_effect = lambda cmd: "/bin/clear" if cmd == "clear" else None  # type: ignore[type-unknown]
     Console.cls()
     mock_subprocess_run.assert_called_with(["clear"])
     mock_print.assert_called_with("\033[0m", end="", flush=True)
@@ -737,7 +756,10 @@ def test_input_style_configuration(mock_prompt_session: tuple[MagicMock, MagicMo
     assert call_kwargs["style"] is not None
 
 
-def test_input_validate_while_typing_enabled(mock_prompt_session: tuple[MagicMock, MagicMock], mock_formatcodes_print: MagicMock):
+def test_input_validate_while_typing_enabled(
+    mock_prompt_session: tuple[MagicMock, MagicMock],
+    mock_formatcodes_print: MagicMock,
+):
     """Test that validate_while_typing is enabled."""
     mock_session_class, _ = mock_prompt_session
 
@@ -958,7 +980,7 @@ def test_progressbar_create_bar():
 
 def test_progressbar_intercepted_output():
     pb = ProgressBar()
-    intercepted = console._InterceptedOutput(pb)  # type: ignore
+    intercepted = console._InterceptedOutput(pb)
     result = intercepted.write("test content")
     assert result == len("test content")
     assert "test content" in pb._buffer
@@ -998,7 +1020,7 @@ def test_progressbar_start_stop_intercepting():
     pb._start_intercepting()
     assert pb.active is True
     assert pb._original_stdout == original_stdout
-    assert isinstance(sys.stdout, console._InterceptedOutput)  # type: ignore
+    assert isinstance(sys.stdout, console._InterceptedOutput)
 
     pb._stop_intercepting()
     assert pb.active is False

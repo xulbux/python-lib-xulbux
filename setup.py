@@ -6,9 +6,15 @@ import sys
 import os
 
 
+PROJECT_ROOT = Path(__file__).parent
+PROJECT_SRC = PROJECT_ROOT / "src" / "xulbux"
+
+
 def find_python_files(directory: str) -> list[str]:
     python_files: list[str] = []
     for file in Path(directory).rglob("*.py"):
+        if file.name == "__init__.py":
+            continue
         python_files.append(str(file))
     return python_files
 
@@ -18,17 +24,16 @@ def generate_stubs_for_package():
 
     try:
         skip_stubgen = {
-            Path("src/xulbux/base/types.py"),  # COMPLEX TYPE DEFINITIONS
-            Path("src/xulbux/__init__.py"),  # PRESERVE PACKAGE METADATA CONSTANTS
+            PROJECT_SRC / "base" / "types.py",  # COMPLEX TYPE DEFINITIONS
+            PROJECT_SRC / "__init__.py",  # PRESERVE PACKAGE METADATA CONSTANTS
         }
 
-        src_dir = Path("src/xulbux")
         generated_count = 0
         skipped_count = 0
 
-        for py_file in src_dir.rglob("*.py"):
+        for py_file in PROJECT_SRC.rglob("*.py"):
             pyi_file = py_file.with_suffix(".pyi")
-            rel_path = py_file.relative_to(src_dir.parent)
+            rel_path = py_file.relative_to(PROJECT_SRC.parent)
 
             if py_file in skip_stubgen:
                 pyi_file.write_text(py_file.read_text(encoding="utf-8"), encoding="utf-8")
@@ -41,13 +46,9 @@ def generate_stubs_for_package():
                 or str(Path(sys.executable).parent / ("stubgen.exe" if sys.platform == "win32" else "stubgen"))
             )
             result = subprocess.run(
-                [stubgen_exe,
-                 str(py_file),
-                 "-o", "src",
-                 "--include-private",
-                 "--export-less"],
+                [stubgen_exe, str(py_file), "-o", "src", "--include-private", "--export-less"],
                 capture_output=True,
-                text=True
+                text=True,
             )
 
             if result.returncode == 0:
@@ -63,6 +64,11 @@ def generate_stubs_for_package():
     except Exception as e:
         fmt_error = "\n  ".join(str(e).splitlines())
         print(f"[WARNING] Could not generate stubs:\n  {fmt_error}\n")
+
+
+def delete_project_stub_files():
+    deleted = [f for f in PROJECT_SRC.rglob("*.pyi") if f.unlink() or True]
+    print(f"\nCleaned up {len(deleted)} stub file(s) from project directory.\n")
 
 
 ext_modules = []
@@ -90,3 +96,5 @@ setup(
     name="xulbux",
     ext_modules=ext_modules,
 )
+
+delete_project_stub_files()
