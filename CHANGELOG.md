@@ -17,7 +17,7 @@
 
 <span id="v1-9-7" />
 
-## 26.04.2026 `v1.9.7`
+## 26.04.2026 `v1.9.7`
 
 * Restructured CLI commands under a single `xulbux-lib` entry point:
   - `xulbux-lib` shows library info.
@@ -35,6 +35,7 @@
 * The `ANSI.COLOR_MAP` constant is now a set for better lookup performance, as the color order doesn't matter there.
 * All `Console` methods that allow console default colors as input for their color params, now actually validate the given color, raising an error if it's not valid.
 * The default for `box_bg_color` in `Console.log_box_filled()` is now the console foreground color (`None`) instead of `br:green`.
+
 
 <span id="v1-9-6" />
 
