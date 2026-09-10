@@ -1,8 +1,8 @@
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = [
-  "mypy-extensions>=1.1.0",
   "mypy>=1.19.0",
+  "mypy-extensions>=1.1.0",
   "prompt_toolkit>=3.0.41",
   "ruff>=0.15.0",
   "setuptools>=80.0.0",
