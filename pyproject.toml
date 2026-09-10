@@ -107,7 +107,7 @@ reportDeprecated = "warning"
 reportPrivateUsage = "none"
 enableTypeIgnoreComments = false
 include = ["src"]
-exclude = [".venv", "build", "mutants"]
+exclude = ["**/__pycache__", ".agents", ".github", ".venv", "build", "mutants"]
 
 [tool.pytest.ini_options]
 addopts = "-ra -q --cov=xulbux --cov-report=term-missing"
