@@ -104,11 +104,11 @@ def test_s_render_dispatch_and_fallbacks() -> None:
         S("Nested"),
         S.BOLD("Sequence"),
         ("Tuple1", "Tuple2"),
-        S.BOLD,  # Bare _Style
-        S.hex("#FF0000"),  # Bare _ColorStyle
-        S.link("https://example.com"),  # Bare _Link
-        S.BOLD | S.RED,  # Bare _StyleGroup
-        CustomRenderable(),  # type:ignore[arg-type]
+        S.BOLD,  # Bare `_Style`
+        S.hex("#FF0000"),  # Bare `_ColorStyle`
+        S.link("https://example.com"),  # Bare `_Link`
+        S.BOLD | S.RED,  # Bare `_StyleGroup`
+        CustomRenderable(),  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
     )
     assert "CustomStr" in rendered.raw
     assert "Sequence" in rendered.raw

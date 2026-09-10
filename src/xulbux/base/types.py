@@ -31,9 +31,6 @@ type Int_0_360 = int
 type Float_0_1 = float
 """Float constrained to the range [0.0, 1.0] inclusive."""
 
-type FormattableString = str
-"""String made to be formatted with the `.format()` method."""
-
 
 # ************************************************** COLLECTIONS & ITERABLES **************************************************
 

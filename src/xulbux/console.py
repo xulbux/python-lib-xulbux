@@ -6,12 +6,14 @@ and command-line argument parsing.
 """
 
 from .ansi import (
+    _ANSI_SEQ_RX,
     AnyStyle,
     BgColorStyle,
     FgColorStyle,
     Renderable,
     S,
     TextRenderable,
+    _ansi256_to_rgb,
     _Color256Style,
     _ColorStyle,
     is_any_style,
@@ -20,7 +22,7 @@ from .ansi import (
     is_renderable,
     is_text_renderable,
 )
-from .base.consts import ANSI, CHARS
+from .base.consts import CHARS
 from .base.decorators import mypyc_attr
 from .base.types import AllTextChars, ProgressUpdater, SeqOrSet
 from .regex import LazyRegex
@@ -73,8 +75,6 @@ _LOG_TITLE_CACHE_MAX: Final[int] = 256
 
 _TITLE_COLORS_CACHE: Final[dict[object, tuple[BgColorStyle, FgColorStyle]]] = {}
 """Cache of resolved background and matching foreground style pairs."""
-_CUBE_STEPS: Final[tuple[int, ...]] = (0, 95, 135, 175, 215, 255)
-"""RGB step values for the 6x6x6 256-color palette cube."""
 
 _OPT_SEP_DEFAULT: Final[object] = object()
 """Sentinel object used as default for `opt_value_sep` in `ArgumentParser.parse()`."""
@@ -2436,7 +2436,7 @@ def _restore_raw_terminal() -> None:
             with _suppress(Exception):
                 import termios as _termios
 
-                _termios.tcsetattr(_sys.stdin.fileno(), _termios.TCSADRAIN, _original_termios_attrs)
+                _termios.tcsetattr(_sys.stdin.fileno(), _termios.TCSADRAIN, _original_termios_attrs)  # type:ignore[attr-defined]
 
         _original_termios_attrs = None
         _raw_mode_depth = 0
@@ -2471,10 +2471,12 @@ def raw_mode() -> Generator[None, None, None]:
 
     if not _sys.stdin.isatty() or _sys.platform == "win32":
         _raw_mode_depth += 1
+
         try:
             yield
         finally:
             _raw_mode_depth -= 1
+
         return
 
     import termios as _termios
@@ -2482,15 +2484,15 @@ def raw_mode() -> Generator[None, None, None]:
     file_descriptor = _sys.stdin.fileno()
 
     if _raw_mode_depth == 0:
-        _original_termios_attrs = _termios.tcgetattr(file_descriptor)
+        _original_termios_attrs = _termios.tcgetattr(file_descriptor)  # type:ignore[attr-defined]
 
-        modified_attrs = _termios.tcgetattr(file_descriptor)
-        modified_attrs[3] &= ~(_termios.ECHO | _termios.ICANON)
-        modified_attrs[0] &= ~_termios.ICRNL
-        modified_attrs[6][_termios.VMIN] = 1
-        modified_attrs[6][_termios.VTIME] = 0
+        modified_attrs = _termios.tcgetattr(file_descriptor)  # type:ignore[attr-defined]
+        modified_attrs[3] &= ~(_termios.ECHO | _termios.ICANON)  # type:ignore[attr-defined]
+        modified_attrs[0] &= ~_termios.ICRNL  # type:ignore[attr-defined]
+        modified_attrs[6][_termios.VMIN] = 1  # type:ignore[attr-defined]
+        modified_attrs[6][_termios.VTIME] = 0  # type:ignore[attr-defined]
 
-        _termios.tcsetattr(file_descriptor, _termios.TCSANOW, modified_attrs)
+        _termios.tcsetattr(file_descriptor, _termios.TCSANOW, modified_attrs)  # type:ignore[attr-defined]
 
         _sys.stdout.write("\x1b[>1u\x1b[>4;2m")
         _sys.stdout.flush()
@@ -2507,7 +2509,7 @@ def raw_mode() -> Generator[None, None, None]:
             _sys.stdout.flush()
 
             if _original_termios_attrs is not None:
-                _termios.tcsetattr(file_descriptor, _termios.TCSADRAIN, _original_termios_attrs)
+                _termios.tcsetattr(file_descriptor, _termios.TCSADRAIN, _original_termios_attrs)  # type:ignore[attr-defined]
                 _original_termios_attrs = None
 
 
@@ -2623,16 +2625,10 @@ def _resolve_title_colors(title_bg_color: object, /) -> tuple[BgColorStyle, FgCo
             luminance = 0.2126 * title_bg_color._red + 0.7152 * title_bg_color._green + 0.0722 * title_bg_color._blue
             fg_style = S.rgb(255, 255, 255) if luminance < 128 else S.rgb(0, 0, 0)
 
-        elif isinstance(title_bg_color, _Color256Style):
-            if 16 <= (code := title_bg_color._code) <= 231:
-                r_idx, rem = divmod(code - 16, 36)
-                g_idx, b_idx = divmod(rem, 6)
-                luminance = 0.2126 * _CUBE_STEPS[r_idx] + 0.7152 * _CUBE_STEPS[g_idx] + 0.0722 * _CUBE_STEPS[b_idx]
-                fg_style = S.rgb(255, 255, 255) if luminance < 128 else S.rgb(0, 0, 0)
-
-            elif 232 <= code <= 255:
-                gray = 8 + 10 * (code - 232)
-                fg_style = S.rgb(255, 255, 255) if gray < 128 else S.rgb(0, 0, 0)
+        elif isinstance(title_bg_color, _Color256Style) and (code := title_bg_color._code) >= 16:
+            red, green, blue = _ansi256_to_rgb(code)
+            luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue
+            fg_style = S.rgb(255, 255, 255) if luminance < 128 else S.rgb(0, 0, 0)
 
         result: tuple[BgColorStyle, FgColorStyle] = (title_bg_color, fg_style)
         _TITLE_COLORS_CACHE[title_bg_color] = result
@@ -2672,10 +2668,10 @@ def _persist_style(ansi_text: str, style_open: str, /) -> str:
     """Re-inserts `style_open` right after every ANSI escape sequence in `ansi_text`,<br>
     so the style keeps applying even across (e.g., full) resets contained in the text."""
 
-    if not style_open or ANSI.CHAR not in ansi_text:
+    if not style_open or "\x1b" not in ansi_text:
         return ansi_text
 
-    return ANSI.SEQ_PATTERN.sub(r"\g<0>" + style_open.replace("\\", r"\\"), ansi_text)
+    return _ANSI_SEQ_RX.sub(r"\g<0>" + style_open.replace("\\", r"\\"), ansi_text)
 
 
 def _render_log_title(text: str, style: AnyStyle, /) -> str:
@@ -3050,7 +3046,7 @@ class _StdoutInterceptorMixin:
         """Clear the current line where animation or progress is displayed."""
 
         if self._last_line_len > 0 and self._original_stdout:
-            self._original_stdout.write(f"{ANSI.CHAR}[2K\r")
+            self._original_stdout.write("\x1b[2K\r")
             self._original_stdout.flush()
 
     def _flush_buffer(self) -> None:
@@ -3397,7 +3393,7 @@ class ProgressBar(_StdoutInterceptorMixin):
 
         self._current_progress_str = progress_text
         self._last_line_len = len(progress_text)
-        self._original_stdout.write(f"{ANSI.CHAR}[2K\r{progress_text}")
+        self._original_stdout.write(f"\x1b[2K\r{progress_text}")
         self._original_stdout.flush()
 
     def _get_formatted_info_and_bar_width(
@@ -3457,7 +3453,7 @@ class ProgressBar(_StdoutInterceptorMixin):
         """Redraw the current progress bar display on the terminal."""
 
         if self._current_progress_str and self._original_stdout:
-            self._original_stdout.write(f"{ANSI.CHAR}[2K\r{self._current_progress_str}")
+            self._original_stdout.write(f"\x1b[2K\r{self._current_progress_str}")
             self._original_stdout.flush()
 
 
@@ -3738,5 +3734,5 @@ class Throbber(_StdoutInterceptorMixin):
         """Redraw the current throbber animation frame on the terminal."""
 
         if self._current_animation_str and self._original_stdout:
-            self._original_stdout.write(f"{ANSI.CHAR}[2K\r{self._current_animation_str}")
+            self._original_stdout.write(f"\x1b[2K\r{self._current_animation_str}")
             self._original_stdout.flush()

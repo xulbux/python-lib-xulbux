@@ -33,7 +33,7 @@ def is_elevated() -> bool:
         if _os.name == "nt":
             return _ctypes.windll.shell32.IsUserAnAdmin() != 0  # type: ignore[attr-defined]
         elif _os.name == "posix":
-            return _os.geteuid() == 0  # type:ignore[attr-defined]
+            return _os.geteuid() == 0  # type:ignore[attr-defined]  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType,reportUnknownVariableType]
 
     return False
 

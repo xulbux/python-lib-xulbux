@@ -67,7 +67,7 @@ if TYPE_CHECKING:
     import sys
 
     if sys.version_info >= (3, 13):
-        from warnings import deprecated as deprecated  # type:ignore[assignment]
+        from warnings import deprecated as deprecated  # type:ignore[assignment]  # pyright:ignore[reportAssignmentType,reportGeneralTypeIssues]
     else:
         from typing_extensions import deprecated as deprecated  # type:ignore[assignment]
 

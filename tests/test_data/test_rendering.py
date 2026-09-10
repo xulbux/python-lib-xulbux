@@ -16,7 +16,7 @@ def test_render_compactness_levels() -> None:
     rendered_auto = _data_module.render(sample_data, compactness=1)
     assert len(rendered_auto.raw) > 0
 
-    rendered_primitive = _data_module.render(42)  # type:ignore[arg-type]
+    rendered_primitive = _data_module.render(42)  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
     assert rendered_primitive.raw == "42"
 
 
@@ -83,4 +83,4 @@ def test_render_validation_errors() -> None:
         _data_module.render({}, max_width=0)
 
     with pytest.raises(TypeError, match="must be a dict or bool"):
-        _data_module.render({}, syntax_highlighting="invalid_type")  # type:ignore[arg-type]
+        _data_module.render({}, syntax_highlighting="invalid_type")  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]

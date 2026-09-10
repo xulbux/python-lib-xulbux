@@ -283,9 +283,9 @@ def test_parse_rgba_internal() -> None:
     with pytest.raises(ValueError):
         _color_module._parse_rgba("invalid")
     with pytest.raises(ValueError):
-        _color_module._parse_rgba((255, 0))  # type:ignore[arg-type]
+        _color_module._parse_rgba((255, 0))  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError):
-        _color_module._parse_rgba({"red": 255})  # type:ignore[arg-type]
+        _color_module._parse_rgba({"red": 255})  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
 
 
 def test_parse_hsla_internal() -> None:
@@ -300,6 +300,6 @@ def test_parse_hsla_internal() -> None:
     with pytest.raises(ValueError):
         _color_module._parse_hsla("invalid")
     with pytest.raises(ValueError):
-        _color_module._parse_hsla((180, 50))  # type:ignore[arg-type]
+        _color_module._parse_hsla((180, 50))  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError):
-        _color_module._parse_hsla({"hue": 180})  # type:ignore[arg-type]
+        _color_module._parse_hsla({"hue": 180})  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]

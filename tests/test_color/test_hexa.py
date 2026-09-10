@@ -28,7 +28,7 @@ def test_hexa_init() -> None:
         blue = 0
         alpha = 0.5
 
-    color_from_obj = hexa(CustomColorObject())  # type:ignore[arg-type]
+    color_from_obj = hexa(CustomColorObject())  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
     assert color_from_obj.red == 255
     assert color_from_obj.alpha is not None and math.isclose(color_from_obj.alpha, 0.5)
 

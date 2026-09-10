@@ -70,10 +70,10 @@ def test_progress_bar_display_and_context() -> None:
         update_progress(6000, label="Updated label")
         bar._last_update_time = 0.0
         # Positional with current kwarg:
-        update_progress(8000, current=8500)  # type:ignore[call-overload]
+        update_progress(8000, current=8500)  # type:ignore[call-overload]  # pyright:ignore[reportCallIssue]
         bar._last_update_time = 0.0
         # None current with label:
-        update_progress(None, "Only label")  # type:ignore[call-overload]
+        update_progress(None, "Only label")  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
         bar._last_update_time = 0.0
         update_progress(10000, "Completed")
         # Over 100% hides progress:
@@ -91,11 +91,11 @@ def test_progress_bar_display_and_context() -> None:
     # Progress helper validation errors:
     with bar.progress_context(100) as update_fn:
         with pytest.raises(TypeError, match="1 or 2 positional arguments"):
-            update_fn(1, 2, 3)  # type:ignore[call-overload]
+            update_fn(1, 2, 3)  # type:ignore[call-overload]  # pyright:ignore[reportCallIssue]
         with pytest.raises(TypeError, match="1 or 2 positional arguments"):
-            update_fn()  # type:ignore[call-overload]
+            update_fn()  # type:ignore[call-overload]  # pyright:ignore[reportCallIssue]
         with pytest.raises(TypeError, match="must be provided"):
-            update_fn(None)  # type:ignore[call-overload]
+            update_fn(None)  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
 
     # Validation errors on show_progress:
     with pytest.raises(ValueError, match="current"):

@@ -3,48 +3,12 @@
 """
 Provides constant values used throughout the library.
 
-Includes character sets and ANSI escape sequences.
+Includes character sets and terminal key sequences.
 """
 
-from .types import AllTextChars, FormattableString
+from .types import AllTextChars
 
 from typing import Final
-import regex as _rx
-from regex import Pattern
-
-
-class ANSI:
-    """Constants and utilities for ANSI escape code sequences."""
-
-    # ********************** ESCAPE CHARACTERS **********************
-
-    CHAR_ESCAPED: Final[str] = r"\x1b"
-    """Printable ANSI escape character."""
-    CHAR: Final[str] = "\x1b"
-    """ANSI escape character."""
-
-    # *********************** COLOR SEQUENCES ***********************
-
-    SEQ_FG_COLOR: Final[FormattableString] = f"{CHAR}[38;2;{{}};{{}};{{}}m"
-    """RGB foreground color sequence with placeholders for red, green, and blue values."""
-    SEQ_BG_COLOR: Final[FormattableString] = f"{CHAR}[48;2;{{}};{{}};{{}}m"
-    """RGB background color sequence with placeholders for red, green, and blue values."""
-    SEQ_FG_COLOR_256: Final[FormattableString] = f"{CHAR}[38;5;{{}}m"
-    """256-color foreground sequence with placeholder for color index (0-255)."""
-    SEQ_BG_COLOR_256: Final[FormattableString] = f"{CHAR}[48;5;{{}}m"
-    """256-color background sequence with placeholder for color index (0-255)."""
-
-    # *********************** LINK SEQUENCES ************************
-
-    SEQ_LINK_OPEN: Final[FormattableString] = f"{CHAR}]8;;{{}}{CHAR}\\"
-    """OSC 8 hyperlink opening sequence with a placeholder for the URL."""
-    SEQ_LINK_CLOSE: Final[str] = f"{CHAR}]8;;{CHAR}\\"
-    """OSC 8 hyperlink closing sequence."""
-
-    # *********************** REGEX PATTERNS ************************
-
-    SEQ_PATTERN: Final[Pattern[str]] = _rx.compile(CHAR + r"(?:\].*?(?:\x1b\\|\x07)|\[[0-?]*[ -/]*[@-~]|[@-Z\\-_c]|[0-9=><])")
-    """Compiled regex pattern matching any ANSI escape sequence (CSI, OSC, or single-character)."""
 
 
 class CHARS:
@@ -59,38 +23,40 @@ class CHARS:
 
     DIGITS: Final[str] = "0123456789"
     """Numeric digits: `0`-`9`"""
-    FLOAT_DIGITS: Final[str] = "." + DIGITS
+    FLOAT_DIGITS: Final[str] = ".0123456789"
     """Numeric digits with decimal point: `0`-`9` and `.`"""
-    HEX_DIGITS: Final[str] = "#" + DIGITS + "abcdefABCDEF"
+    HEX_DIGITS: Final[str] = "#0123456789abcdefABCDEF"
     """Hexadecimal digits: `0`-`9`, `a`-`f`, `A`-`F`, and `#`"""
 
     # *************************** LETTERS ***************************
 
+    # fmt:off
     LOWERCASE: Final[str] = "abcdefghijklmnopqrstuvwxyz"
     """Lowercase ASCII letters: `a`-`z`"""
-    LOWERCASE_EXTENDED: Final[str] = LOWERCASE + "äëïöüÿàèìòùáéíóúýâêîôûãñõåæç"
+    LOWERCASE_EXTENDED: Final[str] = "abcdefghijklmnopqrstuvwxyzäëïöüÿàèìòùáéíóúýâêîôûãñõåæç"
     """Lowercase ASCII letters with diacritic marks."""
     UPPERCASE: Final[str] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     """Uppercase ASCII letters: `A`-`Z`"""
-    UPPERCASE_EXTENDED: Final[str] = UPPERCASE + "ÄËÏÖÜÀÈÌÒÙÁÉÍÓÚÝÂÊÎÔÛÃÑÕÅÆÇß"
+    UPPERCASE_EXTENDED: Final[str] = "ABCDEFGHIJKLMNOPQRSTUVWXYZÄËÏÖÜÀÈÌÒÙÁÉÍÓÚÝÂÊÎÔÛÃÑÕÅÆÇß"
     """Uppercase ASCII letters with diacritic marks."""
-    LETTERS: Final[str] = LOWERCASE + UPPERCASE
+    LETTERS: Final[str] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     """All ASCII letters: `a`-`z` and `A`-`Z`"""
-    LETTERS_EXTENDED: Final[str] = LOWERCASE_EXTENDED + UPPERCASE_EXTENDED
+    LETTERS_EXTENDED: Final[str] = "abcdefghijklmnopqrstuvwxyzäëïöüÿàèìòùáéíóúýâêîôûãñõåæçABCDEFGHIJKLMNOPQRSTUVWXYZÄËÏÖÜÀÈÌÒÙÁÉÍÓÚÝÂÊÎÔÛÃÑÕÅÆÇß"  # ruff:ignore[line-too-long]
     """All ASCII letters with diacritic marks."""
+    # fmt:on
 
     # ******************** SPECIAL & FULL ASCII *********************
 
+    # fmt:off
     SPECIAL_ASCII: Final[str] = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
     """Standard ASCII special characters and symbols."""
-    SPECIAL_ASCII_EXTENDED: Final[str] = (
-        SPECIAL_ASCII + "ø£Ø×ƒªº¿®¬½¼¡«»░▒▓│┤©╣║╗╝¢¥┐└┴┬├─┼╚╔╩╦╠═╬¤ðÐı┘┌█▄¦▀µþÞ¯´≡­±‗¾¶§÷¸°¨·¹³²■ "
-    )
+    SPECIAL_ASCII_EXTENDED: Final[str] = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ø£Ø×ƒªº¿®¬½¼¡«»░▒▓│┤©╣║╗╝¢¥┐└┴┬├─┼╚╔╩╦╠═╬¤ðÐı┘┌█▄¦▀µþÞ¯´≡­±‗¾¶§÷¸°¨·¹³²■ "  # ruff:ignore[line-too-long]
     """Standard and extended ASCII special characters."""
-    STANDARD_ASCII: Final[str] = DIGITS + LETTERS + SPECIAL_ASCII
+    STANDARD_ASCII: Final[str] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"  # ruff:ignore[line-too-long]
     """All standard ASCII characters (letters, digits, and symbols)."""
-    FULL_ASCII: Final[str] = DIGITS + LETTERS_EXTENDED + SPECIAL_ASCII_EXTENDED
+    FULL_ASCII: Final[str] = "0123456789abcdefghijklmnopqrstuvwxyzäëïöüÿàèìòùáéíóúýâêîôûãñõåæçABCDEFGHIJKLMNOPQRSTUVWXYZÄËÏÖÜÀÈÌÒÙÁÉÍÓÚÝÂÊÎÔÛÃÑÕÅÆÇß !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ø£Ø×ƒªº¿®¬½¼¡«»░▒▓│┤©╣║╗╝¢¥┐└┴┬├─┼╚╔╩╦╠═╬¤ðÐı┘┌█▄¦▀µþÞ¯´≡­±‗¾¶§÷¸°¨·¹³²■ "  # ruff:ignore[line-too-long]
     """Complete ASCII character set including extended characters."""
+    # fmt:on
 
 
 class KEYS:
@@ -203,8 +169,8 @@ class KEYS:
     """`Shift+Enter` key sequences."""
     ESCAPE: Final[frozenset[str]] = frozenset(("\x1b", "\x1b[27u", "\x1b\x1b"))
     """Escape and double-escape key representations."""
-    SPACE: Final[frozenset[str]] = frozenset((" ", "\x1b[32u"))
-    """Space character representations."""
+    SPACEBAR: Final[frozenset[str]] = frozenset((" ", "\x1b[32u"))
+    """Space bar key representations."""
 
     # ************************ FUNCTION KEYS *************************
 

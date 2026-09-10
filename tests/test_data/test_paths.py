@@ -173,10 +173,10 @@ def test_set_value_by_path_id() -> None:
     single_tuple = (10, 20)
     assert _data_module.set_value_by_path_id(single_tuple, {"10": 99}) == (99, 20)
 
-    res = _set_nested_val(1, [0, 0], 2)  # type:ignore[arg-type]
+    res = _set_nested_val(1, [0, 0], 2)  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
     assert res == 1
 
-    res_single = _set_nested_val(1, [0], 2)  # type:ignore[arg-type]
+    res_single = _set_nested_val(1, [0], 2)  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
     assert res_single == 1
 
 

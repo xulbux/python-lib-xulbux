@@ -251,21 +251,21 @@ def test_box_validation() -> None:
     with pytest.raises(ValueError, match="border_style"):
         box("Error", border_style=S.BG.RED)
     with pytest.raises(ValueError, match="border_style"):
-        box("Error", border_style=object())  # type:ignore[arg-type,call-overload]
+        box("Error", border_style=object())  # type:ignore[arg-type,call-overload]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="border"):
-        box("Error", border="invalid")  # type:ignore[arg-type,call-overload]
+        box("Error", border="invalid")  # type:ignore[arg-type,call-overload]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="bg"):
-        box("Error", bg="invalid")  # type:ignore[arg-type,call-overload]
+        box("Error", bg="invalid")  # type:ignore[arg-type,call-overload]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="width"):
         box("Error", width=-1)
     with pytest.raises(ValueError, match="width"):
         box("Error", width=3)  # too small: min is 2 + 2*1 + 1 = 5
     with pytest.raises(ValueError, match="width"):
-        box("Error", width="invalid")  # type:ignore[arg-type,call-overload]
+        box("Error", width="invalid")  # type:ignore[arg-type,call-overload]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="width"):
         box("Error", width=True)  # type:ignore[arg-type,call-overload]
     with pytest.raises(ValueError, match="align"):
-        box("Error", align="invalid")  # type:ignore[arg-type,call-overload]
+        box("Error", align="invalid")  # type:ignore[arg-type,call-overload]  # pyright:ignore[reportArgumentType]
 
 
 def test_box_alignment() -> None:

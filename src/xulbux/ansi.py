@@ -196,8 +196,6 @@ These are plain strings (or string-returning helpers), so they can be passed dir
 
 from __future__ import annotations
 
-from .base.consts import ANSI
-
 import base64 as _base64
 import ctypes as _ctypes
 import os as _os
@@ -206,13 +204,13 @@ import textwrap as _textwrap
 from contextlib import suppress as _suppress
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Final, Literal, Self, TextIO, cast, overload
+import regex as _rx
 
 if TYPE_CHECKING:
     from .color import hexa, rgba
 
     import sys
     from collections.abc import Iterable, Iterator
-    import regex as _rx
 
     if sys.version_info >= (3, 13):
         from typing import TypeIs
@@ -222,9 +220,8 @@ if TYPE_CHECKING:
 _terminal_configured: bool = False
 """Whether the terminal was already configured to be able to interpret and render ANSI styling."""
 
-_ANSI_SEQ_RX: Final[_rx.Pattern[str]] = ANSI.SEQ_PATTERN
-"""Module shorthand for `ANSI.SEQ_PATTERN`.<br>
-Matches any ANSI escape sequence (CSI, OSC, or single-character)."""
+_ANSI_SEQ_RX: Final[_rx.Pattern[str]] = _rx.compile(r"\x1b(?:\].*?(?:\x1b\\|\x07)|\[[0-?]*[ -/]*[@-~]|[@-Z\\-_c]|[0-9=><])")
+"""Compiled regex pattern matching any ANSI escape sequence (CSI, OSC, or single-character)."""
 
 # fmt:off
 _RESET_MAP: Final[dict[int, int]] = {
@@ -244,7 +241,7 @@ Codes that fully reset everything (`0`) or have no useful specific reset are int
 # fmt:on
 
 _STANDARD_SEQS: Final[dict[int, tuple[tuple[str, ...], tuple[str, ...]]],] = {
-    cid: ((f"{ANSI.CHAR}[{cid}m",), (f"{ANSI.CHAR}[{reset}m",)) for cid, reset in _RESET_MAP.items()
+    cid: ((f"\x1b[{cid}m",), (f"\x1b[{reset}m",)) for cid, reset in _RESET_MAP.items()
 }
 """Pre-computed `(opens, closes)` tuple pairs for every standard single-code SGR style.\n
 Used as a fast path in `_build_open_close` to avoid per-call list and string allocations."""
@@ -378,13 +375,13 @@ class _BuildOpenClose:
         closes: list[str] = []
 
         if self.link_url is not None:
-            opens.append(ANSI.SEQ_LINK_OPEN.format(self.link_url))
+            opens.append(f"\x1b]8;;{self.link_url}\x1b\\")
         if self.sgr_open:
-            opens.append(f"{ANSI.CHAR}[{';'.join(self.sgr_open)}m")
+            opens.append(f"\x1b[{';'.join(self.sgr_open)}m")
         if dedup_close:
-            closes.append(f"{ANSI.CHAR}[{';'.join(dedup_close)}m")
+            closes.append(f"\x1b[{';'.join(dedup_close)}m")
         if self.link_url is not None:
-            closes.append(ANSI.SEQ_LINK_CLOSE)
+            closes.append("\x1b]8;;\x1b\\")
 
         return tuple(opens), tuple(closes)
 
@@ -761,7 +758,7 @@ class _SBase:
         user_input = input(self.ansi)
 
         if reset_ansi:
-            _sys.stdout.write(f"{ANSI.CHAR}[0m")
+            _sys.stdout.write("\x1b[0m")
 
         return user_input
 
@@ -781,7 +778,7 @@ class _Style(_SBase):
 
     def __init__(self, value: int, /) -> None:
         self._value: int = value
-        self.ansi = f"{ANSI.CHAR}[{value}m"
+        self.ansi = f"\x1b[{value}m"
 
     def __int__(self) -> int:
         return self._value
@@ -870,11 +867,11 @@ class _ColorStyle(_SBase):
         self._bg: bool = bg
 
         if bg:
-            self._open_seq: str = ANSI.SEQ_BG_COLOR.format(red, green, blue)
-            self._close_seq: str = f"{ANSI.CHAR}[49m"
+            self._open_seq: str = f"\x1b[48;2;{red};{green};{blue}m"
+            self._close_seq: str = "\x1b[49m"
         else:
-            self._open_seq = ANSI.SEQ_FG_COLOR.format(red, green, blue)
-            self._close_seq = f"{ANSI.CHAR}[39m"
+            self._open_seq = f"\x1b[38;2;{red};{green};{blue}m"
+            self._close_seq = "\x1b[39m"
 
         self.ansi = self._open_seq
 
@@ -1092,11 +1089,11 @@ class _Color256Style(_SBase):
         self._bg: bool = bg
 
         if bg:
-            self._open_seq: str = ANSI.SEQ_BG_COLOR_256.format(code)
-            self._close_seq: str = f"{ANSI.CHAR}[49m"
+            self._open_seq: str = f"\x1b[48;5;{code}m"
+            self._close_seq: str = "\x1b[49m"
         else:
-            self._open_seq = ANSI.SEQ_FG_COLOR_256.format(code)
-            self._close_seq = f"{ANSI.CHAR}[39m"
+            self._open_seq = f"\x1b[38;5;{code}m"
+            self._close_seq = "\x1b[39m"
 
         self.ansi = self._open_seq
 
@@ -1227,8 +1224,8 @@ class _Link(_SBase):
 
     def __init__(self, url: str | Path, /) -> None:
         self._url: str = url.resolve().as_uri() if isinstance(url, Path) else url
-        self._open_seq: str = ANSI.SEQ_LINK_OPEN.format(self._url)
-        self._close_seq: str = ANSI.SEQ_LINK_CLOSE
+        self._open_seq: str = f"\x1b]8;;{self._url}\x1b\\"
+        self._close_seq: str = "\x1b]8;;\x1b\\"
         self.ansi = self._open_seq
 
     def __or__(self, other: AnyStyle) -> _StyleGroup:
@@ -1817,146 +1814,146 @@ class Term:
 
     BELL: ClassVar[str] = "\x07"
     """Terminal bell character to trigger an audio or visual alert."""
-    CLEAR_LINE: ClassVar[str] = f"{ANSI.CHAR}[2K"
+    CLEAR_LINE: ClassVar[str] = "\x1b[2K"
     """Erase the entire current line."""
-    CLEAR_LINE_TO_END: ClassVar[str] = f"{ANSI.CHAR}[0K"
+    CLEAR_LINE_TO_END: ClassVar[str] = "\x1b[0K"
     """Erase from the cursor to the end of the current line."""
-    CLEAR_LINE_TO_START: ClassVar[str] = f"{ANSI.CHAR}[1K"
+    CLEAR_LINE_TO_START: ClassVar[str] = "\x1b[1K"
     """Erase from the beginning of the line up to the cursor."""
-    CLEAR_SCREEN: ClassVar[str] = f"{ANSI.CHAR}[2J"
+    CLEAR_SCREEN: ClassVar[str] = "\x1b[2J"
     """Erase the whole screen."""
-    CLEAR_SCREEN_TO_END: ClassVar[str] = f"{ANSI.CHAR}[0J"
+    CLEAR_SCREEN_TO_END: ClassVar[str] = "\x1b[0J"
     """Erase from the cursor to the end of the screen."""
-    CLEAR_SCREEN_TO_START: ClassVar[str] = f"{ANSI.CHAR}[1J"
+    CLEAR_SCREEN_TO_START: ClassVar[str] = "\x1b[1J"
     """Erase from the beginning of the screen up to the cursor."""
-    CLEAR_SCROLLBACK: ClassVar[str] = f"{ANSI.CHAR}[3J"
+    CLEAR_SCROLLBACK: ClassVar[str] = "\x1b[3J"
     """Erase the terminal scrollback history buffer."""
-    CUR_HIDE: ClassVar[str] = f"{ANSI.CHAR}[?25l"
+    CUR_HIDE: ClassVar[str] = "\x1b[?25l"
     """Hide the cursor."""
-    CUR_SHOW: ClassVar[str] = f"{ANSI.CHAR}[?25h"
+    CUR_SHOW: ClassVar[str] = "\x1b[?25h"
     """Show the cursor."""
-    CUR_HOME: ClassVar[str] = f"{ANSI.CHAR}[H"
+    CUR_HOME: ClassVar[str] = "\x1b[H"
     """Move the cursor to the home position (0,0) (CUP/HVP)."""
-    CUR_SAVE: ClassVar[str] = f"{ANSI.CHAR}[s"
+    CUR_SAVE: ClassVar[str] = "\x1b[s"
     """Save the current cursor position (ANSI.SYS / SCO)."""
-    CUR_RESTORE: ClassVar[str] = f"{ANSI.CHAR}[u"
+    CUR_RESTORE: ClassVar[str] = "\x1b[u"
     """Restore the previously saved cursor position (ANSI.SYS / SCO)."""
-    CUR_SAVE_DEC: ClassVar[str] = f"{ANSI.CHAR}7"
+    CUR_SAVE_DEC: ClassVar[str] = "\x1b7"
     """Save cursor position and attributes (DEC private sequence ESC 7)."""
-    CUR_RESTORE_DEC: ClassVar[str] = f"{ANSI.CHAR}8"
+    CUR_RESTORE_DEC: ClassVar[str] = "\x1b8"
     """Restore cursor position and attributes (DEC private sequence ESC 8)."""
-    ALT_SCREEN: ClassVar[str] = f"{ANSI.CHAR}[?1049h"
+    ALT_SCREEN: ClassVar[str] = "\x1b[?1049h"
     """Enter the alternate screen buffer."""
-    MAIN_SCREEN: ClassVar[str] = f"{ANSI.CHAR}[?1049l"
+    MAIN_SCREEN: ClassVar[str] = "\x1b[?1049l"
     """Leave the alternate screen buffer."""
-    BRACKETED_PASTE_ENABLE: ClassVar[str] = f"{ANSI.CHAR}[?2004h"
+    BRACKETED_PASTE_ENABLE: ClassVar[str] = "\x1b[?2004h"
     """Enable bracketed paste mode (wraps pasted text in paste brackets)."""
-    BRACKETED_PASTE_DISABLE: ClassVar[str] = f"{ANSI.CHAR}[?2004l"
+    BRACKETED_PASTE_DISABLE: ClassVar[str] = "\x1b[?2004l"
     """Disable bracketed paste mode."""
-    LINE_WRAP_ENABLE: ClassVar[str] = f"{ANSI.CHAR}[?7h"
+    LINE_WRAP_ENABLE: ClassVar[str] = "\x1b[?7h"
     """Enable line wrapping (DECAWM)."""
-    LINE_WRAP_DISABLE: ClassVar[str] = f"{ANSI.CHAR}[?7l"
+    LINE_WRAP_DISABLE: ClassVar[str] = "\x1b[?7l"
     """Disable line wrapping (DECAWM)."""
-    RESET: ClassVar[str] = f"{ANSI.CHAR}c"
+    RESET: ClassVar[str] = "\x1bc"
     """Hard reset to initial state (RIS)."""
-    SOFT_RESET: ClassVar[str] = f"{ANSI.CHAR}[!p"
+    SOFT_RESET: ClassVar[str] = "\x1b[!p"
     """Soft terminal reset to sensible defaults (DECSTR)."""
 
     @staticmethod
     def up(n: int = 1, /) -> str:
         """Move the cursor up by `n` rows."""
 
-        return f"{ANSI.CHAR}[{n}A"
+        return f"\x1b[{n}A"
 
     @staticmethod
     def down(n: int = 1, /) -> str:
         """Move the cursor down by `n` rows."""
 
-        return f"{ANSI.CHAR}[{n}B"
+        return f"\x1b[{n}B"
 
     @staticmethod
     def left(n: int = 1, /) -> str:
         """Move the cursor left by `n` columns."""
 
-        return f"{ANSI.CHAR}[{n}D"
+        return f"\x1b[{n}D"
 
     @staticmethod
     def right(n: int = 1, /) -> str:
         """Move the cursor right by `n` columns."""
 
-        return f"{ANSI.CHAR}[{n}C"
+        return f"\x1b[{n}C"
 
     @staticmethod
     def prev_line(n: int = 1, /) -> str:
         """Move the cursor to the beginning of the previous line, `n` lines up."""
 
-        return f"{ANSI.CHAR}[{n}F"
+        return f"\x1b[{n}F"
 
     @staticmethod
     def next_line(n: int = 1, /) -> str:
         """Move the cursor to the beginning of the next line, `n` lines down."""
 
-        return f"{ANSI.CHAR}[{n}E"
+        return f"\x1b[{n}E"
 
     @staticmethod
     def row(row: int = 1, /) -> str:
         """Move the cursor to absolute row `row` in the current column (1-based, VPA)."""
 
-        return f"{ANSI.CHAR}[{row}d"
+        return f"\x1b[{row}d"
 
     @staticmethod
     def col(col: int = 1, /) -> str:
         """Move the cursor to absolute column `col` in the current row (1-based, CHA)."""
 
-        return f"{ANSI.CHAR}[{col}G"
+        return f"\x1b[{col}G"
 
     @staticmethod
     def move(row: int, col: int, /) -> str:
         """Move the cursor to absolute position `(row, col)` (1-based, CUP)."""
 
-        return f"{ANSI.CHAR}[{row};{col}H"
+        return f"\x1b[{row};{col}H"
 
     @staticmethod
     def insert_lines(n: int = 1, /) -> str:
         """Insert `n` blank lines at the current row (IL)."""
 
-        return f"{ANSI.CHAR}[{n}L"
+        return f"\x1b[{n}L"
 
     @staticmethod
     def delete_lines(n: int = 1, /) -> str:
         """Delete `n` lines starting from the current row (DL)."""
 
-        return f"{ANSI.CHAR}[{n}M"
+        return f"\x1b[{n}M"
 
     @staticmethod
     def insert_chars(n: int = 1, /) -> str:
         """Insert `n` blank characters at the current cursor position (ICH)."""
 
-        return f"{ANSI.CHAR}[{n}@"
+        return f"\x1b[{n}@"
 
     @staticmethod
     def delete_chars(n: int = 1, /) -> str:
         """Delete `n` characters at the current cursor position (DCH)."""
 
-        return f"{ANSI.CHAR}[{n}P"
+        return f"\x1b[{n}P"
 
     @staticmethod
     def scroll_up(n: int = 1, /) -> str:
         """Scroll page up by `n` lines."""
 
-        return f"{ANSI.CHAR}[{n}S"
+        return f"\x1b[{n}S"
 
     @staticmethod
     def scroll_down(n: int = 1, /) -> str:
         """Scroll page down by `n` lines."""
 
-        return f"{ANSI.CHAR}[{n}T"
+        return f"\x1b[{n}T"
 
     @staticmethod
     def title(text: str, /) -> str:
         """Set the terminal window / tab title (OSC 2)."""
 
-        return f"{ANSI.CHAR}]2;{text}\x07"
+        return f"\x1b]2;{text}\x07"
 
     @staticmethod
     def cursor_shape(
@@ -1991,18 +1988,18 @@ class Term:
                 f"Expected cursor shape in [1, 6] inclusive, or one of {list(_CURSOR_SHAPES.keys())!r}, got {shape!r}"
             )
 
-        return f"{ANSI.CHAR}[{shape_num} q"
+        return f"\x1b[{shape_num} q"
 
     @staticmethod
     def clipboard_copy(text: str, /) -> str:
         """Copy `text` to the system clipboard (OSC 52)."""
 
         encoded = _base64.b64encode(text.encode("utf-8")).decode("ascii")
-        return f"{ANSI.CHAR}]52;c;{encoded}{ANSI.CHAR}\\"
+        return f"\x1b]52;c;{encoded}\x1b\\"
 
     @staticmethod
     def cwd(path: str | Path, /) -> str:
         """Notify the terminal of the current working directory (OSC 7)."""
 
         uri = path.resolve().as_uri() if isinstance(path, Path) else path
-        return f"{ANSI.CHAR}]7;{uri}{ANSI.CHAR}\\"
+        return f"\x1b]7;{uri}\x1b\\"

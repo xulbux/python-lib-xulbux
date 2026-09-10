@@ -3,86 +3,86 @@ from collections.abc import Callable
 from pathlib import Path
 from unittest.mock import MagicMock
 import xulbux.ansi as _ansi_module
-from xulbux.ansi import S, Term, _build_open_close, _config_terminal, _StyleGroup
-from xulbux.base.consts import ANSI
+from xulbux.ansi import _ANSI_SEQ_RX, S, Term, _build_open_close, _config_terminal, _StyleGroup
 from xulbux.color import hexa, rgba
 import pytest
 
 
 def test_term_control_constants() -> None:
-    assert f"{ANSI.CHAR}[2K" == Term.CLEAR_LINE
-    assert f"{ANSI.CHAR}[0K" == Term.CLEAR_LINE_TO_END
-    assert f"{ANSI.CHAR}[1K" == Term.CLEAR_LINE_TO_START
-    assert f"{ANSI.CHAR}[2J" == Term.CLEAR_SCREEN
-    assert f"{ANSI.CHAR}[0J" == Term.CLEAR_SCREEN_TO_END
-    assert f"{ANSI.CHAR}[1J" == Term.CLEAR_SCREEN_TO_START
-    assert f"{ANSI.CHAR}[3J" == Term.CLEAR_SCROLLBACK
-    assert f"{ANSI.CHAR}[?25l" == Term.CUR_HIDE
-    assert f"{ANSI.CHAR}[?25h" == Term.CUR_SHOW
-    assert f"{ANSI.CHAR}[?1049h" == Term.ALT_SCREEN
-    assert f"{ANSI.CHAR}[?1049l" == Term.MAIN_SCREEN
+    assert Term.CLEAR_LINE == "\x1b[2K"
+    assert Term.CLEAR_LINE_TO_END == "\x1b[0K"
+    assert Term.CLEAR_LINE_TO_START == "\x1b[1K"
+    assert Term.CLEAR_SCREEN == "\x1b[2J"
+    assert Term.CLEAR_SCREEN_TO_END == "\x1b[0J"
+    assert Term.CLEAR_SCREEN_TO_START == "\x1b[1J"
+    assert Term.CLEAR_SCROLLBACK == "\x1b[3J"
+    assert Term.CUR_HIDE == "\x1b[?25l"
+    assert Term.CUR_SHOW == "\x1b[?25h"
+    assert Term.ALT_SCREEN == "\x1b[?1049h"
+    assert Term.MAIN_SCREEN == "\x1b[?1049l"
     assert Term.BELL == "\x07"
-    assert f"{ANSI.CHAR}[?2004h" == Term.BRACKETED_PASTE_ENABLE
-    assert f"{ANSI.CHAR}[?2004l" == Term.BRACKETED_PASTE_DISABLE
-    assert f"{ANSI.CHAR}[?7h" == Term.LINE_WRAP_ENABLE
-    assert f"{ANSI.CHAR}[?7l" == Term.LINE_WRAP_DISABLE
-    assert f"{ANSI.CHAR}c" == Term.RESET
-    assert f"{ANSI.CHAR}[!p" == Term.SOFT_RESET
-    assert f"{ANSI.CHAR}[H" == Term.CUR_HOME
-    assert f"{ANSI.CHAR}[s" == Term.CUR_SAVE
-    assert f"{ANSI.CHAR}[u" == Term.CUR_RESTORE
-    assert f"{ANSI.CHAR}7" == Term.CUR_SAVE_DEC
-    assert f"{ANSI.CHAR}8" == Term.CUR_RESTORE_DEC
+    assert Term.BRACKETED_PASTE_ENABLE == "\x1b[?2004h"
+    assert Term.BRACKETED_PASTE_DISABLE == "\x1b[?2004l"
+    assert Term.LINE_WRAP_ENABLE == "\x1b[?7h"
+    assert Term.LINE_WRAP_DISABLE == "\x1b[?7l"
+    assert Term.RESET == "\x1bc"
+    assert Term.SOFT_RESET == "\x1b[!p"
+    assert Term.CUR_HOME == "\x1b[H"
+    assert Term.CUR_SAVE == "\x1b[s"
+    assert Term.CUR_RESTORE == "\x1b[u"
+    assert Term.CUR_SAVE_DEC == "\x1b7"
+    assert Term.CUR_RESTORE_DEC == "\x1b8"
 
 
 def test_term_cursor_methods() -> None:
-    assert Term.up(3) == f"{ANSI.CHAR}[3A"
-    assert Term.down(2) == f"{ANSI.CHAR}[2B"
-    assert Term.left(4) == f"{ANSI.CHAR}[4D"
-    assert Term.right(5) == f"{ANSI.CHAR}[5C"
-    assert Term.prev_line(1) == f"{ANSI.CHAR}[1F"
-    assert Term.next_line(2) == f"{ANSI.CHAR}[2E"
-    assert Term.row(10) == f"{ANSI.CHAR}[10d"
-    assert Term.row() == f"{ANSI.CHAR}[1d"
-    assert Term.col(10) == f"{ANSI.CHAR}[10G"
-    assert Term.col() == f"{ANSI.CHAR}[1G"
-    assert Term.move(10, 20) == f"{ANSI.CHAR}[10;20H"
-    assert Term.insert_lines(2) == f"{ANSI.CHAR}[2L"
-    assert Term.delete_lines(3) == f"{ANSI.CHAR}[3M"
-    assert Term.insert_chars(4) == f"{ANSI.CHAR}[4@"
-    assert Term.delete_chars(5) == f"{ANSI.CHAR}[5P"
-    assert Term.scroll_up(2) == f"{ANSI.CHAR}[2S"
-    assert Term.scroll_down(3) == f"{ANSI.CHAR}[3T"
-    assert Term.title("Terminal Title") == f"{ANSI.CHAR}]2;Terminal Title\x07"
+    assert Term.up(3) == "\x1b[3A"
+    assert Term.down(2) == "\x1b[2B"
+    assert Term.left(4) == "\x1b[4D"
+    assert Term.right(5) == "\x1b[5C"
+    assert Term.prev_line(1) == "\x1b[1F"
+    assert Term.next_line(2) == "\x1b[2E"
+    assert Term.row(10) == "\x1b[10d"
+    assert Term.row() == "\x1b[1d"
+    assert Term.col(10) == "\x1b[10G"
+    assert Term.col() == "\x1b[1G"
+    assert Term.move(10, 20) == "\x1b[10;20H"
+    assert Term.insert_lines(2) == "\x1b[2L"
+    assert Term.delete_lines(3) == "\x1b[3M"
+    assert Term.insert_chars(4) == "\x1b[4@"
+    assert Term.delete_chars(5) == "\x1b[5P"
+    assert Term.scroll_up(2) == "\x1b[2S"
+    assert Term.scroll_down(3) == "\x1b[3T"
+    assert Term.title("Terminal Title") == "\x1b]2;Terminal Title\x07"
 
 
 def test_term_cursor_shape() -> None:
-    assert Term.cursor_shape("blinking_block") == f"{ANSI.CHAR}[1 q"
-    assert Term.cursor_shape("steady_block") == f"{ANSI.CHAR}[2 q"
-    assert Term.cursor_shape("blinking_underline") == f"{ANSI.CHAR}[3 q"
-    assert Term.cursor_shape("steady_underline") == f"{ANSI.CHAR}[4 q"
-    assert Term.cursor_shape("blinking_bar") == f"{ANSI.CHAR}[5 q"
-    assert Term.cursor_shape("steady_bar") == f"{ANSI.CHAR}[6 q"
-    assert Term.cursor_shape(1) == f"{ANSI.CHAR}[1 q"
-    assert Term.cursor_shape(6) == f"{ANSI.CHAR}[6 q"
+    assert Term.cursor_shape("blinking_block") == "\x1b[1 q"
+    assert Term.cursor_shape("steady_block") == "\x1b[2 q"
+    assert Term.cursor_shape("blinking_underline") == "\x1b[3 q"
+    assert Term.cursor_shape("steady_underline") == "\x1b[4 q"
+    assert Term.cursor_shape("blinking_bar") == "\x1b[5 q"
+    assert Term.cursor_shape("steady_bar") == "\x1b[6 q"
+    assert Term.cursor_shape(1) == "\x1b[1 q"
+    assert Term.cursor_shape(6) == "\x1b[6 q"
 
     with pytest.raises(ValueError, match="cursor shape"):
-        Term.cursor_shape(0)  # type:ignore[arg-type]
+        Term.cursor_shape(0)  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="cursor shape"):
-        Term.cursor_shape(7)  # type:ignore[arg-type]
+        Term.cursor_shape(7)  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="cursor shape"):
-        Term.cursor_shape("invalid_shape")  # type:ignore[arg-type]
+        Term.cursor_shape("invalid_shape")  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
 
 
 def test_term_clipboard_and_cwd() -> None:
-    assert Term.clipboard_copy("hello world") == f"{ANSI.CHAR}]52;c;aGVsbG8gd29ybGQ={ANSI.CHAR}\\"
-    assert Term.cwd("/custom/path") == f"{ANSI.CHAR}]7;/custom/path{ANSI.CHAR}\\"
+    assert Term.clipboard_copy("hello world") == "\x1b]52;c;aGVsbG8gd29ybGQ=\x1b\\"
+    assert Term.cwd("/custom/path") == "\x1b]7;/custom/path\x1b\\"
     cwd_path_res = Term.cwd(Path("tests/test_ansi"))
     assert "file://" in cwd_path_res
-    assert cwd_path_res.startswith(f"{ANSI.CHAR}]7;")
-    assert cwd_path_res.endswith(f"{ANSI.CHAR}\\")
+    assert cwd_path_res.startswith("\x1b]7;")
+    assert cwd_path_res.endswith("\x1b\\")
 
-    # Verify SEQ_PATTERN strips new sequences properly in S.raw:
+    # Verify `_ANSI_SEQ_RX` pattern matching and stripping sequences in `S.raw`:
+    assert _ANSI_SEQ_RX.search("\x1b[31mHello\x1b[0m") is not None
     assert S(Term.CUR_SAVE_DEC, "hello", Term.CUR_RESTORE_DEC).raw == "hello"
 
 

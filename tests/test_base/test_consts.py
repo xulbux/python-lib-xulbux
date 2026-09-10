@@ -1,4 +1,4 @@
-from xulbux.base.consts import ANSI, CHARS, KEYS
+from xulbux.base.consts import CHARS, KEYS
 
 
 def test_chars_constants() -> None:
@@ -15,20 +15,6 @@ def test_chars_constants() -> None:
     assert "ø" in CHARS.SPECIAL_ASCII_EXTENDED
     assert CHARS.STANDARD_ASCII == CHARS.DIGITS + CHARS.LETTERS + CHARS.SPECIAL_ASCII
     assert CHARS.FULL_ASCII == CHARS.DIGITS + CHARS.LETTERS_EXTENDED + CHARS.SPECIAL_ASCII_EXTENDED
-
-
-def test_ansi_escape_constants_and_sequences() -> None:
-    assert ANSI.CHAR == "\x1b"
-    assert ANSI.CHAR_ESCAPED == r"\x1b"
-
-    assert ANSI.SEQ_FG_COLOR.format(255, 0, 0) == "\x1b[38;2;255;0;0m"
-    assert ANSI.SEQ_BG_COLOR.format(0, 255, 0) == "\x1b[48;2;0;255;0m"
-
-    url = "https://example.com"
-    assert ANSI.SEQ_LINK_OPEN.format(url) == f"\x1b]8;;{url}\x1b\\"
-    assert ANSI.SEQ_LINK_CLOSE == "\x1b]8;;\x1b\\"
-
-    assert ANSI.SEQ_PATTERN.search("\x1b[31mHello\x1b[0m") is not None
 
 
 def test_keys_constants() -> None:
@@ -54,7 +40,7 @@ def test_keys_constants() -> None:
     assert KEYS.ENTER.isdisjoint(KEYS.CTRL_ENTER)
     assert "\x1b[13;2u" in KEYS.SHIFT_ENTER
     assert "\x1b" in KEYS.ESCAPE and "\x1b[27u" in KEYS.ESCAPE
-    assert " " in KEYS.SPACE and "\x1b[32u" in KEYS.SPACE
+    assert " " in KEYS.SPACEBAR and "\x1b[32u" in KEYS.SPACEBAR
 
     assert "\x1bOP" in KEYS.F1 and "\x1b[[A" in KEYS.F1
     assert "\x1bOQ" in KEYS.F2 and "\x1b[[B" in KEYS.F2

@@ -105,7 +105,7 @@ def test_argument_parser_validation_errors() -> None:
     with pytest.raises(ValueError, match="nargs"):
         parser.add_arg("bad_nargs", nargs=0)
     with pytest.raises(ValueError, match="nargs"):
-        parser.add_arg("bad_nargs_str", nargs="invalid")  # type:ignore[arg-type]
+        parser.add_arg("bad_nargs_str", nargs="invalid")  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
 
     with pytest.raises(ValueError, match=r"opts.*cannot be empty"):
         parser.add_opt([])

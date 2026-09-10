@@ -101,9 +101,11 @@ source_paths = ["src/xulbux/"]
 exclude_gitignore = true
 
 [tool.pyright]
+pythonPlatform = "All"
 typeCheckingMode = "strict"
 reportDeprecated = "warning"
 reportPrivateUsage = "none"
+enableTypeIgnoreComments = false
 include = ["src"]
 exclude = [".venv", "build", "mutants"]
 

@@ -85,7 +85,6 @@
         -   `string.split_count()` → `string.chunk()`.
         -   `string.change_tab_size()` → `string.change_tab_spaces()`.
     *   **Parameters & Constants:**
-        -   `ANSI.SEQ_COLOR` → `ANSI.SEQ_FG_COLOR`.
         -   Single-letter color channel parameters `r`, `g`, `b`, `h`, `s`, `l`, `a` → `red`, `green`, `blue`, `hue`, `sat`, `light`, `alpha`.
         -   `string.decompose()`: parameter `case_string` → `string`.
         -   `data.is_equal()`: parameters `data1, data2` → `data_a, data_b`.
@@ -100,8 +99,8 @@
     -   Removed `console.get_user()` in favor of `system.get_username()`.
     -   Removed `reset_ansi` parameter almost everywhere (append `S.RESET` directly if needed).
     -   Removed `format_linebreaks` parameter from `console.log()`.
-    -   Removed `AnyRgba`, `AnyHsla`, and `AnyHexa` type aliases.
-    -   Removed `COLOR` class presets from `xulbux.base.consts`.
+    -   Removed `FormattableString`, `AnyRgba`, `AnyHsla`, and `AnyHexa` type aliases from `xulbux.base.types`.
+    -   Removed `COLOR` class presets and `ANSI` class from `xulbux.base.consts`.
 
 
 <span id="v1-9-7" />
