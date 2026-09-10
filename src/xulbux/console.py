@@ -641,7 +641,7 @@ class ArgumentParser:
                 case "*" | "+":
                     label_st = S.BR.CYAN(f"{l_br}{name}...{r_br}")
                 case int(n) if n > 1:
-                    label_st = S(S.BR.CYAN(l_br, name, " "), S.DIM(f"[{nargs}]"), S.BR.CYAN(r_br))
+                    label_st = S.BR.CYAN(f"{l_br}{name} ", S.DIM(f"[{nargs}]"), r_br)
                 case _:
                     label_st = S.BR.CYAN(f"{l_br}{name}{r_br}")
 
@@ -2182,9 +2182,9 @@ def confirm(
 
     yes_no = S.DIM(
         "(",
-        *(S.BOLD("Y"), S.DIM) if default_is_yes else "y",
+        S.BOLD("Y") if default_is_yes else "y",
         "/",
-        *(S.BOLD("N"), S.DIM) if not default_is_yes else "n",
+        S.BOLD("N") if not default_is_yes else "n",
         "): ",
     )
     head = f"{_to_styled_text(start)}{_to_styled_text(prompt).ansi} "

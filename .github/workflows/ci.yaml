@@ -55,4 +55,4 @@ jobs:
 
       - name: Test with PyTest
         run: |
-          python -m pytest -vv
+          python -m pytest --verbose

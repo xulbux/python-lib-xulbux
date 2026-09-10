@@ -152,7 +152,7 @@ An empty string argument `""` therefore produces a blank line.
 *   Specific resets (only needed in advanced use; auto-reset usually covers it):
     -   `S.RESET_BOLD`, `S.RESET_DIM`, `S.RESET_ITALIC`, `S.RESET_UNDERLINE`,
         `S.RESET_BLINK`, `S.RESET_INVERSE`, `S.RESET_HIDDEN`, `S.RESET_STRIKE`,
-        `S.RESET_COLOR`, `S.RESET_BG`
+        `S.RESET_FG`, `S.RESET_BG`
 *   Total reset (resets every previously applied styles):
     -   `S.RESET`
 
@@ -393,7 +393,7 @@ class _BuildOpenClose:
 
         return self._build_result()
 
-    def _process_code(self, code: BaseStyle) -> None:
+    def _process_code(self, code: BaseStyle, /) -> None:
         """Internal helper to process a single style code and append its opening and closing sequences."""
 
         if isinstance(code, _Link):
@@ -449,7 +449,14 @@ class _BuildOpenClose:
         return tuple(opens), tuple(closes)
 
 
-def _render_styled(opens: tuple[str, ...], closes: tuple[str, ...], segments: tuple[Renderable, ...]) -> S:
+def _render_styled(
+    opens: tuple[str, ...],
+    closes: tuple[str, ...],
+    segments: tuple[Renderable, ...],
+    /,
+    *,
+    reset_codes: tuple[int, ...] = (),
+) -> S:
     """Internal helper to construct an `S` object wrapped in opening and closing ANSI sequences."""
 
     ansi_parts: list[str] = list(opens)
@@ -458,10 +465,10 @@ def _render_styled(opens: tuple[str, ...], closes: tuple[str, ...], segments: tu
     for close in closes:
         ansi_parts.append(close)
 
-    return S("".join(ansi_parts))
+    return S("".join(ansi_parts), _reset_codes=reset_codes)
 
 
-def _render_segment(segment: object, ansi_parts: list[str]) -> None:
+def _render_segment(segment: object, ansi_parts: list[str], /) -> None:
     """Internal helper to recursively render a segment into `ansi_parts`."""
 
     if isinstance(segment, str):
@@ -480,6 +487,114 @@ def _render_segment(segment: object, ansi_parts: list[str]) -> None:
     else:
         # Fallback; coerce unknown objects to str:
         ansi_parts.append(str(segment))
+
+
+def _style_reset_codes(style: BaseStyle, /) -> tuple[int, ...]:
+    """Internal helper to determine the SGR reset codes associated with a style."""
+
+    if isinstance(style, _Style):
+        if (reset := _RESET_MAP.get(style._value)) is not None:
+            return (reset,)
+        return ()
+
+    elif isinstance(style, (_ColorStyle, _Color256Style)):
+        return (49 if style._bg else 39,)
+
+    return ()
+
+
+def _segment_has_reset_code(segment: object, target_code: int, /) -> bool:
+    """Internal helper to check if a segment or nested tuple has a matching reset code."""
+
+    if isinstance(segment, S):
+        return target_code in segment._reset_codes
+
+    elif isinstance(segment, tuple):
+        for item in cast("tuple[object, ...]", segment):
+            if _segment_has_reset_code(item, target_code):
+                return True
+
+    return False
+
+
+def _segment_ends_with_reset_code(segment: object, target_code: int, /) -> bool:
+    """Internal helper to check if a segment or nested tuple ends with a matching reset code."""
+
+    if isinstance(segment, S):
+        return target_code in segment._reset_codes
+
+    elif isinstance(segment, tuple) and segment:
+        return _segment_ends_with_reset_code(cast("tuple[object, ...]", segment)[-1], target_code)
+
+    return False
+
+
+def _collect_outer_resets(outer_styles: tuple[BaseStyle, ...], /) -> tuple[tuple[int, BaseStyle], ...]:
+    """Collects unique outer reset codes paired with their effective style in reverse order."""
+
+    outer_resets: list[tuple[int, BaseStyle]] = []
+    seen_resets: set[int] = set()
+
+    for style in reversed(outer_styles):
+        for reset_code in _style_reset_codes(style):
+            if reset_code not in seen_resets:
+                seen_resets.add(reset_code)
+                outer_resets.append((reset_code, style))
+
+    outer_resets.reverse()
+    return tuple(outer_resets)
+
+
+def _has_matching_reset(segments: tuple[Renderable, ...], outer_resets: tuple[tuple[int, BaseStyle], ...], /) -> bool:
+    """Returns True if any segment matches any outer reset code."""
+
+    for reset_code, _style in outer_resets:
+        for segment in segments:
+            if _segment_has_reset_code(segment, reset_code):
+                return True
+
+    return False
+
+
+def _resolve_styles_to_restore(segment: object, outer_resets: tuple[tuple[int, BaseStyle], ...], /) -> AnyStyle | None:
+    """Resolves the style or composite style group to restore behind a segment."""
+
+    styles_to_restore: list[BaseStyle] = []
+
+    for reset_code, restore_style in outer_resets:
+        if _segment_ends_with_reset_code(segment, reset_code):
+            styles_to_restore.append(restore_style)
+
+    if not styles_to_restore:
+        return None
+    elif len(styles_to_restore) == 1:
+        return styles_to_restore[0]
+
+    return _StyleGroup(*styles_to_restore)
+
+
+def _restore_reset_styles(outer_styles: tuple[BaseStyle, ...], segments: tuple[Renderable, ...], /) -> tuple[Renderable, ...]:
+    """Internal helper to restore active outer styles behind nested auto-resetting segments."""
+
+    if not (outer_resets := _collect_outer_resets(outer_styles)):
+        return segments
+
+    if not _has_matching_reset(segments, outer_resets):
+        return segments
+
+    result: list[Renderable] = []
+    segment_count = len(segments)
+
+    for i, segment in enumerate(segments):
+        if isinstance(segment, tuple):
+            result.append(_restore_reset_styles(outer_styles, cast("tuple[Renderable, ...]", segment)))
+        else:
+            result.append(segment)
+
+        if i < segment_count - 1 and (restore_style := _resolve_styles_to_restore(segment, outer_resets)) is not None:
+            result.append(restore_style)
+
+    return tuple(result)
 
 
 # ******************************************************** BASE CLASS *********************************************************
@@ -559,7 +674,7 @@ class _SBase:
     def __mul__(self, n: int, /) -> S:
         """Repeat this `_SBase` object `n` times."""
 
-        return S(*([self] * max(0, n)))
+        return S(*([self] * max(0, n)), _reset_codes=(self._reset_codes if isinstance(self, S) else ()))
 
     def __rmul__(self, n: int, /) -> S:
         """Repeat this `_SBase` object `n` times from the left."""
@@ -613,7 +728,7 @@ class _SBase:
         result_parts.append(sliced_raw[last_index:])
         result_parts.extend(suffix_codes)
 
-        return S("".join(result_parts))
+        return S("".join(result_parts), _reset_codes=(self._reset_codes if isinstance(self, S) else ()))
 
     def __contains__(self, item: object, /) -> bool:
         """Check if a substring or plain string is contained in the rendered output or plain text."""
@@ -890,7 +1005,12 @@ class _Style(_SBase):
             oc = _build_open_close(_StyleGroup(self)) if cached is None else cached
             self._oc = oc
 
-        return _render_styled(oc[0], oc[1], text)
+        return _render_styled(
+            oc[0],
+            oc[1],
+            _restore_reset_styles((self,), text),
+            reset_codes=_style_reset_codes(self),
+        )
 
     def __matmul__(self, text: Renderable) -> S:
         """Applies this style code to the given text, auto-resetting after."""
@@ -902,7 +1022,12 @@ class _Style(_SBase):
             oc = _build_open_close(_StyleGroup(self)) if cached is None else cached
             self._oc = oc
 
-        return _render_styled(oc[0], oc[1], (text,))
+        return _render_styled(
+            oc[0],
+            oc[1],
+            _restore_reset_styles((self,), cast("tuple[Renderable, ...]", text if isinstance(text, tuple) else (text,))),
+            reset_codes=_style_reset_codes(self),
+        )
 
     def as_fg(self) -> _Style:
         """Convert to the corresponding foreground style."""
@@ -977,12 +1102,22 @@ class _ColorStyle(_SBase):
     def __call__(self, *text: Renderable) -> S:
         """Applies this color style to the given text, auto-resetting after."""
 
-        return _render_styled((self._open_seq,), (self._close_seq,), text)
+        return _render_styled(
+            (self._open_seq,),
+            (self._close_seq,),
+            _restore_reset_styles((self,), text),
+            reset_codes=(49 if self._bg else 39,),
+        )
 
     def __matmul__(self, text: Renderable) -> S:
         """Applies this color style to the given text, auto-resetting after."""
 
-        return _render_styled((self._open_seq,), (self._close_seq,), (text,))
+        return _render_styled(
+            (self._open_seq,),
+            (self._close_seq,),
+            _restore_reset_styles((self,), cast("tuple[Renderable, ...]", text if isinstance(text, tuple) else (text,))),
+            reset_codes=(49 if self._bg else 39,),
+        )
 
     def __repr__(self) -> str:
         """Returns a string representation of this color style, indicating
@@ -1178,12 +1313,22 @@ class _Color256Style(_SBase):
     def __call__(self, *text: Renderable) -> S:
         """Applies this 256-color style to the given text, auto-resetting after."""
 
-        return _render_styled((self._open_seq,), (self._close_seq,), text)
+        return _render_styled(
+            (self._open_seq,),
+            (self._close_seq,),
+            _restore_reset_styles((self,), text),
+            reset_codes=(49 if self._bg else 39,),
+        )
 
     def __matmul__(self, text: Renderable) -> S:
         """Applies this 256-color style to the given text, auto-resetting after."""
 
-        return _render_styled((self._open_seq,), (self._close_seq,), (text,))
+        return _render_styled(
+            (self._open_seq,),
+            (self._close_seq,),
+            _restore_reset_styles((self,), cast("tuple[Renderable, ...]", text if isinstance(text, tuple) else (text,))),
+            reset_codes=(49 if self._bg else 39,),
+        )
 
     def __repr__(self) -> str:
         """Returns a string representation of this 256-color style."""
@@ -1795,7 +1940,23 @@ class _GradientStyle(_SBase):
             )
 
         output_content = "\n".join(rendered_lines)
-        return S(f"{extra_open}{output_content}{extra_close}") if extra_open or extra_close else S(output_content)
+        gradient_resets: tuple[int, ...] = (49 if self._bg else 39,)
+
+        if extra_styles:
+            extra_resets: list[int] = []
+
+            for extra_style in extra_styles:
+                for reset_code in _style_reset_codes(extra_style):
+                    if reset_code not in extra_resets:
+                        extra_resets.append(reset_code)
+
+            gradient_resets = gradient_resets + tuple(extra_resets)
+
+        return (
+            S(f"{extra_open}{output_content}{extra_close}", _reset_codes=gradient_resets)
+            if extra_open or extra_close
+            else S(output_content, _reset_codes=gradient_resets)
+        )
 
 
 class _StyleGroup(_SBase):
@@ -1836,7 +1997,19 @@ class _StyleGroup(_SBase):
                 other_codes = tuple([item for item in self._codes if not isinstance(item, _GradientStyle)])
                 return code._render_gradient(text, extra_styles=other_codes)
 
-        return _render_styled(self._oc[0], self._oc[1], text)
+        group_resets: list[int] = []
+
+        for code in self._codes:
+            for reset_code in _style_reset_codes(code):
+                if reset_code not in group_resets:
+                    group_resets.append(reset_code)
+
+        return _render_styled(
+            self._oc[0],
+            self._oc[1],
+            _restore_reset_styles(self._codes, text),
+            reset_codes=tuple(group_resets),
+        )
 
     def __matmul__(self, text: Renderable) -> S:
         """Applies this style group to the given text, auto-resetting after."""
@@ -2085,7 +2258,10 @@ class S(_SBase):
     status.print()
     ```"""
 
-    __slots__: tuple[str, ...] = ()
+    __slots__: tuple[str, ...] = ("_reset_codes",)
+
+    _reset_codes: tuple[int, ...]
+    """Tuple of ANSI SGR reset codes associated with the style of this instance."""
 
     # ************************* TOTAL RESET *************************
 
@@ -2251,7 +2427,7 @@ class S(_SBase):
 
     # *********************** INITIALIZATION ************************
 
-    def __init__(self, /, *segments: Renderable, sep: str = "") -> None:
+    def __init__(self, /, *segments: Renderable, sep: str = "", _reset_codes: tuple[int, ...] = ()) -> None:
         ansi_parts: list[str] = []
 
         for i, segment in enumerate(segments):
@@ -2261,6 +2437,7 @@ class S(_SBase):
             _render_segment(segment, ansi_parts)
 
         self.ansi = "".join(ansi_parts)
+        self._reset_codes = _reset_codes
 
 
 # **************************************************** PUBLIC TYPE HELPERS ****************************************************
