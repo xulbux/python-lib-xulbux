@@ -229,15 +229,23 @@ def test_throbber_context_and_animation() -> None:
     assert throbber.active is False
 
     # Deterministic animation frame rendering check:
+    class _StopOnWriteStdout(io.StringIO):
+        def write(self, text: str) -> int:
+            result = super().write(text)
+            if throbber._stop_event:
+                throbber._stop_event.set()
+            return result
+
+    anim_stdout = _StopOnWriteStdout()
     throbber.label = "Next step"
     throbber.active = True
-    throbber._original_stdout = mock_stdout
+    throbber._original_stdout = anim_stdout
     throbber._stop_event = threading.Event()
-    throbber._stop_event.set()
     throbber._animation_loop()
-    assert "Next step" in mock_stdout.getvalue()
+    assert "Next step" in anim_stdout.getvalue()
 
-    # Redraw when inactive:
+    # Redraw when inactive/empty:
+    throbber._current_animation_str = ""
     throbber._redraw_display()
 
 

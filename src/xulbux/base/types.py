@@ -74,7 +74,7 @@ def is_seq_or_set(obj: object, item_type: None, /) -> TypeIs[SeqOrSet[Any]]: ...
 
 
 def is_seq_or_set(obj: object, item_type: type[Any] | tuple[type[Any], ...] | None = None, /) -> bool:
-    """Returns true if `obj` is an instance that matches the `SeqOrSet` type,<br>
+    """Returns true if `obj` is an instance that matches the `SeqOrSet` type,
     optionally checking if all contained elements are instances of `item_type`.\n
     ----------------------------------------------------------------------------------------------------
     *   `obj` – The object to check.

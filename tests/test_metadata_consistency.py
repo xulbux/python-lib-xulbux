@@ -65,8 +65,8 @@ def _get_pyproject_data() -> dict[str, Any]:
 
 
 def test_version_consistency() -> None:
-    """Verifies that the version numbers in `pyproject.toml` and `__init__.py`<br>
-    match each other, and match the release branch (`dev/x.y.z`) if currently on one."""
+    """Verifies that the version numbers in `pyproject.toml` and `__init__.py` match each other,
+    and match the release branch (`dev/x.y.z`) if currently on one."""
 
     init_version = _get_init_var("__version__")
     pyproject_data = _get_pyproject_data()

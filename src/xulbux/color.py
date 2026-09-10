@@ -10,11 +10,12 @@ from __future__ import annotations
 from . import regex as _regex_module
 from .base.types import Hexa, HexaDict, Hsla, HslaDict, Rgba, RgbaDict
 
+import math as _math
 from typing import TYPE_CHECKING, Any, Literal, TypeGuard, cast, overload
 import regex as _rx
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Iterator, Sequence
 
 
 _SRGB_LINEAR_LUT: tuple[float, ...] = tuple([
@@ -51,7 +52,7 @@ class rgba(_ColorBase):
     *   `red` – The red channel in range [0, 255] inclusive.
     *   `green` – The green channel in range [0, 255] inclusive.
     *   `blue` – The blue channel in range [0, 255] inclusive.
-    *   `alpha` – The alpha channel in range [0.0, 1.0] inclusive<br>
+    *   `alpha` – The alpha channel in range [0.0, 1.0] inclusive
         or `None` if the color has no alpha channel.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -323,7 +324,7 @@ class hsla(_ColorBase):
     *   `hue` – The hue channel in range [0, 360] inclusive.
     *   `sat` – The saturation channel in range [0, 100] inclusive.
     *   `light` – The lightness channel in range [0, 100] inclusive.
-    *   `alpha` – The alpha channel in range [0.0, 1.0] inclusive<br>
+    *   `alpha` – The alpha channel in range [0.0, 1.0] inclusive
         or `None` if the color has no alpha channel.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -733,7 +734,7 @@ class hexa(_ColorBase):
         )
 
     def as_dict(self) -> HexaDict:
-        """Returns the color components as a dictionary with hex string values<br>
+        """Returns the color components as a dictionary with hex string values
         for keys `"red"`, `"green"`, `"blue"` and optionally `"alpha"`."""
 
         return HexaDict(
@@ -1228,6 +1229,72 @@ def extract_hsla(string: str, /, *, only_first: bool = False) -> hsla | list[hsl
         ]
 
 
+def _parse_rgba(color: Rgba, /) -> rgba:
+    """Internal method to parse a color to an RGBA object."""
+
+    if isinstance(color, rgba):
+        return color
+
+    elif isinstance(color, (list, tuple)):
+        array_color = cast("list[Any] | tuple[Any, ...]", color)
+        if len(array_color) == 4:
+            return rgba(int(array_color[0]), int(array_color[1]), int(array_color[2]), float(array_color[3]), _validate=False)
+        elif len(array_color) == 3:
+            return rgba(int(array_color[0]), int(array_color[1]), int(array_color[2]), None, _validate=False)
+        raise ValueError(f"Could not parse RGBA color: {color!r}")
+
+    elif isinstance(color, dict):
+        dict_color = cast("dict[str, Any]", color)
+        try:
+            return rgba(
+                int(dict_color["red"]),
+                int(dict_color["green"]),
+                int(dict_color["blue"]),
+                dict_color.get("alpha"),
+                _validate=False,
+            )
+        except (KeyError, ValueError):
+            raise ValueError(f"Could not parse RGBA color: {color!r}") from None
+
+    elif isinstance(color, str) and (parsed := extract_rgba(color, only_first=True)):
+        return parsed
+
+    raise ValueError(f"Could not parse RGBA color: {color!r}")
+
+
+def _parse_hsla(color: Hsla, /) -> hsla:
+    """Internal method to parse a color to an HSLA object."""
+
+    if isinstance(color, hsla):
+        return color
+
+    elif isinstance(color, (list, tuple)):
+        array_color = cast("list[Any] | tuple[Any, ...]", color)
+        if len(color) == 4:
+            return hsla(int(array_color[0]), int(array_color[1]), int(array_color[2]), float(array_color[3]), _validate=False)
+        elif len(color) == 3:
+            return hsla(int(array_color[0]), int(array_color[1]), int(array_color[2]), None, _validate=False)
+        raise ValueError(f"Could not parse HSLA color: {color!r}")
+
+    elif isinstance(color, dict):
+        dict_color = cast("dict[str, Any]", color)
+        try:
+            return hsla(
+                int(dict_color["hue"]),
+                int(dict_color["sat"]),
+                int(dict_color["light"]),
+                dict_color.get("alpha"),
+                _validate=False,
+            )
+        except (KeyError, ValueError):
+            raise ValueError(f"Could not parse HSLA color: {color!r}") from None
+
+    elif isinstance(color, str) and (parsed := extract_hsla(color, only_first=True)):
+        return parsed
+
+    raise ValueError(f"Could not parse HSLA color: {color!r}")
+
+
 def rgba_to_hex_int(red: int, green: int, blue: int, alpha: float | None = None, /, *, preserve_original: bool = False) -> int:
     """Convert RGBA channels to a HEXA integer (alpha is optional).\n
     ----------------------------------------------------------------------------------------------------
@@ -1235,10 +1302,10 @@ def rgba_to_hex_int(red: int, green: int, blue: int, alpha: float | None = None,
     *   `alpha` – The alpha channel in range [0.0, 1.0] inclusive or `None` if not set.
     *   `preserve_original` – Whether to preserve the original color exactly (explained below).\n
     ----------------------------------------------------------------------------------------------------
-    To preserve leading zeros, the function will add a `1` at the beginning,<br>
-    if the HEX integer would start with a `0`.\n
-    This could affect the color a little bit, but will make sure, that it won't be interpreted<br>
-    as a completely different color, when initializing it as a `hexa()` color or changing it<br>
+    To preserve leading zeros, the function will add a `1` at the beginning,
+    if the HEX integer would start with a `0`.<br>
+    This could affect the color a little bit, but will make sure, that it won't be interpreted
+    as a completely different color, when initializing it as a `hexa()` color or changing it
     back to RGBA using `hex_int_to_rgba()`."""
 
     if not (0 <= red <= 255 and 0 <= green <= 255 and 0 <= blue <= 255):
@@ -1271,8 +1338,8 @@ def hex_int_to_rgba(hex_int: int, /, *, preserve_original: bool = False) -> rgba
     *   `hex_int` – The HEX integer to convert.
     *   `preserve_original` – Whether to preserve the original color exactly (explained below).\n
     ----------------------------------------------------------------------------------------------------
-    If the red channel is `1` after conversion, it will be set to `0`, because when converting<br>
-    from RGBA to a HEX integer, the first `0` will be set to `1` to preserve leading zeros.\n
+    If the red channel is `1` after conversion, it will be set to `0`, because when converting
+    from RGBA to a HEX integer, the first `0` will be set to `1` to preserve leading zeros.<br>
     This is the correction, so the color doesn't even look slightly different."""
 
     if not (0 <= hex_int <= 0xFFFFFFFF):
@@ -1431,7 +1498,7 @@ def adjust_lightness(color: Rgba | Hexa, light_change: float, /) -> rgba | hexa:
     """In- or decrease the lightness of the input color.\n
     ----------------------------------------------------------------------------------------------------
     *   `color` – The color to adjust (can be in RGBA or HEXA format).
-    *   `light_change` – The amount to change the lightness by,<br>
+    *   `light_change` – The amount to change the lightness by,
         in range `-1.0` (darken by 100%) and `1.0` (lighten by 100%)."""
 
     if not (-1.0 <= light_change <= 1.0):
@@ -1467,7 +1534,7 @@ def adjust_saturation(color: Rgba | Hexa, sat_change: float, /) -> rgba | hexa:
     """In- or decrease the saturation of the input color.\n
     ----------------------------------------------------------------------------------------------------
     *   `color` – The color to adjust (can be in RGBA or HEXA format).
-    *   `sat_change` – The amount to change the saturation by,<br>
+    *   `sat_change` – The amount to change the saturation by,
         in range `-1.0` (saturate by 100%) and `1.0` (desaturate by 100%)."""
 
     if not (-1.0 <= sat_change <= 1.0):
@@ -1491,67 +1558,530 @@ def adjust_saturation(color: Rgba | Hexa, sat_change: float, /) -> rgba | hexa:
     )
 
 
-def _parse_rgba(color: Rgba, /) -> rgba:
-    """Internal method to parse a color to an RGBA object."""
+def _linear_to_srgb(linear_val: float, /) -> int:
+    """Converts a linear RGB float in range [0.0, 1.0] to an 8-bit sRGB integer in range [0, 255]."""
 
-    if isinstance(color, rgba):
-        return color
+    srgb_val = linear_val * 12.92 if linear_val <= 0.0031308 else (1.055 * (linear_val ** (1.0 / 2.4)) - 0.055)
+    return max(0, min(255, int(srgb_val * 255.0 + 0.5)))
 
-    elif isinstance(color, (list, tuple)):
-        array_color = cast("list[Any] | tuple[Any, ...]", color)
-        if len(array_color) == 4:
-            return rgba(int(array_color[0]), int(array_color[1]), int(array_color[2]), float(array_color[3]), _validate=False)
-        elif len(array_color) == 3:
-            return rgba(int(array_color[0]), int(array_color[1]), int(array_color[2]), None, _validate=False)
-        raise ValueError(f"Could not parse RGBA color: {color!r}")
 
-    elif isinstance(color, dict):
-        dict_color = cast("dict[str, Any]", color)
-        try:
-            return rgba(
-                int(dict_color["red"]),
-                int(dict_color["green"]),
-                int(dict_color["blue"]),
-                dict_color.get("alpha"),
-                _validate=False,
+def _interpolate_rgb(
+    red1: int,
+    green1: int,
+    blue1: int,
+    red2: int,
+    green2: int,
+    blue2: int,
+    ratio: float,
+    /,
+) -> tuple[int, int, int]:
+    """Internal function to linearly interpolate two RGB colors in naive sRGB space."""
+
+    inv_ratio = 1.0 - ratio
+    return (
+        max(0, min(255, int(red1 * inv_ratio + red2 * ratio + 0.5))),
+        max(0, min(255, int(green1 * inv_ratio + green2 * ratio + 0.5))),
+        max(0, min(255, int(blue1 * inv_ratio + blue2 * ratio + 0.5))),
+    )
+
+
+def _interpolate_linear_rgb(
+    red1: int,
+    green1: int,
+    blue1: int,
+    red2: int,
+    green2: int,
+    blue2: int,
+    ratio: float,
+    /,
+) -> tuple[int, int, int]:
+    """Internal function to interpolate two RGB colors in gamma-corrected linear RGB space."""
+
+    inv_ratio = 1.0 - ratio
+    lin_red = _SRGB_LINEAR_LUT[red1] * inv_ratio + _SRGB_LINEAR_LUT[red2] * ratio
+    lin_green = _SRGB_LINEAR_LUT[green1] * inv_ratio + _SRGB_LINEAR_LUT[green2] * ratio
+    lin_blue = _SRGB_LINEAR_LUT[blue1] * inv_ratio + _SRGB_LINEAR_LUT[blue2] * ratio
+
+    return (_linear_to_srgb(lin_red), _linear_to_srgb(lin_green), _linear_to_srgb(lin_blue))
+
+
+def _rgb_to_hsl(red: int, green: int, blue: int, /) -> tuple[float, float, float]:
+    """Internal function to convert an RGB color to HSL floats (hue in [0, 360), sat and light in [0, 1])."""
+
+    norm_red = red / 255.0
+    norm_green = green / 255.0
+    norm_blue = blue / 255.0
+
+    max_val = max([norm_red, norm_green, norm_blue])
+    min_val = min([norm_red, norm_green, norm_blue])
+    delta_val = max_val - min_val
+    light_val = (max_val + min_val) / 2.0
+
+    if delta_val < 1e-6:
+        return (0.0, 0.0, light_val)
+
+    sat_val = delta_val / (1.0 - abs(2.0 * light_val - 1.0)) if (0.0 < light_val < 1.0) else 0.0
+
+    if max_val == norm_red:
+        hue_val = 60.0 * (((norm_green - norm_blue) / delta_val) % 6.0)
+    elif max_val == norm_green:
+        hue_val = 60.0 * (((norm_blue - norm_red) / delta_val) + 2.0)
+    else:
+        hue_val = 60.0 * (((norm_red - norm_green) / delta_val) + 4.0)
+
+    return (hue_val % 360.0, sat_val, light_val)
+
+
+def _hsl_to_rgb(hue: float, sat: float, light: float, /) -> tuple[int, int, int]:
+    """Internal function to convert HSL floats (hue in [0, 360), sat and light in [0, 1]) to RGB integers."""
+
+    chroma_val = (1.0 - abs(2.0 * light - 1.0)) * sat
+    hue_sector = (hue % 360.0) / 60.0
+    second_comp = chroma_val * (1.0 - abs((hue_sector % 2.0) - 1.0))
+    light_match = light - chroma_val / 2.0
+
+    if hue_sector < 1.0:
+        red_part, green_part, blue_part = chroma_val, second_comp, 0.0
+    elif hue_sector < 2.0:
+        red_part, green_part, blue_part = second_comp, chroma_val, 0.0
+    elif hue_sector < 3.0:
+        red_part, green_part, blue_part = 0.0, chroma_val, second_comp
+    elif hue_sector < 4.0:
+        red_part, green_part, blue_part = 0.0, second_comp, chroma_val
+    elif hue_sector < 5.0:
+        red_part, green_part, blue_part = second_comp, 0.0, chroma_val
+    else:
+        red_part, green_part, blue_part = chroma_val, 0.0, second_comp
+
+    return (
+        max(0, min(255, int((red_part + light_match) * 255.0 + 0.5))),
+        max(0, min(255, int((green_part + light_match) * 255.0 + 0.5))),
+        max(0, min(255, int((blue_part + light_match) * 255.0 + 0.5))),
+    )
+
+
+def _interpolate_hsl(
+    red1: int,
+    green1: int,
+    blue1: int,
+    red2: int,
+    green2: int,
+    blue2: int,
+    ratio: float,
+    /,
+    *,
+    long_path: bool = False,
+) -> tuple[int, int, int]:
+    """Internal function to interpolate two RGB colors in HSL space."""
+
+    hue1, sat1, light1 = _rgb_to_hsl(red1, green1, blue1)
+    hue2, sat2, light2 = _rgb_to_hsl(red2, green2, blue2)
+
+    # If one color is achromatic, inherit hue from the chromatic color:
+    if sat1 < 1e-6 and sat2 >= 1e-6:
+        hue1 = hue2
+    elif sat2 < 1e-6 and sat1 >= 1e-6:
+        hue2 = hue1
+
+    delta_hue = hue2 - hue1
+
+    if not long_path:
+        if delta_hue > 180.0:
+            delta_hue -= 360.0
+        elif delta_hue < -180.0:
+            delta_hue += 360.0
+    else:
+        if 0.0 < delta_hue < 180.0:
+            delta_hue -= 360.0
+        elif -180.0 < delta_hue <= 0.0:
+            delta_hue += 360.0
+
+    interp_hue = (hue1 + delta_hue * ratio) % 360.0
+    interp_sat = sat1 * (1.0 - ratio) + sat2 * ratio
+    interp_light = light1 * (1.0 - ratio) + light2 * ratio
+
+    return _hsl_to_rgb(interp_hue, interp_sat, interp_light)
+
+
+def _interpolate_oklab(
+    red1: int,
+    green1: int,
+    blue1: int,
+    red2: int,
+    green2: int,
+    blue2: int,
+    ratio: float,
+    /,
+) -> tuple[int, int, int]:
+    """Internal function to interpolate two RGB colors in perceptually uniform Oklab space."""
+
+    # [1] Convert sRGB to linear RGB:
+    lin_red1 = _SRGB_LINEAR_LUT[red1]
+    lin_green1 = _SRGB_LINEAR_LUT[green1]
+    lin_blue1 = _SRGB_LINEAR_LUT[blue1]
+    lin_red2 = _SRGB_LINEAR_LUT[red2]
+    lin_green2 = _SRGB_LINEAR_LUT[green2]
+    lin_blue2 = _SRGB_LINEAR_LUT[blue2]
+
+    # [2] Linear RGB to LMS:
+    lms_l1 = 0.4122214708 * lin_red1 + 0.5363325363 * lin_green1 + 0.0514459929 * lin_blue1
+    lms_m1 = 0.2119034982 * lin_red1 + 0.6806995451 * lin_green1 + 0.1073969566 * lin_blue1
+    lms_s1 = 0.0883024619 * lin_red1 + 0.2817188376 * lin_green1 + 0.6299787005 * lin_blue1
+    lms_l2 = 0.4122214708 * lin_red2 + 0.5363325363 * lin_green2 + 0.0514459929 * lin_blue2
+    lms_m2 = 0.2119034982 * lin_red2 + 0.6806995451 * lin_green2 + 0.1073969566 * lin_blue2
+    lms_s2 = 0.0883024619 * lin_red2 + 0.2817188376 * lin_green2 + 0.6299787005 * lin_blue2
+
+    # Cube root:
+    l1_cbrt = _math.cbrt(lms_l1)
+    m1_cbrt = _math.cbrt(lms_m1)
+    s1_cbrt = _math.cbrt(lms_s1)
+    l2_cbrt = _math.cbrt(lms_l2)
+    m2_cbrt = _math.cbrt(lms_m2)
+    s2_cbrt = _math.cbrt(lms_s2)
+
+    # [3] LMS to Oklab:
+    lab_l1 = 0.2104542553 * l1_cbrt + 0.7936177850 * m1_cbrt - 0.0040720468 * s1_cbrt
+    lab_a1 = 1.9779984951 * l1_cbrt - 2.4285922050 * m1_cbrt + 0.4505937099 * s1_cbrt
+    lab_b1 = 0.0259040371 * l1_cbrt + 0.7827717662 * m1_cbrt - 0.8086757660 * s1_cbrt
+    lab_l2 = 0.2104542553 * l2_cbrt + 0.7936177850 * m2_cbrt - 0.0040720468 * s2_cbrt
+    lab_a2 = 1.9779984951 * l2_cbrt - 2.4285922050 * m2_cbrt + 0.4505937099 * s2_cbrt
+    lab_b2 = 0.0259040371 * l2_cbrt + 0.7827717662 * m2_cbrt - 0.8086757660 * s2_cbrt
+
+    # [4] Interpolate in Oklab:
+    inv_ratio = 1.0 - ratio
+    interp_l = lab_l1 * inv_ratio + lab_l2 * ratio
+    interp_a = lab_a1 * inv_ratio + lab_a2 * ratio
+    interp_b = lab_b1 * inv_ratio + lab_b2 * ratio
+
+    # [5] Inverse Oklab to LMS:
+    out_l_cbrt = interp_l + 0.3963377774 * interp_a + 0.2158037573 * interp_b
+    out_m_cbrt = interp_l - 0.1055613458 * interp_a - 0.0638541728 * interp_b
+    out_s_cbrt = interp_l - 0.0894841775 * interp_a - 1.2914855480 * interp_b
+
+    out_l = out_l_cbrt * out_l_cbrt * out_l_cbrt
+    out_m = out_m_cbrt * out_m_cbrt * out_m_cbrt
+    out_s = out_s_cbrt * out_s_cbrt * out_s_cbrt
+
+    # [6] LMS to Linear RGB:
+    lin_red = +4.0767439362 * out_l - 3.3077115913 * out_m + 0.2309699295 * out_s
+    lin_green = -1.2684380046 * out_l + 2.6097574011 * out_m - 0.3413193965 * out_s
+    lin_blue = -0.0041960863 * out_l - 0.7034186147 * out_m + 1.7076147010 * out_s
+
+    return (_linear_to_srgb(lin_red), _linear_to_srgb(lin_green), _linear_to_srgb(lin_blue))
+
+
+def _interpolate_color(
+    red1: int,
+    green1: int,
+    blue1: int,
+    red2: int,
+    green2: int,
+    blue2: int,
+    ratio: float,
+    /,
+    *,
+    space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = "hsl",
+) -> tuple[int, int, int]:
+    """Internal function to interpolate two RGB colors using the specified color space."""
+
+    clamped_ratio = max(0.0, min(1.0, ratio))
+
+    match space:
+        case "rgb":
+            return _interpolate_rgb(red1, green1, blue1, red2, green2, blue2, clamped_ratio)
+        case "linear_rgb":
+            return _interpolate_linear_rgb(red1, green1, blue1, red2, green2, blue2, clamped_ratio)
+        case "hsl":
+            return _interpolate_hsl(red1, green1, blue1, red2, green2, blue2, clamped_ratio, long_path=False)
+        case "hsl_long":
+            return _interpolate_hsl(red1, green1, blue1, red2, green2, blue2, clamped_ratio, long_path=True)
+        case "oklab":
+            return _interpolate_oklab(red1, green1, blue1, red2, green2, blue2, clamped_ratio)
+        case _:
+            raise ValueError(f"Unsupported color space {space!r}")
+
+
+def _resolve_color_stop(
+    stops: tuple[tuple[tuple[int, int, int], float], ...],
+    position: float,
+    /,
+    *,
+    space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = "hsl",
+) -> tuple[int, int, int]:
+    """Internal helper to resolve an RGB color at ratio `position` across stops without alpha overhead."""
+
+    if not stops:
+        return (0, 0, 0)
+    elif len(stops) == 1 or position <= stops[0][1]:
+        return stops[0][0]
+    elif position >= stops[-1][1]:
+        return stops[-1][0]
+
+    for i in range(len(stops) - 1):
+        rgb1, pos1 = stops[i]
+        rgb2, pos2 = stops[i + 1]
+
+        if pos1 <= position <= pos2:
+            seg_ratio = (position - pos1) / seg_len if (seg_len := pos2 - pos1) > 1e-9 else 0.0
+            return _interpolate_color(rgb1[0], rgb1[1], rgb1[2], rgb2[0], rgb2[1], rgb2[2], seg_ratio, space=space)
+
+    return stops[-1][0]  # coverage:ignore[defensive-return]
+
+
+def _distribute_color_stops[T](raw_stops: Sequence[tuple[T, float | None]], /) -> tuple[tuple[T, float], ...]:
+    """Calculate and distribute stop positions across normalized color stops.\n
+    ----------------------------------------------------------------------------------------------------
+    *   `raw_stops` – Sequence of `(color_payload, position_or_none)` tuples.\n
+    ----------------------------------------------------------------------------------------------------
+    Assumes color data is already fully normalized and validated."""
+
+    if (total_count := len(raw_stops)) == 1:
+        return ((raw_stops[0][0], 0.0),)
+
+    has_explicit_positions = False
+    for _, pos_val in raw_stops:
+        if pos_val is not None:
+            has_explicit_positions = True
+            break
+
+    if not has_explicit_positions:
+        step_factor = 1.0 / (total_count - 1)
+        return tuple([(color_val, i * step_factor) for i, (color_val, _) in enumerate(raw_stops)])
+
+    resolved: list[tuple[T, float]] = []
+    for color_val, pos_val in raw_stops:
+        resolved.append((color_val, 0.0 if pos_val is None else max(0.0, min(1.0, pos_val))))
+
+    resolved.sort(key=lambda item: item[1])
+
+    if resolved[0][1] > 0.0:
+        resolved.insert(0, (resolved[0][0], 0.0))
+    if resolved[-1][1] < 1.0:
+        resolved.append((resolved[-1][0], 1.0))
+
+    return tuple(resolved)
+
+
+def _calculate_gradient(
+    stops: tuple[tuple[tuple[int, int, int], float], ...],
+    /,
+    *,
+    steps: int,
+    space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = "hsl",
+) -> tuple[tuple[int, int, int], ...]:
+    """Internal calculation helper to generate `steps` interpolated RGB colors from normalized stops."""
+
+    if steps == 1:
+        return (stops[0][0],)
+
+    result: list[tuple[int, int, int]] = []
+    inv_steps = 1.0 / (steps - 1)
+
+    for i in range(steps):
+        result.append(_resolve_color_stop(stops, i * inv_steps, space=space))
+
+    return tuple(result)
+
+
+def _extract_rgb_fast(color: _ColorBase | Rgba | Hsla | Hexa, /) -> tuple[int, int, int]:
+    """Internal helper to extract plain `(red, green, blue)` integers from any color representation without object creation."""
+
+    if isinstance(color, (rgba, hexa)):
+        return (color.red, color.green, color.blue)
+
+    elif isinstance(color, hsla):
+        return hsla._hsl_to_rgb(color.hue, color.sat, color.light)
+
+    elif isinstance(color, (tuple, list)) and len(color) in {3, 4}:
+        red_val, green_val, blue_val = color[0], color[1], color[2]
+        if red_val is not None and green_val is not None and blue_val is not None:
+            return (int(red_val), int(green_val), int(blue_val))
+
+    elif isinstance(color, int):
+        if not (0x000000 <= color <= 0xFFFFFF):
+            raise ValueError(f"Expected 24-bit HEX integer in range [0x000000, 0xFFFFFF] inclusive, got 0x{color:X}")
+        return ((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF)
+
+    elif isinstance(color, str):
+        if (hex_clean := color.strip().lstrip("#")).lower().startswith("0x"):
+            hex_clean = hex_clean[2:]
+
+        if len(hex_clean) == 3:
+            return (
+                int(hex_clean[0] * 2, 16),
+                int(hex_clean[1] * 2, 16),
+                int(hex_clean[2] * 2, 16),
             )
-        except (KeyError, ValueError):
-            raise ValueError(f"Could not parse RGBA color: {color!r}") from None
-
-    elif isinstance(color, str) and (parsed := extract_rgba(color, only_first=True)):
-        return parsed
-
-    raise ValueError(f"Could not parse RGBA color: {color!r}")
-
-
-def _parse_hsla(color: Hsla, /) -> hsla:
-    """Internal method to parse a color to an HSLA object."""
-
-    if isinstance(color, hsla):
-        return color
-
-    elif isinstance(color, (list, tuple)):
-        array_color = cast("list[Any] | tuple[Any, ...]", color)
-        if len(color) == 4:
-            return hsla(int(array_color[0]), int(array_color[1]), int(array_color[2]), float(array_color[3]), _validate=False)
-        elif len(color) == 3:
-            return hsla(int(array_color[0]), int(array_color[1]), int(array_color[2]), None, _validate=False)
-        raise ValueError(f"Could not parse HSLA color: {color!r}")
-
-    elif isinstance(color, dict):
-        dict_color = cast("dict[str, Any]", color)
-        try:
-            return hsla(
-                int(dict_color["hue"]),
-                int(dict_color["sat"]),
-                int(dict_color["light"]),
-                dict_color.get("alpha"),
-                _validate=False,
+        elif len(hex_clean) == 6:
+            return (
+                int(hex_clean[0:2], 16),
+                int(hex_clean[2:4], 16),
+                int(hex_clean[4:6], 16),
             )
-        except (KeyError, ValueError):
-            raise ValueError(f"Could not parse HSLA color: {color!r}") from None
 
-    elif isinstance(color, str) and (parsed := extract_hsla(color, only_first=True)):
-        return parsed
+        color_obj = as_rgba(color)
+        return (color_obj.red, color_obj.green, color_obj.blue)
 
-    raise ValueError(f"Could not parse HSLA color: {color!r}")
+    color_obj = as_rgba(cast("Any", color))
+    return (color_obj.red, color_obj.green, color_obj.blue)
+
+
+def _extract_alpha_fast(color: _ColorBase | Rgba | Hsla | Hexa, /) -> float | None:
+    """Internal helper to extract alpha from a color representation without object creation."""
+
+    if isinstance(color, (rgba, hsla, hexa)):
+        return color.alpha
+    elif isinstance(color, (tuple, list)) and len(color) == 4 and color[3] is not None:
+        return float(color[3])
+    elif isinstance(color, dict) and "alpha" in color and color["alpha"] is not None:
+        return float(color["alpha"])
+    return None
+
+
+type ColorStop = Rgba | Hsla | Hexa | tuple[Rgba | Hsla | Hexa, float | int]
+"""A color stop for gradient generation: a color value or a `(color, position)` tuple."""
+
+
+def _parse_color_stops(colors: Sequence[ColorStop], /) -> tuple[tuple[tuple[int, int, int], float | None, float], ...]:
+    """Internal helper to parse and sort color stops into `((red, green, blue), alpha, position)` tuples."""
+
+    raw_items: list[tuple[tuple[tuple[int, int, int], float | None], float | None]] = []
+
+    for item in colors:
+        if isinstance(item, tuple) and len(item) == 2:
+            raw_color = item[0]
+            raw_items.append((
+                (_extract_rgb_fast(raw_color), _extract_alpha_fast(raw_color)),
+                float(item[1]),
+            ))
+        else:
+            raw_items.append((
+                (_extract_rgb_fast(item), _extract_alpha_fast(item)),
+                None,
+            ))
+
+    distributed = _distribute_color_stops(raw_items)
+    return tuple([(item[0][0], item[0][1], item[1]) for item in distributed])
+
+
+def _resolve_color_stop_with_alpha(
+    stops: tuple[tuple[tuple[int, int, int], float | None, float], ...],
+    position: float,
+    /,
+    *,
+    space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = "hsl",
+) -> tuple[tuple[int, int, int], float | None]:
+    """Internal helper to resolve an RGB color and alpha value at the given position `position`."""
+
+    if not stops:
+        return ((0, 0, 0), None)
+    if len(stops) == 1 or position <= stops[0][2]:
+        return (stops[0][0], stops[0][1])
+    if position >= stops[-1][2]:
+        return (stops[-1][0], stops[-1][1])
+
+    rgb_stops = tuple([(item[0], item[2]) for item in stops])
+    interp_rgb = _resolve_color_stop(rgb_stops, position, space=space)
+
+    for i in range(len(stops) - 1):
+        _, alpha1, pos1 = stops[i]
+        _, alpha2, pos2 = stops[i + 1]
+
+        if pos1 <= position <= pos2:
+            if alpha1 is None and alpha2 is None:
+                return (interp_rgb, None)
+
+            seg_ratio = (position - pos1) / seg_len if (seg_len := pos2 - pos1) > 1e-9 else 0.0
+            val1, val2 = 1.0 if alpha1 is None else alpha1, 1.0 if alpha2 is None else alpha2
+
+            return (interp_rgb, round(val1 * (1.0 - seg_ratio) + val2 * seg_ratio, 4))
+
+    return (interp_rgb, None)  # coverage:ignore[defensive-return]
+
+
+def interpolate_color(
+    color1: Rgba | Hsla | Hexa,
+    color2: Rgba | Hsla | Hexa,
+    /,
+    *,
+    ratio: float = 0.5,
+    space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = "hsl",
+) -> rgba:
+    """Linearly interpolates between two colors in the specified color space.\n
+    ----------------------------------------------------------------------------------------------------
+    *   `color1` – The starting color (RGBA, HSLA, HEXA, hex string, or tuple).
+    *   `color2` – The ending color (RGBA, HSLA, HEXA, hex string, or tuple).
+    *   `ratio` – The blend ratio between `0.0` (100% `color1`) and `1.0` (100% `color2`).
+    *   `space` – The color space to interpolate in
+        (`"rgb"`, `"hsl"`, `"hsl_long"`, `"linear_rgb"`, or `"oklab"`). Default is `"hsl"`.\n
+    ----------------------------------------------------------------------------------------------------
+    Raises `ValueError` if `space` is invalid."""
+
+    if space not in {"rgb", "hsl", "hsl_long", "linear_rgb", "oklab"}:
+        raise ValueError(f"Unsupported color space {space!r}")
+
+    clamped_ratio = max(0.0, min(1.0, ratio))
+    rgb1 = _extract_rgb_fast(color1)
+    rgb2 = _extract_rgb_fast(color2)
+
+    red, green, blue = _interpolate_color(rgb1[0], rgb1[1], rgb1[2], rgb2[0], rgb2[1], rgb2[2], clamped_ratio, space=space)
+
+    alpha1 = _extract_alpha_fast(color1)
+    alpha2 = _extract_alpha_fast(color2)
+    alpha: float | None = None
+
+    if alpha1 is not None or alpha2 is not None:
+        val1, val2 = 1.0 if alpha1 is None else alpha1, 1.0 if alpha2 is None else alpha2
+        alpha = round(val1 * (1.0 - clamped_ratio) + val2 * clamped_ratio, 4)
+
+    return rgba(red, green, blue, alpha, _validate=False)
+
+
+def create_gradient(
+    colors: Sequence[ColorStop],
+    /,
+    *,
+    steps: int = 10,
+    space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = "hsl",
+) -> tuple[rgba, ...]:
+    """Creates a tuple of `steps` smoothly interpolated colors across the given color stops.\n
+    ----------------------------------------------------------------------------------------------------
+    *   `colors` – Sequence of colors or `(color, position)` tuples defining the gradient stops.
+    *   `steps` – Total number of color steps to generate. Default is `10`.
+    *   `space` – The color space to interpolate in
+        (`"rgb"`, `"hsl"`, `"hsl_long"`, `"linear_rgb"`, or `"oklab"`). Default is `"hsl"`.\n
+    ----------------------------------------------------------------------------------------------------
+    Raises `ValueError` if `steps < 1`, `colors` is empty, or `space` is invalid."""
+
+    if steps < 1:
+        raise ValueError(f"The 'steps' parameter must be an integer >= 1, got {steps!r}")
+    if not colors:
+        raise ValueError("At least one color stop must be provided for a gradient")
+    if space not in {"rgb", "hsl", "hsl_long", "linear_rgb", "oklab"}:
+        raise ValueError(f"Unsupported color space {space!r}")
+
+    parsed_stops = _parse_color_stops(colors)
+
+    if steps == 1:
+        first_rgb, first_alpha, _ = parsed_stops[0]
+        return (rgba(first_rgb[0], first_rgb[1], first_rgb[2], first_alpha, _validate=False),)
+
+    has_alpha = False
+    for _, alpha_val, _ in parsed_stops:
+        if alpha_val is not None:
+            has_alpha = True
+            break
+
+    if not has_alpha:
+        pure_stops = tuple([(item[0], item[2]) for item in parsed_stops])
+        calc_rgbs = _calculate_gradient(pure_stops, steps=steps, space=space)
+        return tuple([rgba(rgb[0], rgb[1], rgb[2], None, _validate=False) for rgb in calc_rgbs])
+
+    result: list[rgba] = []
+    inv_steps = 1.0 / (steps - 1)
+    for i in range(steps):
+        pos = i * inv_steps
+        rgb, alpha = _resolve_color_stop_with_alpha(parsed_stops, pos, space=space)
+        result.append(rgba(rgb[0], rgb[1], rgb[2], alpha, _validate=False))
+
+    return tuple(result)

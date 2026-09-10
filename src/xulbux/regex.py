@@ -215,13 +215,13 @@ def outside_strings(pattern: str = r".*", /) -> str:
 
 
 def all_except(disallowed_pattern: str, /, ignore_pattern: str = "", *, is_group: bool = False) -> str:
-    """Matches everything up to the `disallowed_pattern`, unless the<br>
+    """Matches everything up to the `disallowed_pattern`, unless the
     `disallowed_pattern` is found inside a string/quotes (`'…'` or `"…"`).\n
     ----------------------------------------------------------------------------------------------------
     *   `disallowed_pattern` – The pattern that is not allowed to be matched.
-    *   `ignore_pattern` – A pattern that, if found, will make the regex ignore the<br>
+    *   `ignore_pattern` – A pattern that, if found, will make the regex ignore the
         `disallowed_pattern` (even if it contains the `disallowed_pattern` inside it):<br>
-        For example if `disallowed_pattern` is `>` and `ignore_pattern` is `->`,<br>
+        For example if `disallowed_pattern` is `>` and `ignore_pattern` is `->`,
         the `->`-arrows will be allowed, even though they have `>` in them.
     *   `is_group` – Whether to create a capturing group for the matched content.\n
     ----------------------------------------------------------------------------------------------------
@@ -344,7 +344,7 @@ def rgba_str(fix_sep: str | None = ",", *, allow_alpha: bool = True) -> str:
     """Matches an RGBA color inside a string.\n
     ----------------------------------------------------------------------------------------------------
     *   `fix_sep` – The fixed separator between the RGBA values (e.g., `,`, `;` …):<br>
-        If set to nothing or `None`, any char that is not a letter or number<br>
+        If set to nothing or `None`, any char that is not a letter or number
         can be used to separate the RGBA values, including just a space.
     *   `allow_alpha` – Whether to include the alpha channel in the match.\n
     ----------------------------------------------------------------------------------------------------
@@ -453,7 +453,7 @@ def hsla_str(fix_sep: str | None = ",", *, allow_alpha: bool = True) -> str:
     """Matches a HSLA color inside a string.\n
     ----------------------------------------------------------------------------------------------------
     *   `fix_sep` – The fixed separator between the HSLA values (e.g., `,`, `;` …):<br>
-        If set to nothing or `None`, any char that is not a letter or number<br>
+        If set to nothing or `None`, any char that is not a letter or number
         can be used to separate the HSLA values, including just a space.
     *   `allow_alpha` – Whether to include the alpha channel in the match.\n
     ----------------------------------------------------------------------------------------------------
@@ -635,7 +635,7 @@ def hexa_str(*, allow_alpha: bool = True) -> str:
 class LazyRegex:
     """A class that lazily compiles and caches regex patterns on first access.\n
     ----------------------------------------------------------------------------------------------------
-    *   `**patterns` – Keyword arguments where the key is the name of the pattern<br>
+    *   `**patterns` – Keyword arguments where the key is the name of the pattern
         and the value is the regex pattern string to compile.\n
     ----------------------------------------------------------------------------------------------------
     **Attention:** Requires non-standard library `regex`, not standard library `re`!\n

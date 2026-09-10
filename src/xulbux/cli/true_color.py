@@ -10,8 +10,8 @@ from contextlib import suppress
 def _parse_color_arg(raw: str, /) -> hsla | None:
     """Internal helper to parse a color CLI argument as an `hsla` color.\n
     ----------------------------------------------------------------------------------------------------
-    Supports HEX (`#1E90FF`, `ff0055`), RGB (`rgb(255, 0, 128)`, `255,0,128`), and<br>
-    numeric hue values (`210`, `210deg`). Returns `None` if invalid."""
+    Supports HEX (`#1E90FF`, `ff0055`), RGB (`rgb(255, 0, 128)`, `255,0,128`),
+    and numeric hue values (`210`, `210deg`). Returns `None` if invalid."""
 
     clean_str = raw.strip()
 
@@ -48,8 +48,7 @@ def _parse_color_arg(raw: str, /) -> hsla | None:
 
 
 def show_true_color(color_arg: str | None = None, /) -> None:
-    """CLI command function for `xulbux-lib tc` command,<br>
-    which renders a smooth true-color gradient in the terminal."""
+    """CLI command function for `xulbux-lib tc` command, which renders a smooth true-color gradient in the terminal."""
 
     parsed_hsla: hsla | None = _parse_color_arg(color_arg) if color_arg else None
 

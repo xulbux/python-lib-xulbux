@@ -61,3 +61,12 @@ def test_cli_main_unknown_subcommand(capsys: pytest.CaptureFixture[str]) -> None
         main()
         captured = capsys.readouterr()
         assert "Commands:" in captured.out
+
+
+def test_cli_main_keyboard_interrupt() -> None:
+    with (
+        patch.object(sys, "argv", ["xulbux-lib"]),
+        patch("xulbux.cli.help.show_help", side_effect=KeyboardInterrupt),
+        pytest.raises(SystemExit),
+    ):
+        main()

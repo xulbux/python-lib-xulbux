@@ -11,6 +11,18 @@ from typing import Final
 PACKAGE_META_URL: Final[str] = "https://pypi.org/pypi/xulbux/json"
 """URL to fetch the package metadata from PyPI."""
 
+_LOGO_LINES: Final[S] = S(
+    S.BOLD(
+        "               __  __              \n",
+        "  _  __ __  __/ / / /_  __  ___  __\n",
+        " | |/ // / / / / / __ \\/ / / | |/ /\n",
+        " > , </ /_/ / /_/ /_/ / /_/ /> , < \n",
+        "/_/|_|\\____/\\__/\\____/\\____//_/|_| \n",
+    ),
+    S.ITALIC("Simplify common programming tasks!"),
+)
+"""ASCII logo and library tagline."""
+
 
 def get_latest_version(timeout: float = 1.0) -> str | None:
     """Fetches the latest version of the library from PyPI in the format `x.y.z`.\n
@@ -37,7 +49,7 @@ def get_latest_version(timeout: float = 1.0) -> str | None:
     return result[0]
 
 
-def is_latest_version(latest_version: str | None = None) -> bool | None:
+def is_latest_version(latest_version: str | None = None, /) -> bool | None:
     """Checks if the currently installed version of the library is the latest one available on PyPI.\n
     ----------------------------------------------------------------------------------------------------
     *   `latest_version` – Optional already fetched latest version
@@ -65,17 +77,13 @@ def show_help() -> None:
     """CLI command function for `xulbux-lib` command,<br>
     which shows some information about the library."""
 
-    # XulbuX colors:
-    xx_primary = S.hex("#7075FF")
-    xx_secondary = S.hex("#9095FF")
-
     # Styles used in the help message:
     cmd_st = S.BR.RED
     heading_st = S.BOLD | S.BR.WHITE
     module_st = S.BR.MAGENTA
-    notice_st = S.BR.CYAN
     src_st = S.BR.BLUE
     txt_st = S.WHITE
+    version_st = S.hex("#EAEBEE")
 
     def _box(*args: TextRenderable) -> S:
         """Helper function to create a help screen box with the given content."""
@@ -86,32 +94,34 @@ def show_help() -> None:
 
     # The local version of the library:
     version_msg: tuple[TextRenderable, TextRenderable, TextRenderable] = (
-        xx_secondary("▄" * (len(__version__) + (7 if is_latest_ver else 5))),
-        (S.hex("#000") | xx_secondary.as_bg())(f"  {'✓ ' if is_latest_ver else ''}v", S.BOLD(__version__), "  "),
-        xx_secondary("▀" * (len(__version__) + (7 if is_latest_ver else 5))),
+        version_st("▄" * (len(__version__) + (7 if is_latest_ver else 5))),
+        (S.hex("#000") | version_st.as_bg())(f"  {'✓ ' if is_latest_ver else ''}v", S.BOLD(__version__), "  "),
+        version_st("▀" * (len(__version__) + (7 if is_latest_ver else 5))),
     )
 
     # fmt:off
     # Attach a notice if the installed version is not the latest one available on PyPI:
     if not is_latest_ver and latest_ver:
         version_msg = (
-            (version_msg[0], (S.DIM | notice_st)("─" * (len(latest_ver) + 15), "╮")),
-            (version_msg[1], (notice_st(" ↑ ", S.link("https://pypi.org/pypi/xulbux")("v", S.BOLD(latest_ver)), " available "), (S.DIM | notice_st)("│"))),  # ruff:ignore[line-too-long]
-            (version_msg[2], (S.DIM | notice_st)("─" * (len(latest_ver) + 15), "╯")),
+            (version_msg[0], (S.DIM | version_st)("─" * (len(latest_ver) + 15), "╮")),
+            (version_msg[1], (version_st(" ↑ ", S.link("https://pypi.org/pypi/xulbux")("v", S.BOLD(latest_ver)), " available "), (S.DIM | version_st)("│"))),  # ruff:ignore[line-too-long]
+            (version_msg[2], (S.DIM | version_st)("─" * (len(latest_ver) + 15), "╯")),
         )
+
+    logo_lines = S.gradient("#6652FF", "#999FFF", "#FF7AA0", "#FF3D5D", angle=24, space="oklab")(_LOGO_LINES).ansi.split("\n")
 
     S(
         S.RESET,
         (
-            "  ", (S.BOLD | xx_primary)("               __  __              "), " \n",
-            "  ", (S.BOLD | xx_primary)("  _  __ __  __/ / / /_  __  ___  __"), " \n",
-            "  ", (S.BOLD | xx_primary)(" | |/ // / / / / / __ \\/ / / | |/ /"), " \n",
-            "  ", (S.BOLD | xx_primary)(" > , </ /_/ / /_/ /_/ / /_/ /> , <"), "  ", version_msg[0], "\n",
-            "  ", (S.BOLD | xx_primary)("/_/|_|\\____/\\__/\\____/\\____//_/|_|"), "  ", version_msg[1],
+            "  ", logo_lines[0], " \n",
+            "  ", logo_lines[1], " \n",
+            "  ", logo_lines[2], " \n",
+            "  ", logo_lines[3], "  ", version_msg[0], "\n",
+            "  ", logo_lines[4], "  ", version_msg[1], "\n",
+            "                                       ", version_msg[2], "\n",
+            "  ", logo_lines[5],
         ),
-        ("                                      ", version_msg[2]),
-        ("  ", (S.ITALIC | xx_secondary)("Simplify common programming tasks!")),
-        "",
+        "\n",
         ("  ", heading_st("Commands:")),
         _box(
             (cmd_st("xulbux-lib        "), txt_st("Show library info and usage.")),
@@ -137,9 +147,9 @@ def show_help() -> None:
             (src_st("GitHub     "), (txt_st | S.link("https://github.com/xulbux/python-lib-xulbux"))("github.com/xulbux/python-lib-xulbux")),
             (src_st("PyPI       "), (txt_st | S.link("https://pypi.org/project/xulbux"))("pypi.org/project/xulbux")),
         ),
-        "",
+        "\n",
         sep="\n",
     ).print()
     # fmt:on
 
-    _console_module.pause_exit(S("  ", S.DIM("Press any key to exit..."), "\n\n"), pause=True)
+    _console_module.pause_exit(S("  ", S.DIM("Press any key to exit..."), "\n\n\n"), pause=True)

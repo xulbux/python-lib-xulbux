@@ -283,7 +283,7 @@ def remove_consecutive_empty_lines(string: str, /, max_consecutive: int = 0) -> 
     *   `string` – The string to process.
     *   `max_consecutive` – The maximum number of allowed consecutive empty lines:<br>
         -   If `0`, it will remove all consecutive empty lines.
-        -   If bigger than `0`, it will only allow `max_consecutive` consecutive empty lines<br>
+        -   If bigger than `0`, it will only allow `max_consecutive` consecutive empty lines
             and everything above it will be cut down to `max_consecutive` empty lines."""
 
     if max_consecutive < 0:

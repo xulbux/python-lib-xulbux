@@ -40,7 +40,7 @@ def read(
         (processed_json, original_json)
         ```\n
     ----------------------------------------------------------------------------------------------------
-    For more detailed information about the comment handling,<br>
+    For more detailed information about the comment handling,
     see the `_data_module.remove_comments()` method documentation.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -81,13 +81,13 @@ def create(
     *   `json_file` – The path (relative or absolute) to the JSON file to create.
     *   `data` – The dictionary data to write to the JSON file.
     *   `indent` – The amount of spaces to use for indentation.
-    *   `compactness` – Can be `0`, `1` or `2` and indicates how compact<br>
+    *   `compactness` – Can be `0`, `1` or `2` and indicates how compact
         the data should be formatted (see `_data_module.render()` for more info).
-    *   `force` – If true, will overwrite existing files<br>
+    *   `force` – If true, will overwrite existing files
         without throwing an error (errors explained below).\n
     ----------------------------------------------------------------------------------------------------
-    The method will throw a `FileExistsError` if a file with the same<br>
-    name already exists and a `SameContentFileExistsError` if a file<br>
+    The method will throw a `FileExistsError` if a file with the same
+    name already exists and a `SameContentFileExistsError` if a file
     with the same name and same content already exists.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -126,18 +126,18 @@ def update(
     comment_end: str = "<<",
     path_sep: str = "->",
 ) -> None:
-    """Update single/multiple values inside JSON files,<br>
-    without needing to know the rest of the data.\n
+    """Update single/multiple values inside JSON files, without needing to know the rest of the data.\n
     ----------------------------------------------------------------------------------------------------
     *   `json_file` – The path (relative or absolute) to the JSON file to update.
-    *   `update_values` – A dictionary where keys are the paths to the values to update<br>
-        and values are the new values to set. Dictionaries are addressed by key name,<br>
-        and sequences by integer index. Missing paths will automatically be created.
+    *   `update_values` – A dictionary where keys are the paths to the values to update
+        and values are the new values to set.
+        Dictionaries are addressed by key name, and sequences by integer index.<br>
+        Missing paths will automatically be created.
     *   `comment_start` – The string that indicates the start of a comment.
     *   `comment_end` – The string that indicates the end of a comment.
     *   `path_sep` – The separator used inside the value-paths in `update_values`.\n
     ----------------------------------------------------------------------------------------------------
-    For more detailed information about comment handling,<br>
+    For more detailed information about comment handling,
     see the `data.remove_comments()` method documentation.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -195,7 +195,7 @@ def update(
 
 
 def _create_nested_path(data_obj: dict[str, Any], path_keys: list[str], value: Any, /) -> dict[str, Any]:
-    """Internal method that creates nested dictionaries/lists based on the<br>
+    """Internal method that creates nested dictionaries/lists based on the
     given path keys and sets the specified value at the end of the path."""
 
     last_idx, current = len(path_keys) - 1, data_obj

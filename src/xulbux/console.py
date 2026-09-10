@@ -301,7 +301,7 @@ class ArgumentParser:
         -   `{cmd}` – The command name (e.g., `cli-tool`).
         -   `{args}` – The arguments placeholder (`<input> [output...]`).
         -   `{opts}` – The options placeholder (`[options]`).
-    *   `controls` – A sequence of tuples `(control_key, help)`, where `control_key`<br>
+    *   `controls` – A sequence of tuples `(control_key, help)`, where `control_key`
         can be a single key string or an iterable of strings (e.g., `("WASD", "⏶⏴⏷⏵")`).
     *   `examples` – A list of tuples `(example_command, comment)`.
     *   `epilog` – Optional footer text to append to the help print.
@@ -539,8 +539,7 @@ class ArgumentParser:
         return sorted(opts, key=lambda opt: (len(opt) - len(_PATTERNS.cli_opt_prefix.sub("", opt)), opt))
 
     def _opts_to_st(self, opts: Iterable[str]) -> S:
-        """Internal method to convert a set of options into a<br>
-        nicely formatted `S` object for help printing."""
+        """Internal method to convert a set of options into a nicely formatted `S` object for help printing."""
 
         return S(", ").join([S.BR.BLUE(opt) for opt in self._sort_opts(opts)])
 
@@ -1153,7 +1152,7 @@ class ArgumentParser:
             Defaults to `self.opt_value_sep` if omitted. Set to `None` to disable.
         *   `allow_space_value` – Whether to allow space-separated values
             for options (e.g., `--foo bar`).
-        *   `intermixed` – Whether options and positional arguments can be intermixed<br>
+        *   `intermixed` – Whether options and positional arguments can be intermixed
             (defaults to `self.intermixed` if not specified).\n
         ----------------------------------------------------------------------------------------------------
         Returns the `ParsedArgs` container."""
@@ -1331,8 +1330,7 @@ def log(
     *   `prompt` – The log message.
     *   `start` – Something to print before the log is printed.
     *   `end` – Something to print after the log is printed (e.g., `\\n`).
-    *   `title_bg_color` – The background color of the `title`<br>
-        (an `S` background color style).
+    *   `title_bg_color` – The background color of the `title` (an `S` background color style).
     *   `default_color` – The default text color of the `prompt` (an `S` foreground style).
     *   `tab_size` – The tab size used for the log (default is 8 – matches terminal tabs).
     *   `title_px` – The horizontal padding (in chars) to the title (if `title_bg_color` is set).
@@ -2009,13 +2007,13 @@ def box(
     ----------------------------------------------------------------------------------------------------
     *   `*lines` – The box content (one object per line).<br>
         By adding `{hr}` in the `*lines`, you can insert horizontal rules to split the box content.
-    *   `border` – The border type (`"rounded"`, `"standard"`, `"strong"`, `"double"`),<br>
+    *   `border` – The border type (`"rounded"`, `"standard"`, `"strong"`, `"double"`),
         or `None` to disable borders.
     *   `border_style` – The style of the border (an `S` non-background style).
-    *   `bg` – Background fill: `None` for transparent, `True` for default console background,<br>
+    *   `bg` – Background fill: `None` for transparent, `True` for default console background,
         or an `S` background color style (e.g., `S.BG.GREEN`, `S.BG.hex("#222")`).
     *   `default_color` – The default text color of the `*lines` (an `S` foreground style).
-    *   `width` – The fixed outer box width (in chars), `"full"` for full terminal width,<br>
+    *   `width` – The fixed outer box width (in chars), `"full"` for full terminal width,
         or `None` to shrinkwrap up to the terminal width.
     *   `align` – The content alignment (`"left"`, `"center"`, `"right"`).
     *   `indent` – The indentation of the box (in chars).
@@ -2334,10 +2332,10 @@ def input(
     *   `mask_char` – If set, the input will be masked with this character.
     *   `min_len` – The minimum length of the input (required to submit).
     *   `max_len` – The maximum length of the input (can't write further if reached).
-    *   `allowed_chars` – A string of characters that are allowed to be inputted<br>
+    *   `allowed_chars` – A string of characters that are allowed to be inputted
         (default allows all characters).
     *   `allow_paste` – Whether to allow pasting text into the input or not.
-    *   `validator` – A function that takes the input string and returns a string error<br>
+    *   `validator` – A function that takes the input string and returns a string error
         message if invalid, or nothing if valid.
     *   `default_val` – The default value to return if the input is empty.
     *   `output_type` – The type (class) to convert the input to before returning it.\n
@@ -2576,7 +2574,7 @@ def read_key(*, raw: bool = True) -> str:
     ----------------------------------------------------------------------------------------------------
     **Attention:**<br>
     This function operates exclusively within an active terminal/console environment.<br>
-    It reads standard input in raw mode and cannot capture global desktop keystrokes<br>
+    It reads standard input in raw mode and cannot capture global desktop keystrokes
     or background input outside the terminal window.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -2665,7 +2663,7 @@ def _as_fg_color_style(color: object, /, *, param_name: str = "color") -> FgColo
 
 
 def _persist_style(ansi_text: str, style_open: str, /) -> str:
-    """Re-inserts `style_open` right after every ANSI escape sequence in `ansi_text`,<br>
+    """Re-inserts `style_open` right after every ANSI escape sequence in `ansi_text`,
     so the style keeps applying even across (e.g., full) resets contained in the text."""
 
     if not style_open or "\x1b" not in ansi_text:
@@ -2677,7 +2675,7 @@ def _persist_style(ansi_text: str, style_open: str, /) -> str:
 def _render_log_title(text: str, style: AnyStyle, /) -> str:
     """Renders (and caches) the styled log title as an ANSI string.\n
     ----------------------------------------------------------------------------------------------------
-    Since consecutive log calls often reuse the exact same title and style,<br>
+    Since consecutive log calls often reuse the exact same title and style,
     the rendered string is cached and reused instead of being rebuilt."""
 
     key = (text, repr(style))
@@ -2771,7 +2769,7 @@ def _prepare_log_box(
     wrap_width: int | None = None,
     align: Literal["left", "center", "right"] = "left",
 ) -> tuple[list[str], list[str], int]:
-    """Prepares the log box content, returning the ANSI lines,<br>
+    """Prepares the log box content, returning the ANSI lines,
     their plain-text counterparts, and the maximum visible line length."""
 
     ansi_lines: list[str] = []
@@ -3115,16 +3113,16 @@ class ProgressBar(_StdoutInterceptorMixin):
         -   `{label}` `{l}`
         -   `{bar}` `{b}`
         -   `{current}` `{c}`
-            (optional `:<char>` format specifier for thousands separator, e.g., `{c:,}`)
+            (optional `:{char}` format specifier for thousands separator, e.g., `{c:,}`)
         -   `{total}` `{t}`
-            (optional `:<char>` format specifier for thousands separator, e.g., `{t:,}`)
-        -   `{percentage}` `{percent}` `{p}` (optional `:.<num>f` format specifier to round<br>
+            (optional `:{char}` format specifier for thousands separator, e.g., `{t:,}`)
+        -   `{percentage}` `{percent}` `{p}` (optional `:.<num>f` format specifier to round
             to specified number of decimal places, e.g., `{p:.1f}`)
-    *   `limited_format` – A simplified format string used when the terminal width is too small<br>
+    *   `limited_format` – A simplified format string used when the terminal width is too small
         for the normal `format`.
     *   `chars` – A tuple of characters ordered from full to empty progress:<br>
         The first character represents completely filled sections.<br>
-        Intermediate characters create smooth transitions<br>
+        Intermediate characters create smooth transitions.<br>
         The last character represents empty sections.\n
     ----------------------------------------------------------------------------------------------------
     The formats can additionally be styled by embedding ANSI from the operator-based API.<br>
@@ -3225,10 +3223,10 @@ class ProgressBar(_StdoutInterceptorMixin):
             -   `{label}` `{l}`
             -   `{bar}` `{b}`
             -   `{current}` `{c}`
-                (optional `:<char>` format specifier for thousands separator, e.g., `{c:,}`)
+                (optional `:{char}` format specifier for thousands separator, e.g., `{c:,}`)
             -   `{total}` `{t}`
-                (optional `:<char>` format specifier for thousands separator, e.g., `{t:,}`)
-            -   `{percentage}` `{percent}` `{p}` (optional `:.<num>f` format specifier to round<br>
+                (optional `:{char}` format specifier for thousands separator, e.g., `{t:,}`)
+            -   `{percentage}` `{percent}` `{p}` (optional `:.<num>f` format specifier to round
                 to specified number of decimal places, e.g., `{p:.1f}`)
         *   `limited_format` – A simplified format strings used when the terminal width is too small.
         *   `sep` – The separator string used to join multiple format strings.\n

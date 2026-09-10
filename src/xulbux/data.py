@@ -221,13 +221,13 @@ def is_equal(
     *   `data_a` – The first data structure to compare.
     *   `data_b` – The second data structure to compare.
     *   `ignore_paths` – A path or list of paths to key/s and item/s to ignore during comparison:<br>
-        Comments are not ignored when comparing. `comment_start` and `comment_end` are only used<br>
+        Comments are not ignored when comparing. `comment_start` and `comment_end` are only used
         to correctly recognize the keys in the `ignore_paths`.
     *   `path_sep` – The separator between the keys/indexes in the `ignore_paths`.
     *   `comment_start` – The string that marks the start of a comment inside `data_a` and `data_b`.
     *   `comment_end` – The string that marks the end of a comment inside `data_a` and `data_b`.\n
     ----------------------------------------------------------------------------------------------------
-    The paths from `ignore_paths` and the `path_sep` parameter work exactly the same way as for<br>
+    The paths from `ignore_paths` and the `path_sep` parameter work exactly the same way as for
     `get_path_id()`. See its documentation for more details.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -316,7 +316,7 @@ def get_path_id(
     *   `path_sep` – The separator between the keys/indexes in the `value_paths`.
     *   `comment_start` – The string that marks the start of a comment inside `data`.
     *   `comment_end` – The string that marks the end of a comment inside `data`.
-    *   `ignore_not_found` – If true, the function will return `None`<br>
+    *   `ignore_not_found` – If true, the function will return `None`
         if the value is not found instead of raising an error.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -360,7 +360,7 @@ def get_path_id(
 
 
 def get_value_by_path_id(data: DataObjType, path_id: str, /, *, get_key: bool = False) -> Any:
-    """Retrieves the value from `data` using the provided `path_id`,<br>
+    """Retrieves the value from `data` using the provided `path_id`,
     as long as the data structure hasn't changed since creating the path ID.\n
     ----------------------------------------------------------------------------------------------------
     *   `data` – The list, tuple, or dictionary to retrieve the value from.
@@ -424,12 +424,12 @@ def get_value_by_path_id(data: DataObjType, path_id: str, /, *, get_key: bool = 
 
 
 def set_value_by_path_id[DataObj: DataObjType](data: DataObj, update_values: dict[str, Any], /) -> DataObj:
-    """Updates the value/s from `update_values` in the `data`, as long as the<br>
+    """Updates the value/s from `update_values` in the `data`, as long as the
     data structure hasn't changed since creating the path ID to that value.\n
     ----------------------------------------------------------------------------------------------------
     *   `data` – The list, tuple, or dictionary to update the value/s in.
-    *   `update_values` – A dictionary where keys are path IDs<br>
-        and values are the new values to insert.
+    *   `update_values` – A dictionary where keys are path IDs
+        and values are the new values to insert.<br>
         The path IDs should have been created using `get_path_id()`.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -497,7 +497,7 @@ def render(
     The `syntax_highlighting` dictionary has 5 keys for each part of the data.<br>
     The key's values are the `S` style attributes (or combined style groups)
     to apply to this data part.<br>
-    The styling can be changed by simply adding the key with the new value<br>
+    The styling can be changed by simply adding the key with the new value
     inside the `syntax_highlighting` dictionary.\n
     The keys with their default values are:
     *   `str: S.BR.BLUE`

@@ -60,16 +60,16 @@ def resolve_path(
     """Tries to resolve and extend a relative path to an absolute path.\n
     ----------------------------------------------------------------------------------------------------
     *   `rel_path` – The relative path to extend.
-    *   `search_in` – A directory or a list of directories to search in,<br>
+    *   `search_in` – A directory or a list of directories to search in,
         in addition to the predefined directories (see exact procedure below).
-    *   `fuzzy_match` – If true, it will try to find the closest matching file/folder<br>
+    *   `fuzzy_match` – If true, it will try to find the closest matching file/folder
         names in the `search_in` directories, allowing for typos in `rel_path` and `search_in`.
-    *   `raise_error` – If true, raises a `PathNotFoundError` if<br>
+    *   `raise_error` – If true, raises a `PathNotFoundError` if
         the path couldn't be found (otherwise it returns `None`).\n
     ----------------------------------------------------------------------------------------------------
-    If the `rel_path` couldn't be located in predefined directories,<br>
-    it will be searched in the `search_in` directory/s.\n
-    If the `rel_path` is still not found, it returns `None` or<br>
+    If the `rel_path` couldn't be located in predefined directories,
+    it will be searched in the `search_in` directory/s.<br>
+    If the `rel_path` is still not found, it returns `None` or
     raises a `PathNotFoundError` if `raise_error` is true.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -114,23 +114,23 @@ def resolve_or_create_path(
     prefer_script_dir: bool = True,
     fuzzy_match: bool = False,
 ) -> Path:
-    """Tries to locate and extend a relative path to an absolute path, and if<br>
+    """Tries to locate and extend a relative path to an absolute path, and if
     the `rel_path` couldn't be located, it generates a path, as if it was located.\n
     ----------------------------------------------------------------------------------------------------
     *   `rel_path` – The relative path to extend or make.
-    *   `search_in` – A directory or a list of directories to search in,<br>
+    *   `search_in` – A directory or a list of directories to search in,
         in addition to the predefined directories (see exact procedure below).
-    *   `prefer_script_dir` – If true, the script directory is preferred<br>
+    *   `prefer_script_dir` – If true, the script directory is preferred
         when making a new path (otherwise the CWD is preferred).
-    *   `fuzzy_match` – If true, it will try to find the closest matching file/folder<br>
+    *   `fuzzy_match` – If true, it will try to find the closest matching file/folder
         names in the `search_in` directories, allowing for typos in `rel_path` and `search_in`.\n
     ----------------------------------------------------------------------------------------------------
-    If the `rel_path` couldn't be located in predefined directories,<br>
-    it will be searched in the `search_in` directory/s.\n
-    If the `rel_path` is still not found, it will makes a path<br>
-    that points to where the `rel_path` would be in the script directory,<br>
-    even though the `rel_path` doesn't exist there.\n
-    If `prefer_script_dir` is false, it will instead make a path<br>
+    If the `rel_path` couldn't be located in predefined directories,
+    it will be searched in the `search_in` directory/s.<br>
+    If the `rel_path` is still not found, it will makes a path
+    that points to where the `rel_path` would be in the script directory,
+    even though the `rel_path` doesn't exist there.<br>
+    If `prefer_script_dir` is false, it will instead make a path
     that points to where the `rel_path` would be in the CWD.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -156,11 +156,11 @@ def create_file(file_path: Path | str, content: str = "", /, *, force: bool = Fa
     ----------------------------------------------------------------------------------------------------
     *   `file_path` – The path where the file should be created.
     *   `content` – The content to write into the file.
-    *   `force` – If true, will overwrite existing files without<br>
+    *   `force` – If true, will overwrite existing files without
         throwing an error (errors explained below).\n
     ----------------------------------------------------------------------------------------------------
-    The method will throw a `FileExistsError` if a file with the same<br>
-    name already exists and a `SameContentFileExistsError` if a file<br>
+    The method will throw a `FileExistsError` if a file with the same
+    name already exists and a `SameContentFileExistsError` if a file
     with the same name and same content already exists.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -198,9 +198,9 @@ def rename_file_ext(
     ----------------------------------------------------------------------------------------------------
     *   `file_path` – The path to the file whose extension should be changed.
     *   `new_extension` – The new extension for the file (with or without dot).
-    *   `full_extension` – Whether to replace the full extension (e.g., `.tar.gz`)<br>
+    *   `full_extension` – Whether to replace the full extension (e.g., `.tar.gz`)
         or just the last part of it (e.g., `.gz`).
-    *   `camel_case_filename` – Whether to convert the filename to CamelCase<br>
+    *   `camel_case_filename` – Whether to convert the filename to CamelCase
         in addition to changing the files extension.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
@@ -243,7 +243,7 @@ def remove(path: Path | str, /, *, only_content: bool = False) -> None:
     """Removes the directory or the directory's content at the specified path.\n
     ----------------------------------------------------------------------------------------------------
     *   `path` – The path to the directory or file to remove.
-    *   `only_content` – If true, only the content of the directory<br>
+    *   `only_content` – If true, only the content of the directory
         is removed and the directory itself is kept."""
 
     if not (path_obj := Path(path)).exists():
@@ -324,7 +324,7 @@ class _ResolvePathHelper:
         return None
 
     def find_path(self, base_dir: Path, target_path: Path, /, *, fuzzy_match: bool) -> Path | None:
-        """Find a path by traversing the given parts from the base directory,<br>
+        """Find a path by traversing the given parts from the base directory,
         optionally using closest matches for each part."""
 
         current_path: Path = base_dir
@@ -340,7 +340,7 @@ class _ResolvePathHelper:
 
     @staticmethod
     def get_closest_match(directory: Path, path_part: str, /) -> str | None:
-        """Internal method to get the closest matching file or folder name<br>
+        """Internal method to get the closest matching file or folder name
         in the given directory for the given path part."""
 
         try:

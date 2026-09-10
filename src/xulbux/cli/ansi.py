@@ -4,15 +4,14 @@ from ..console import get_width
 from pathlib import Path
 
 
-def _st(style: str) -> RenderSegment:
+def _st(style: str, /) -> RenderSegment:
     """Internal helper function to format styles for display in the `xulbux-lib ansi` command output."""
 
     return style if "." not in style else S.DIM(".").join(style.split("."))
 
 
 def show_ansi() -> None:
-    """CLI command function for `xulbux-lib ansi` command,<br>
-    which shows all possible styles using the `xulbux.ansi` API."""
+    """CLI command function for `xulbux-lib ansi` command, which shows all possible styles using the `xulbux.ansi` API."""
 
     title = S.BOLD
     sep = (get_width(), S.DIM("─"))

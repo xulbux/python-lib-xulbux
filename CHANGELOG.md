@@ -39,6 +39,7 @@
     -   Added `console.raw_mode()` context manager for terminal unbuffered raw mode with enhanced key protocols.
     -   Added `console.read_key()` for reading single key presses and ANSI escape sequences in the terminal with cross-platform support.
     -   Implemented a custom stub generator for improved `.pyi` type stub generation during the build process.
+    -   Added color space interpolation and multi-stop scale generators in `color`: `interpolate_color()` and `create_gradient()`, supporting RGB, HSL (shortest and long arc), Linear RGB, and Oklab color spaces.
 
 **BREAKING CHANGES:**
 

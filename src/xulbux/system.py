@@ -185,12 +185,12 @@ def elevate(win_title: str | None = None, args: Sequence[str] | None = None) -> 
     *   `win_title` – The window title of the elevated process (only on Windows).
     *   `args` – A list of additional arguments to be passed to the elevated process.
     ----------------------------------------------------------------------------------------------------
-    After the elevated process started, the original process will exit.\n
-    This means, that this method has to be run at the beginning of the program or<br>
+    After the elevated process started, the original process will exit.<br>
+    This means, that this method has to be run at the beginning of the program or
     or else the program has to continue in a new window after elevation.\n
     ----------------------------------------------------------------------------------------------------
-    Returns `True` if the current process already has elevated privileges and raises<br>
-    a `PermissionError` if the user denied the elevation or the elevation failed.\n
+    Returns `True` if the current process already has elevated privileges
+    and raises a `PermissionError` if the user denied the elevation or the elevation failed.\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
 
@@ -320,7 +320,7 @@ def _get_env_path_target(path: Path | str | None = None, /, *, cwd: bool = False
 
 
 def _persistent_env_path(path: Path, /, *, remove: bool = False) -> None:
-    """Internal method to add or remove a path from the PATH environment variable,<br>
+    """Internal method to add or remove a path from the PATH environment variable,
     persistently, across sessions, as well as the current session."""
 
     current_paths = get_env_path(as_list=True)

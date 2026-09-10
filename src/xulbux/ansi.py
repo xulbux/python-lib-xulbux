@@ -31,11 +31,9 @@ How all of this exactly works is explained in the sections below. 🠫
 In this module, you apply styles and colors using `S` attributes.<br>
 Every style attribute supports two operators:
 
-*   `|` combines two or more styles into a single immutable group, e.g.<br>
-    `S.BOLD | S.RED`  →  bold + red foreground
-*   `()` applies the style (or group) to the given text and auto-resets the style after it, e.g.<br>
-    `S.BOLD("hello")`  →  bold "hello", reset back to normal afterwards<br>
-    `(S.BOLD | S.RED)("hello")`  →  same idea, combined
+*   `|` combines two or more styles into a single immutable group, e.g., `S.BOLD | S.RED` → bold + red foreground
+*   `()` applies the style (or group) to the given text and auto-resets the style after it, e.g.,
+    `S.BOLD("hello")` → bold "hello", reset back to normal afterwards `(S.BOLD | S.RED)("hello")` → same idea, combined
 
 A list of all possible style attributes can be found below.
 
@@ -75,9 +73,9 @@ S.CYAN(
 
 ### Bare (Open-Only) Styles
 
-Passing a style object *without calling it* emits only its opening ANSI sequence at that<br>
-position, with no matching close/reset appended. This is the typed equivalent of `[…]`<br>
-(open bracket without closing braces) from the legacy string syntax:
+Passing a style object *without calling it* emits only its opening ANSI sequence at that position,
+with no matching close/reset appended.<br>
+This is the typed equivalent of `[…]` (open bracket without closing braces) from the legacy string syntax:
 
 ```python
 S(
@@ -90,7 +88,7 @@ S(
 <span class="red">[ERROR] Something went wrong!</span> Back to normal.
 </TerminalOutput> -->
 
-Any style type supports bare usage: `S.RED` (`_Style`), `S.hex("#F67")` (`_ColorStyle`),<br>
+Any style type supports bare usage: `S.RED` (`_Style`), `S.hex("#F67")` (`_ColorStyle`),
 `S.link("url")` (`_Link`), and `S.BOLD | S.RED` (`_StyleGroup`).<br>
 Bare styles can also appear inside tuples and nested calls:
 
@@ -115,8 +113,8 @@ Strings, `S` objects, bare style objects, and raw tuples can be mixed freely:
 *   `S.X`                       – Bare: emit only the opening sequence, no auto-reset.
 *   `("a", S.X("b"), "c")`      – Same-line group; passed as a single tuple to `S(…)`.
 
-Inside `S(*segments, sep="\\n")`, every positional argument is treated as one<br>
-logical line and joined by `sep`. An empty string argument `""` therefore produces a blank line.
+Inside `S(*segments, sep="\\n")`, every positional argument is treated as one logical line and joined by `sep`.<br>
+An empty string argument `""` therefore produces a blank line.
 
 
 ### All Possible Style Attributes
@@ -162,8 +160,8 @@ logical line and joined by `sep`. An empty string argument `""` therefore produc
 ### Terminal Control – the `Term` class
 
 `Term` exposes commonly used non-styling ANSI sequences for cursor- and screen-control.<br>
-These are plain strings (or string-returning helpers), so they can be passed directly into a<br>
-`S(…)` call or written to `sys.stdout`:
+These are plain strings (or string-returning helpers),
+so they can be passed directly into a `S(…)` call or written to `sys.stdout`:
 
 *   `CLEAR_LINE`                         – Erase the entire current line.
 *   `CLEAR_LINE_TO_END`                  – Erase from the cursor to the end of the line.
@@ -196,8 +194,12 @@ These are plain strings (or string-returning helpers), so they can be passed dir
 
 from __future__ import annotations
 
+from . import color as _color_module
+from .base.types import Hexa, Hsla, Rgba
+
 import base64 as _base64
 import ctypes as _ctypes
+import math as _math
 import os as _os
 import sys as _sys
 import textwrap as _textwrap
@@ -207,10 +209,10 @@ from typing import TYPE_CHECKING, Any, ClassVar, Final, Literal, Self, TextIO, c
 import regex as _rx
 
 if TYPE_CHECKING:
-    from .color import hexa, rgba
+    from .color import _ColorBase, hexa, rgba
 
     import sys
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Iterable, Iterator, Sequence
 
     if sys.version_info >= (3, 13):
         from typing import TypeIs
@@ -222,6 +224,16 @@ _terminal_configured: bool = False
 
 _ANSI_SEQ_RX: Final[_rx.Pattern[str]] = _rx.compile(r"\x1b(?:\].*?(?:\x1b\\|\x07)|\[[0-?]*[ -/]*[@-~]|[@-Z\\-_c]|[0-9=><])")
 """Compiled regex pattern matching any ANSI escape sequence (CSI, OSC, or single-character)."""
+
+_CHAR_OR_ANSI_RX: Final[_rx.Pattern[str]] = _rx.compile(
+    r"(\x1b(?:\].*?(?:\x1b\\|\x07)|\[[0-?]*[ -/]*[@-~]|[@-Z\\-_c]|[0-9=><])|.)"
+)
+"""Compiled regex pattern matching either a single ANSI escape sequence or an arbitrary character."""
+
+_WORD_OR_ANSI_RX: Final[_rx.Pattern[str]] = _rx.compile(
+    r"(\x1b(?:\].*?(?:\x1b\\|\x07)|\[[0-?]*[ -/]*[@-~]|[@-Z\\-_c]|[0-9=><])|\s+|\S+)"
+)
+"""Compiled regex pattern matching an ANSI escape sequence, whitespace run, or non-whitespace word."""
 
 # fmt:off
 _RESET_MAP: Final[dict[int, int]] = {
@@ -259,6 +271,26 @@ _CURSOR_SHAPES: Final[dict[str, int]] = {
 }
 """Mapping from cursor shape description names to their corresponding DECSCUSR numeric codes."""
 
+_ANSI16_TO_RGB: Final[dict[int, tuple[int, int, int]]] = {
+    30: (0, 0, 0),
+    31: (205, 49, 49),
+    32: (13, 188, 121),
+    33: (229, 229, 16),
+    34: (36, 114, 200),
+    35: (188, 63, 188),
+    36: (17, 168, 205),
+    37: (229, 229, 229),
+    90: (102, 102, 102),
+    91: (241, 76, 76),
+    92: (35, 209, 139),
+    93: (245, 245, 67),
+    94: (59, 142, 234),
+    95: (214, 112, 214),
+    96: (41, 184, 219),
+    97: (255, 255, 255),
+}
+"""RGB color coordinates corresponding to the standard 16 ANSI colors."""
+
 
 # ***************************************************** INTERNAL HELPERS ******************************************************
 
@@ -274,10 +306,38 @@ def _ansi256_to_rgb(code: int, /) -> tuple[int, int, int]:
     return (gray, gray, gray)
 
 
+def _rgb_to_ansi256(red: int, green: int, blue: int, /) -> int:
+    """Internal function to map an RGB color to the closest ANSI 256-color palette index."""
+
+    if red == green == blue:
+        if red < 4:
+            return 16
+        elif red > 243:
+            return 231
+        return 232 + int((red - 8) / 10 + 0.5)
+
+    def _closest_cube_index(val: int, /) -> int:
+        """Helper function to find the closest index in the 6×6×6 color cube."""
+
+        if val < 48:
+            return 0
+        elif val < 115:
+            return 1
+        elif val < 155:
+            return 2
+        elif val < 195:
+            return 3
+        elif val < 235:
+            return 4
+        return 5
+
+    return 16 + 36 * _closest_cube_index(red) + 6 * _closest_cube_index(green) + _closest_cube_index(blue)
+
+
 def _build_open_close(group: _StyleGroup, /) -> tuple[tuple[str, ...], tuple[str, ...]]:
     """Internal function to build the opening and closing ANSI sequences for a `_StyleGroup`.\n
     ----------------------------------------------------------------------------------------------------
-    Returns a `(opens, closes)` pair of tuples. Multiple opens / closes are emitted<br>
+    Returns a `(opens, closes)` pair of tuples. Multiple opens / closes are emitted
     only when both an OSC 8 hyperlink and SGR codes are present (OSC wraps SGR)."""
 
     return _BuildOpenClose(group).build()
@@ -318,7 +378,7 @@ class _BuildOpenClose:
     def build(self) -> tuple[tuple[str, ...], tuple[str, ...]]:
         """Build the opening and closing ANSI sequences for the given `_StyleGroup`.\n
         ----------------------------------------------------------------------------------------------------
-        Returns a `(opens, closes)` pair of tuples. Multiple opens / closes are emitted<br>
+        Returns a `(opens, closes)` pair of tuples. Multiple opens / closes are emitted
         only when both an OSC 8 hyperlink and SGR codes are present (OSC wraps SGR)."""
 
         if (
@@ -354,6 +414,9 @@ class _BuildOpenClose:
             else:
                 self.sgr_open.append(f"38;5;{code._code}")
                 self.sgr_close.append("39")
+
+        elif isinstance(code, _GradientStyle):
+            pass
 
         else:
             self.sgr_open.append(str(cid := int(code)))
@@ -434,9 +497,10 @@ class _SBase:
     def __call__(self, *text: Renderable) -> S:
         """Dummy method required to prevent a MyPyC C-struct memory layout bug.\n
         ----------------------------------------------------------------------------------------------------
-        If subclasses define `__call__` but the native base class does not, MyPyC injects a<br>
-        `vectorcallfunc` pointer into the subclass struct. This breaks the memory offset<br>
-        for inherited fields (like `ansi`), causing a segmentation fault when accessed."""
+        If subclasses define `__call__` but the native base class does not,
+        MyPyC injects a `vectorcallfunc` pointer into the subclass struct.<br>
+        This breaks the memory offset for inherited fields (like `ansi`),
+        causing a segmentation fault when accessed."""
 
         raise NotImplementedError
 
@@ -450,18 +514,19 @@ class _SBase:
 
     @property
     def code_positions(self) -> tuple[tuple[int, str], ...]:
-        """A tuple of `(position, sequence)` pairs giving the<br>
+        """A tuple of `(position, sequence)` pairs giving the
         start offset of every ANSI escape sequence inside `ansi`."""
 
         return tuple([(match.start(), match.group()) for match in _ANSI_SEQ_RX.finditer(self.ansi)])
 
     @property
     def raw_code_positions(self) -> tuple[tuple[int, str], ...]:
-        """A tuple of `(position, sequence)` pairs giving the start offset of every ANSI escape<br>
+        """A tuple of `(position, sequence)` pairs giving the start offset of every ANSI escape
         sequence relative to the plain `raw` text (i.e., as if all escape sequences were removed).\n
         ----------------------------------------------------------------------------------------------------
-        This is the counterpart to `code_positions`, which reports offsets inside the rendered<br>
-        `ansi` string. It is useful for re-inserting the styling after processing the plain text<br>
+        This is the counterpart to `code_positions`,
+        which reports offsets inside the rendered `ansi` string.<br>
+        It is useful for re-inserting the styling after processing the plain text
         (e.g., wrapping or splitting it), since the positions stay valid against `raw`."""
 
         result: list[tuple[int, str]] = []
@@ -670,8 +735,8 @@ class _SBase:
         return fill_char * left_pad + self + fill_char * right_pad
 
     def wrap(self, width: int, /) -> list[S]:
-        """Wrap the object to fit within a given line width<br>
-        (in visible characters), preserving ANSI styling across all wrapped lines.\n
+        """Wrap the object to fit within a given line width (in visible characters),
+        preserving ANSI styling across all wrapped lines.\n
         ----------------------------------------------------------------------------------------------------
         *   `width` – The maximum visible width of each line."""
 
@@ -710,8 +775,8 @@ class _SBase:
         return result
 
     def print(self, /, *, end: str = "\n", flush: bool = True, file: TextIO | None = None) -> None:
-        """Write the rendered ANSI string straight to `sys.stdout` (configuring the terminal<br>
-        for ANSI on first use) or to a custom file-like object.\n
+        """Write the rendered ANSI string straight to `sys.stdout`
+        (configuring the terminal for ANSI on first use) or to a custom file-like object.\n
         ----------------------------------------------------------------------------------------------------
         *   `end` – The string to append at the end of the output (default `"\\n"`).
         *   `flush` – Whether to flush the output stream after writing (default `True`).
@@ -741,7 +806,7 @@ class _SBase:
     def input(self, /, *, reset_ansi: bool = False) -> str:
         """Use the rendered ANSI string as an input prompt and return the user's input.\n
         ----------------------------------------------------------------------------------------------------
-        *   `reset_ansi` – If true, all ANSI styling will be reset after<br>
+        *   `reset_ansi` – If true, all ANSI styling will be reset after
             the user confirmed the input and the program continues to run.\n
         ----------------------------------------------------------------------------------------------------
         #### Example Usage
@@ -920,7 +985,7 @@ class _ColorStyle(_SBase):
         return _render_styled((self._open_seq,), (self._close_seq,), (text,))
 
     def __repr__(self) -> str:
-        """Returns a string representation of this color style, indicating<br>
+        """Returns a string representation of this color style, indicating
         whether it's foreground or background and its RGB values."""
 
         return f"_ColorStyle({'bg' if self._bg else 'fg'} {self._red},{self._green},{self._blue})"
@@ -1280,6 +1345,459 @@ class _Link(_SBase):
         return self
 
 
+type ColorInput = _ColorStyle | _Color256Style | _Style | _ColorBase | Rgba | Hsla | Hexa
+"""Supported color representations for ANSI gradient styles."""
+
+type GradientStop = ColorInput | tuple[ColorInput, float | int]
+"""A color stop for ANSI gradients: a color or a `(color, position)` tuple."""
+
+
+def _color_obj_to_rgb(
+    color: _Style | _ColorStyle | _Color256Style | _ColorBase | Rgba | Hsla | Hexa,
+    /,
+) -> tuple[int, int, int]:
+    """Internal helper to convert style objects to an `(R, G, B)` tuple."""
+
+    if isinstance(color, _ColorStyle):
+        return (color._red, color._green, color._blue)
+
+    elif isinstance(color, _Color256Style):
+        return _ansi256_to_rgb(color._code)
+
+    elif isinstance(color, _Style):
+        if (30 <= (code_val := color._value) <= 37) or (90 <= code_val <= 97):
+            return _ANSI16_TO_RGB.get(code_val, (255, 255, 255))
+        elif (40 <= code_val <= 47) or (100 <= code_val <= 107):
+            normalized_code = (code_val - 40 + 30) if (40 <= code_val <= 47) else (code_val - 100 + 90)
+            return _ANSI16_TO_RGB.get(normalized_code, (255, 255, 255))
+        return (255, 255, 255)
+
+    return _color_module._extract_rgb_fast(color)
+
+
+def _unwrap_gradient_colors(
+    raw_colors: tuple[GradientStop | Sequence[GradientStop], ...],
+    /,
+) -> tuple[GradientStop, ...]:
+    """Internal helper to unwrap nested collections of gradient stops."""
+
+    unwrapped: tuple[GradientStop, ...] = cast("tuple[GradientStop, ...]", raw_colors)
+
+    if len(raw_colors) == 1 and isinstance(raw_colors[0], (list, tuple)):
+        is_rgb_tuple = False
+
+        if len(first_item := raw_colors[0]) in {3, 4}:
+            is_rgb_tuple = True
+            for ch in first_item:
+                if not isinstance(ch, int):
+                    is_rgb_tuple = False
+                    break
+
+        if not is_rgb_tuple:
+            unwrapped = tuple(cast("Sequence[GradientStop]", first_item))
+
+    if not unwrapped:
+        raise ValueError("At least one color must be provided for a gradient")
+
+    return unwrapped
+
+
+def _parse_gradient_stops(
+    raw_colors: tuple[GradientStop | Sequence[GradientStop], ...],
+    /,
+) -> tuple[tuple[tuple[int, int, int], float], ...]:
+    """Internal helper to parse raw color arguments into sorted `((red, green, blue), position)` stops."""
+
+    raw_items: list[tuple[tuple[int, int, int], float | None]] = []
+
+    for item in _unwrap_gradient_colors(raw_colors):
+        if isinstance(item, tuple) and len(item) == 2:
+            raw_items.append((_color_obj_to_rgb(item[0]), float(item[1])))
+        else:
+            raw_items.append((_color_obj_to_rgb(item), None))
+
+    return _color_module._distribute_color_stops(raw_items)
+
+
+class _GradientStyle(_SBase):
+    """An ANSI gradient style that smoothly transitions colors across text or terminal blocks.\n
+    ----------------------------------------------------------------------------------------------------
+    *   `stops` – Parsed color stops `tuple[tuple[tuple[int, int, int], float], ...]`.
+    *   `angle` – Direction angle in degrees (`0.0` = left-to-right, `90.0` = top-to-bottom).
+    *   `space` – Color interpolation space
+        (`"rgb"`, `"hsl"`, `"hsl_long"`, `"linear_rgb"`, `"oklab"`).
+    *   `granularity` – Coloring granularity (`"char"`, `"word"`, or `"line"`).
+    *   `skip_whitespace` – Whether to skip emitting color escape sequences over whitespace.
+    *   `cell_aspect_ratio` – Font cell aspect ratio for 2D geometry correction (default `2.0`).
+    *   `color_depth` – Color mode (`"truecolor"`, `"256"`, or `"auto"`).
+    *   `bg` – Whether this gradient applies to the background instead of foreground."""
+
+    __slots__: tuple[str, ...] = (
+        "_angle",
+        "_bg",
+        "_cell_aspect_ratio",
+        "_color_depth",
+        "_granularity",
+        "_skip_whitespace",
+        "_space",
+        "_stops",
+    )
+
+    def __init__(
+        self,
+        stops: tuple[tuple[tuple[int, int, int], float], ...],
+        /,
+        *,
+        angle: float = 0.0,
+        space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = "hsl",
+        granularity: Literal["char", "word", "line"] = "char",
+        skip_whitespace: bool = True,
+        cell_aspect_ratio: float = 2.0,
+        color_depth: Literal["truecolor", "256", "auto"] = "auto",
+        bg: bool = False,
+    ) -> None:
+        self._stops: tuple[tuple[tuple[int, int, int], float], ...] = stops
+        self._angle: float = float(angle) % 360.0
+        self._space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = space
+        self._granularity: Literal["char", "word", "line"] = granularity
+        self._skip_whitespace: bool = skip_whitespace
+        self._cell_aspect_ratio: float = cell_aspect_ratio
+        self._color_depth: Literal["truecolor", "256", "auto"] = color_depth
+        self._bg: bool = bg
+        self.ansi = ""
+
+    def __or__(self, other: AnyStyle) -> _StyleGroup:
+        """Combines this gradient style with another style or group via `|`."""
+
+        if isinstance(other, _StyleGroup):
+            return _StyleGroup(self, *other._codes)
+
+        return _StyleGroup(self, other)
+
+    def __ror__(self, other: BaseStyle) -> _StyleGroup:
+        """Combines this gradient style with another style or group via `|`."""
+
+        return _StyleGroup(other, self)
+
+    def __call__(self, *text: Renderable) -> S:
+        """Applies this gradient style to the given text, auto-resetting after."""
+
+        return self._render_gradient(text)
+
+    def __matmul__(self, text: Renderable) -> S:
+        """Applies this gradient style to the given text, auto-resetting after."""
+
+        return self._render_gradient((text,))
+
+    def __repr__(self) -> str:
+        """Returns a string representation of this gradient style."""
+
+        return f"_GradientStyle({'bg' if self._bg else 'fg'} stops={len(self._stops)} angle={self._angle}°)"
+
+    def __eq__(self, other: object) -> bool:
+        """Returns `True` if `other` is a `_GradientStyle` with identical attributes."""
+
+        if isinstance(other, _GradientStyle):
+            return (
+                self._stops == other._stops
+                and self._angle == other._angle
+                and self._space == other._space
+                and self._granularity == other._granularity
+                and self._skip_whitespace == other._skip_whitespace
+                and self._cell_aspect_ratio == other._cell_aspect_ratio
+                and self._color_depth == other._color_depth
+                and self._bg == other._bg
+            )
+        elif isinstance(other, (_SBase, str)):
+            return super().__eq__(other)
+
+        return False
+
+    def __hash__(self) -> int:
+        return hash((
+            self._stops,
+            self._angle,
+            self._space,
+            self._granularity,
+            self._skip_whitespace,
+            self._cell_aspect_ratio,
+            self._color_depth,
+            self._bg,
+        ))
+
+    def as_fg(self) -> _GradientStyle:
+        """Convert to the corresponding foreground gradient style."""
+
+        if not self._bg:
+            return self
+
+        return _GradientStyle(
+            self._stops,
+            angle=self._angle,
+            space=self._space,
+            granularity=self._granularity,
+            skip_whitespace=self._skip_whitespace,
+            cell_aspect_ratio=self._cell_aspect_ratio,
+            color_depth=self._color_depth,
+            bg=False,
+        )
+
+    def as_bg(self) -> _GradientStyle:
+        """Convert to the corresponding background gradient style."""
+
+        if self._bg:
+            return self
+
+        return _GradientStyle(
+            self._stops,
+            angle=self._angle,
+            space=self._space,
+            granularity=self._granularity,
+            skip_whitespace=self._skip_whitespace,
+            cell_aspect_ratio=self._cell_aspect_ratio,
+            color_depth=self._color_depth,
+            bg=True,
+        )
+
+    def _color_seq_for_proj(
+        self,
+        proj_val: float,
+        min_proj: float,
+        proj_span: float,
+        /,
+        *,
+        is_256: bool,
+    ) -> str:
+        """Internal helper to calculate the ANSI color escape sequence for a projected coordinate."""
+
+        ratio_val = max(0.0, min(1.0, (proj_val - min_proj) / proj_span if proj_span > 1e-9 else 0.0))
+        rgb_tuple = _color_module._resolve_color_stop(self._stops, ratio_val, space=self._space)
+
+        if is_256:
+            code_val = _rgb_to_ansi256(rgb_tuple[0], rgb_tuple[1], rgb_tuple[2])
+            return f"\x1b[48;5;{code_val}m" if self._bg else f"\x1b[38;5;{code_val}m"
+
+        return (
+            f"\x1b[48;2;{rgb_tuple[0]};{rgb_tuple[1]};{rgb_tuple[2]}m"
+            if self._bg
+            else f"\x1b[38;2;{rgb_tuple[0]};{rgb_tuple[1]};{rgb_tuple[2]}m"
+        )
+
+    def _render_line_gradient(
+        self,
+        lines: list[str],
+        /,
+        *,
+        max_width: int,
+        cos_val: float,
+        sin_val: float,
+        min_proj: float,
+        proj_span: float,
+        is_256: bool,
+        color_reset: str,
+    ) -> list[str]:
+        """Internal helper to render lines with line-level gradient granularity."""
+
+        rendered_lines: list[str] = []
+
+        for row_idx, line in enumerate(lines):
+            if not line:
+                rendered_lines.append("")
+                continue
+
+            proj_line = ((float(max_width - 1)) / 2.0) * cos_val + (float(row_idx) * self._cell_aspect_ratio) * sin_val
+            color_seq = self._color_seq_for_proj(proj_line, min_proj, proj_span, is_256=is_256)
+            rendered_lines.append(f"{color_seq}{line}{color_reset}")
+
+        return rendered_lines
+
+    def _render_word_gradient(
+        self,
+        lines: list[str],
+        /,
+        *,
+        cos_val: float,
+        sin_val: float,
+        min_proj: float,
+        proj_span: float,
+        is_256: bool,
+        color_reset: str,
+    ) -> list[str]:
+        """Internal helper to render lines with word-level gradient granularity."""
+
+        rendered_lines: list[str] = []
+
+        for row_idx, line in enumerate(lines):
+            line_parts: list[str] = []
+            col_x = 0
+            current_color: str | None = None
+
+            for match in _WORD_OR_ANSI_RX.finditer(line):
+                if (token := match.group(1)).startswith("\x1b"):
+                    line_parts.append(token)
+
+                elif token.isspace():
+                    if not self._bg and self._skip_whitespace:
+                        if current_color is not None:
+                            line_parts.append(color_reset)
+                            current_color = None
+                        line_parts.append(token)
+
+                    else:
+                        proj_word = float(col_x) * cos_val + (float(row_idx) * self._cell_aspect_ratio) * sin_val
+                        color_seq = self._color_seq_for_proj(proj_word, min_proj, proj_span, is_256=is_256)
+                        if color_seq != current_color:
+                            line_parts.append(color_seq)
+                            current_color = color_seq
+                        line_parts.append(token)
+
+                    col_x += len(token)
+
+                else:
+                    proj_word = float(col_x) * cos_val + (float(row_idx) * self._cell_aspect_ratio) * sin_val
+                    color_seq = self._color_seq_for_proj(proj_word, min_proj, proj_span, is_256=is_256)
+                    if color_seq != current_color:
+                        line_parts.append(color_seq)
+                        current_color = color_seq
+                    line_parts.append(token)
+                    col_x += len(token)
+
+            if current_color is not None:
+                line_parts.append(color_reset)
+
+            rendered_lines.append("".join(line_parts))
+
+        return rendered_lines
+
+    def _render_char_gradient(
+        self,
+        lines: list[str],
+        /,
+        *,
+        cos_val: float,
+        sin_val: float,
+        min_proj: float,
+        proj_span: float,
+        is_256: bool,
+        color_reset: str,
+    ) -> list[str]:
+        """Internal helper to render lines with character-level gradient granularity."""
+
+        rendered_lines: list[str] = []
+
+        for row_idx, line in enumerate(lines):
+            line_parts: list[str] = []
+            col_x = 0
+            current_color: str | None = None
+
+            for match in _CHAR_OR_ANSI_RX.finditer(line):
+                if (token := match.group(1)).startswith("\x1b"):
+                    line_parts.append(token)
+
+                elif token in {" ", "\t"} and not self._bg and self._skip_whitespace:
+                    if current_color is not None:
+                        line_parts.append(color_reset)
+                        current_color = None
+                    line_parts.append(token)
+                    col_x += 1
+
+                else:
+                    proj_char = float(col_x) * cos_val + (float(row_idx) * self._cell_aspect_ratio) * sin_val
+                    color_seq = self._color_seq_for_proj(proj_char, min_proj, proj_span, is_256=is_256)
+                    if color_seq != current_color:
+                        line_parts.append(color_seq)
+                        current_color = color_seq
+                    line_parts.append(token)
+                    col_x += 1
+
+            if current_color is not None:
+                line_parts.append(color_reset)
+
+            rendered_lines.append("".join(line_parts))
+
+        return rendered_lines
+
+    def _render_gradient(self, segments: tuple[Renderable, ...], extra_styles: tuple[BaseStyle, ...] = ()) -> S:
+        """Internal worker method to render text segments with this gradient applied."""
+
+        raw_parts: list[str] = []
+        for segment in segments:
+            _render_segment(segment, raw_parts)
+        full_text = "".join(raw_parts)
+
+        if not full_text:
+            return S("")
+
+        is_256 = self._color_depth == "256" or (
+            self._color_depth == "auto"
+            and not (_os.name == "nt" or _os.getenv("COLORTERM", "").lower() in {"truecolor", "24bit"})
+        )
+
+        color_reset = "\x1b[49m" if self._bg else "\x1b[39m"
+
+        extra_open = ""
+        extra_close = ""
+        if extra_styles:
+            extra_oc = _BuildOpenClose(_StyleGroup(*extra_styles)).build()
+            extra_open = "".join(extra_oc[0])
+            extra_close = "".join(extra_oc[1])
+
+        lines = full_text.split("\n")
+        num_rows = len(lines)
+        visible_widths = [len(_ANSI_SEQ_RX.sub("", line)) for line in lines]
+        max_width = max(visible_widths) if visible_widths else 0
+        if max_width < 1:
+            max_width = 1
+
+        rad = _math.radians(self._angle)
+        cos_val = _math.cos(rad)
+        sin_val = _math.sin(rad)
+
+        proj_00 = 0.0
+        proj_w0 = float(max_width - 1) * cos_val
+        proj_0h = float(num_rows - 1) * self._cell_aspect_ratio * sin_val
+        proj_wh = proj_w0 + proj_0h
+
+        min_proj = min([proj_00, proj_w0, proj_0h, proj_wh])
+        max_proj = max([proj_00, proj_w0, proj_0h, proj_wh])
+        proj_span = max_proj - min_proj
+
+        if self._granularity == "line":
+            rendered_lines = self._render_line_gradient(
+                lines,
+                max_width=max_width,
+                cos_val=cos_val,
+                sin_val=sin_val,
+                min_proj=min_proj,
+                proj_span=proj_span,
+                is_256=is_256,
+                color_reset=color_reset,
+            )
+        elif self._granularity == "word":
+            rendered_lines = self._render_word_gradient(
+                lines,
+                cos_val=cos_val,
+                sin_val=sin_val,
+                min_proj=min_proj,
+                proj_span=proj_span,
+                is_256=is_256,
+                color_reset=color_reset,
+            )
+        else:
+            rendered_lines = self._render_char_gradient(
+                lines,
+                cos_val=cos_val,
+                sin_val=sin_val,
+                min_proj=min_proj,
+                proj_span=proj_span,
+                is_256=is_256,
+                color_reset=color_reset,
+            )
+
+        output_content = "\n".join(rendered_lines)
+        return S(f"{extra_open}{output_content}{extra_close}") if extra_open or extra_close else S(output_content)
+
+
 class _StyleGroup(_SBase):
     """An immutable, ordered group of styles produced by `|`.\n
     ----------------------------------------------------------------------------------------------------
@@ -1313,12 +1831,17 @@ class _StyleGroup(_SBase):
     def __call__(self, *text: Renderable) -> S:
         """Applies this style group to the given text, auto-resetting after."""
 
+        for code in self._codes:
+            if isinstance(code, _GradientStyle):
+                other_codes = tuple([item for item in self._codes if not isinstance(item, _GradientStyle)])
+                return code._render_gradient(text, extra_styles=other_codes)
+
         return _render_styled(self._oc[0], self._oc[1], text)
 
     def __matmul__(self, text: Renderable) -> S:
         """Applies this style group to the given text, auto-resetting after."""
 
-        return _render_styled(self._oc[0], self._oc[1], (text,))
+        return self(text)
 
     def __repr__(self) -> str:
         """Returns a string representation of this style group, showing its individual codes."""
@@ -1461,6 +1984,50 @@ class _BgNS:
 
         return _BgColor256Style(code)
 
+    @staticmethod
+    def gradient(
+        *colors: GradientStop | Sequence[GradientStop],
+        angle: float | int = 0.0,
+        space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = "hsl",
+        granularity: Literal["char", "word", "line"] = "char",
+        skip_whitespace: bool = False,
+        cell_aspect_ratio: float = 2.0,
+        color_depth: Literal["truecolor", "256", "auto"] = "auto",
+    ) -> _GradientStyle:
+        """Create a background gradient style transitioning colors across text or terminal blocks.\n
+        ----------------------------------------------------------------------------------------------------
+        *   `colors` – Sequence of colors or `(color, position)` tuples defining the gradient stops.
+        *   `angle` – Direction angle in degrees (`0.0` = left-to-right, `90.0` = top-to-bottom,
+            `180.0` = right-to-left, `270.0` = bottom-to-top, `45.0` = top-left to bottom-right).
+        *   `space` – Color space to interpolate in
+            (`"rgb"`, `"hsl"`, `"hsl_long"`, `"linear_rgb"`, or `"oklab"`). Default is `"hsl"`.
+        *   `granularity` – Coloring granularity (`"char"`, `"word"`, or `"line"`).
+        *   `skip_whitespace` – Whether to skip emitting color escape sequences over whitespace.
+        *   `cell_aspect_ratio` – Font cell aspect ratio for 2D geometry correction (default `2.0`).
+        *   `color_depth` – Color mode (`"truecolor"`, `"256"`, or `"auto"`).\n
+        ----------------------------------------------------------------------------------------------------
+        Raises `ValueError` if `colors` is empty or any option is invalid."""
+
+        if space not in {"rgb", "hsl", "hsl_long", "linear_rgb", "oklab"}:
+            raise ValueError(f"Invalid gradient space {space!r}. Expected 'rgb', 'hsl', 'hsl_long', 'linear_rgb', or 'oklab'")
+        if granularity not in {"char", "word", "line"}:
+            raise ValueError(f"Invalid granularity {granularity!r}. Expected 'char', 'word', or 'line'")
+        if color_depth not in {"truecolor", "256", "auto"}:
+            raise ValueError(f"Invalid color_depth {color_depth!r}. Expected 'truecolor', '256', or 'auto'")
+        if cell_aspect_ratio <= 0.0:
+            raise ValueError(f"The 'cell_aspect_ratio' parameter must be positive, got {cell_aspect_ratio!r}")
+
+        return _GradientStyle(
+            _parse_gradient_stops(colors),
+            angle=float(angle),
+            space=space,
+            granularity=granularity,
+            skip_whitespace=skip_whitespace,
+            cell_aspect_ratio=cell_aspect_ratio,
+            color_depth=color_depth,
+            bg=True,
+        )
+
 
 class _BrNS:
     """Namespace for bright foreground colors, reachable as `S.BR.*`."""
@@ -1487,8 +2054,9 @@ class _BrNS:
 
 
 class S(_SBase):
-    """Build a styled string from a sequence of segments (strings, `S` objects, bare styles, or raw<br>
-    tuples), joined by `sep`, or use class-level style attributes and methods to apply ANSI styling.\n
+    """Build a styled string from a sequence of segments
+    (strings, `S` objects, bare styles, or raw tuples), joined by `sep`,
+    or use class-level style attributes and methods to apply ANSI styling.\n
     ----------------------------------------------------------------------------------------------------
     *   `segments` – Any number of segments to render.
         Each positional argument represents one logical line.
@@ -1497,7 +2065,7 @@ class S(_SBase):
     After construction the instance exposes:
     *   `ansi` – The fully rendered ANSI escape string, ready to be written to a terminal.
     *   `raw` – `ansi` with every ANSI escape sequence stripped (computed on demand).
-    *   `code_positions` – A tuple of `(position, sequence)` pairs giving<br>
+    *   `code_positions` – A tuple of `(position, sequence)` pairs giving
         the start offset of every ANSI escape sequence inside `ansi` (computed on demand).\n
     ----------------------------------------------------------------------------------------------------
     Every style attribute supports `|` for combining and `()` for applying to text.\n
@@ -1637,6 +2205,50 @@ class S(_SBase):
 
         return _Link(url)
 
+    @staticmethod
+    def gradient(
+        *colors: GradientStop | Sequence[GradientStop],
+        angle: float | int = 0.0,
+        space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = "hsl",
+        granularity: Literal["char", "word", "line"] = "char",
+        skip_whitespace: bool = True,
+        cell_aspect_ratio: float = 2.0,
+        color_depth: Literal["truecolor", "256", "auto"] = "auto",
+    ) -> _GradientStyle:
+        """Create a gradient style that smoothly transitions colors across text or terminal blocks.\n
+        ----------------------------------------------------------------------------------------------------
+        *   `colors` – Sequence of colors or `(color, position)` tuples defining the gradient stops.
+        *   `angle` – Direction angle in degrees (`0.0` = left-to-right, `90.0` = top-to-bottom,
+            `180.0` = right-to-left, `270.0` = bottom-to-top, `45.0` = top-left to bottom-right).
+        *   `space` – Color space to interpolate in
+            (`"rgb"`, `"hsl"`, `"hsl_long"`, `"linear_rgb"`, or `"oklab"`). Default is `"hsl"`.
+        *   `granularity` – Coloring granularity (`"char"`, `"word"`, or `"line"`).
+        *   `skip_whitespace` – Whether to skip emitting color escape sequences over whitespace.
+        *   `cell_aspect_ratio` – Font cell aspect ratio for 2D geometry correction (default `2.0`).
+        *   `color_depth` – Color mode (`"truecolor"`, `"256"`, or `"auto"`).\n
+        ----------------------------------------------------------------------------------------------------
+        Raises `ValueError` if `colors` is empty or any option is invalid."""
+
+        if space not in {"rgb", "hsl", "hsl_long", "linear_rgb", "oklab"}:
+            raise ValueError(f"Invalid gradient space {space!r}. Expected 'rgb', 'hsl', 'hsl_long', 'linear_rgb', or 'oklab'")
+        if granularity not in {"char", "word", "line"}:
+            raise ValueError(f"Invalid granularity {granularity!r}. Expected 'char', 'word', or 'line'")
+        if color_depth not in {"truecolor", "256", "auto"}:
+            raise ValueError(f"Invalid color_depth {color_depth!r}. Expected 'truecolor', '256', or 'auto'")
+        if cell_aspect_ratio <= 0.0:
+            raise ValueError(f"The 'cell_aspect_ratio' parameter must be positive, got {cell_aspect_ratio!r}")
+
+        return _GradientStyle(
+            _parse_gradient_stops(colors),
+            angle=float(angle),
+            space=space,
+            granularity=granularity,
+            skip_whitespace=skip_whitespace,
+            cell_aspect_ratio=cell_aspect_ratio,
+            color_depth=color_depth,
+            bg=False,
+        )
+
     # *********************** INITIALIZATION ************************
 
     def __init__(self, /, *segments: Renderable, sep: str = "") -> None:
@@ -1701,14 +2313,14 @@ def is_color_style(obj: object, /) -> TypeIs[ColorStyle]:
     return is_fg_color_style(obj) or is_bg_color_style(obj)
 
 
-type BaseStyle = _Style | _ColorStyle | _Color256Style | _Link
-"""Any single style code, color style, or link style that can be combined via `|` and applied to text."""
+type BaseStyle = _Style | _ColorStyle | _Color256Style | _GradientStyle | _Link
+"""Any single style code, color style, link, or gradient style that can be combined via `|` and applied to text."""
 
 
 def is_base_style(obj: object, /) -> TypeIs[BaseStyle]:
     """Returns true if `obj` is an instance that matches the `BaseStyle` type."""
 
-    return isinstance(obj, (_Style, _ColorStyle, _Color256Style, _Link))
+    return isinstance(obj, (_Style, _ColorStyle, _Color256Style, _GradientStyle, _Link))
 
 
 type AnyStyle = BaseStyle | _StyleGroup
@@ -1718,7 +2330,7 @@ type AnyStyle = BaseStyle | _StyleGroup
 def is_any_style(obj: object, /) -> TypeIs[AnyStyle]:
     """Returns true if `obj` is an instance that matches the `AnyStyle` type."""
 
-    return isinstance(obj, (_Style, _ColorStyle, _Color256Style, _Link, _StyleGroup))
+    return isinstance(obj, (_Style, _ColorStyle, _Color256Style, _Link, _GradientStyle, _StyleGroup))
 
 
 type TextSegment = str | S
@@ -1788,7 +2400,7 @@ def is_renderable(obj: object, /) -> TypeIs[Renderable]:
 
 
 class Term:
-    """Common ANSI terminal control sequences (cursor, screen, title, clipboard, modes)<br>
+    """Common ANSI terminal control sequences (cursor, screen, title, clipboard, modes)
     as plain strings or string-returning static methods.\n
     ----------------------------------------------------------------------------------------------------
     Values can be passed straight into an `S(…)` call or written to `sys.stdout`.\n
