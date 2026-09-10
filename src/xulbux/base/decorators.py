@@ -7,6 +7,7 @@ functions, and marking MyPyC compatibility.
 
 import sys as _sys
 from collections.abc import Callable
+from contextlib import suppress as _suppress
 from typing import TYPE_CHECKING, Any, Final, LiteralString
 
 
@@ -38,27 +39,25 @@ class _SafeDeprecated:
             try:
                 from typing_extensions import deprecated as _dep
             except ImportError:
-                from contextlib import suppress
-
-                with suppress(AttributeError, TypeError):
+                with _suppress(AttributeError, TypeError):
                     arg.__deprecated__ = self.message
                 return arg
 
-        try:
+        # Attempt to apply the standard deprecated decorator first:
+        with _suppress(AttributeError, TypeError):
             return _dep(self.message, **self.kwargs)(arg)
 
-        except (AttributeError, TypeError):
-            # Standard decorator failed to set `__deprecated__`.
-            if callable(arg) and not isinstance(arg, type):
-                import functools
+        # Standard decorator failed to set `__deprecated__`:
+        if callable(arg) and not isinstance(arg, type):
+            import functools
 
-                @functools.wraps(arg)
-                def _mypyc_wrapper(*args: Any, **kw: Any) -> Any:
-                    return arg(*args, **kw)
+            @functools.wraps(arg)
+            def _mypyc_wrapper(*args: Any, **kw: Any) -> Any:
+                return arg(*args, **kw)
 
-                return _dep(self.message, **self.kwargs)(_mypyc_wrapper)
+            return _dep(self.message, **self.kwargs)(_mypyc_wrapper)
 
-            return arg  # If it's a class or something else, just return it.
+        return arg  # If it's a class or something else, just return it.
 
 
 deprecated: Final[type[_SafeDeprecated]] = _SafeDeprecated
@@ -69,7 +68,7 @@ if TYPE_CHECKING:
     if sys.version_info >= (3, 13):
         from warnings import deprecated as deprecated  # type:ignore[assignment]  # pyright:ignore[reportAssignmentType,reportGeneralTypeIssues]
     else:
-        from typing_extensions import deprecated as deprecated  # type:ignore[assignment]
+        from typing_extensions import deprecated as deprecated  # type:ignore[assignment]  # pyright:ignore[reportAssignmentType,reportGeneralTypeIssues]
 
 
 def _noop_decorator[T](obj: T) -> T:
@@ -94,7 +93,7 @@ def mypyc_attr[T](**kwargs: Any) -> Callable[[T], T]:
     ```"""
 
     try:
-        from mypy_extensions import mypyc_attr as _mypyc_attr
+        from mypy_extensions import mypyc_attr as _mypyc_attr  # pyright:ignore[reportMissingModuleSource]
 
         return _mypyc_attr(**kwargs)
 

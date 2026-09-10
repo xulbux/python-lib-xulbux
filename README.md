@@ -5,7 +5,7 @@
 <br>
 Python library <code>xulbux</code>
 <br><br>
-<a href="https://pypi.org/project/xulbux"><img src="https://img.shields.io/pypi/v/xulbux?style=flat&labelColor=404560&color=7075FF"/></a> <a href="https://clickpy.clickhouse.com/dashboard/xulbux"><img src="https://img.shields.io/pepy/dt/xulbux?style=flat&labelColor=404560&color=7075FF"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE"><img src="https://img.shields.io/github/license/xulbux/python-lib-xulbux?style=flat&labelColor=405055&color=70E0FF"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/commits"><img src="https://img.shields.io/github/last-commit/xulbux/python-lib-xulbux?style=flat&labelColor=55404A&color=FF608A"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/issues"><img src="https://img.shields.io/github/issues/xulbux/python-lib-xulbux?style=flat&labelColor=55404A&color=FF608A"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/stargazers"><img src="https://img.shields.io/github/stars/xulbux/python-lib-xulbux?label=★&style=flat&labelColor=604055&color=FF9ECA"/></a>
+<a href="https://pypi.org/project/xulbux"><img src="https://img.shields.io/pypi/v/xulbux?style=flat&labelColor=404560&color=7075FF"/></a> <a href="https://clickpy.clickhouse.com/dashboard/xulbux"><img src="https://img.shields.io/pepy/dt/xulbux?style=flat&labelColor=404560&color=7075FF"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE"><img src="https://img.shields.io/github/license/xulbux/python-lib-xulbux?style=flat&labelColor=404560&color=A6A8FF"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/commits"><img src="https://img.shields.io/github/last-commit/xulbux/python-lib-xulbux?style=flat&labelColor=55404A&color=FF608A"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/issues"><img src="https://img.shields.io/github/issues/xulbux/python-lib-xulbux?style=flat&labelColor=55404A&color=FF608A"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/stargazers"><img src="https://img.shields.io/github/stars/xulbux/python-lib-xulbux?label=★&style=flat&labelColor=55404A&color=FF8FB4"/></a>
 </h1>
 <h3>A Python library to simplify common programming tasks.</h3>
 <br><br>
@@ -20,7 +20,7 @@ For the library's latest changes and updates, see the [**change log**](https://g
 
 ### The best modules, you have to check out:
 
-<a href="https://xulbux.github.io/python-lib-xulbux/docs/ansi"><img src="https://img.shields.io/badge/ansi-9670FF?style=for-the-badge" alt="ansi"></a> <a href="https://xulbux.github.io/python-lib-xulbux/docs/console"><img src="https://img.shields.io/badge/console-9670FF?style=for-the-badge" alt="console"></a> <a href="https://xulbux.github.io/python-lib-xulbux/docs/color"><img src="https://img.shields.io/badge/color-9670FF?style=for-the-badge" alt="color"></a>
+<a href="https://xulbux.github.io/python-lib-xulbux/docs/ansi"><img src="https://img.shields.io/badge/ansi-BAA1FF?style=for-the-badge" alt="ansi"></a> <a href="https://xulbux.github.io/python-lib-xulbux/docs/console"><img src="https://img.shields.io/badge/console-BAA1FF?style=for-the-badge" alt="console"></a> <a href="https://xulbux.github.io/python-lib-xulbux/docs/color"><img src="https://img.shields.io/badge/color-BAA1FF?style=for-the-badge" alt="color"></a>
 
 <br>
 
@@ -93,7 +93,7 @@ from xulbux.base.types import PathsList
   </thead>
   <tbody>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/base">base</a></code></b></td>
+      <td align="center"><b><code>base</code></b></td>
       <td>
         <table>
           <thead>
@@ -104,19 +104,19 @@ from xulbux.base.types import PathsList
           </thead>
           <tbody>
             <tr>
-              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/base#consts">consts</a></code></b></td>
-              <td>Constant values used throughout the library.</td>
+              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/base.consts">consts</a></code></b></td>
+              <td>Character set constants and terminal key sequences used throughout the library.</td>
             </tr>
             <tr>
-              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/base#decorators">decorators</a></code></b></td>
+              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/base.decorators">decorators</a></code></b></td>
               <td>Utility decorators used throughout the library.</td>
             </tr>
             <tr>
-              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/base#exceptions">exceptions</a></code></b></td>
+              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/base.exceptions">exceptions</a></code></b></td>
               <td>Custom exception classes used throughout the library.</td>
             </tr>
             <tr>
-              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/base#types">types</a></code></b></td>
+              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/base.types">types</a></code></b></td>
               <td>Custom type definitions used throughout the library.</td>
             </tr>
           </tbody>
@@ -124,44 +124,40 @@ from xulbux.base.types import PathsList
       </td>
     </tr>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/ansi">ansi</a></code></b></td>
-      <td><code>S</code> <code>Term</code> classes for building richly formatted terminal output via a typed,<br>
-        operator-based syntax and for emitting common cursor- and screen-control sequences.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/ansi">ansi</a></code></b></td>
+      <td><code>S</code> and <code>Term</code> classes for building richly formatted terminal output via a typed, operator-based syntax and emitting cursor- and screen-control sequences.</td>
     </tr>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/color">color</a></code></b></td>
-      <td><code>rgba</code> <code>hsla</code> <code>hexa</code> <code>color</code> modules, which provide methods to work with<br>
-        colors in various formats.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/color">color</a></code></b></td>
+      <td><code>rgba</code>, <code>hsla</code>, and <code>hexa</code> classes for manipulating, converting, blending, and interpolating colors across different color spaces.</td>
     </tr>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/console">console</a></code></b></td>
-      <td><code>console</code> module, which provides methods to work with the terminal console and logging.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/console">console</a></code></b></td>
+      <td><code>ArgumentParser</code>, <code>ProgressBar</code>, and <code>Throbber</code> classes, along with utilities for styled logging, interactive prompts, and terminal control.</td>
     </tr>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/data">data</a></code></b></td>
-      <td><code>data</code> module, which provides methods to work with nested data structures.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/data">data</a></code></b></td>
+      <td>Utilities for processing and managing complex data structures, including deep merging, nested key access, recursive sorting, and syntax-highlighted rendering.</td>
     </tr>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/file_sys">file_sys</a></code></b></td>
-      <td><code>file_sys</code> module, which provides methods to work with the file system and directories.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/file_sys">file_sys</a></code></b></td>
+      <td>File system utilities including fuzzy path resolution, recursive searching, safe directory creation, and common system path lookups.</td>
     </tr>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/json">json</a></code></b></td>
-      <td><code>json</code> module, which provides methods to read, create and update JSON files,<br>
-        with support for comments inside the JSON data.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/json">json</a></code></b></td>
+      <td>Enhanced JSON file handling and serialization with non-destructive updates, automatic directory creation, and support for comments.</td>
     </tr>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/regex">regex</a></code></b></td>
-      <td><code>regex</code> module, which provides methods to dynamically generate complex regex patterns<br>
-        for common use cases.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/regex">regex</a></code></b></td>
+      <td><code>LazyRegex</code> pattern container and builders to dynamically generate regular expression patterns for common use cases.</td>
     </tr>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/string">string</a></code></b></td>
-      <td><code>string</code> module, which provides various utility methods for string manipulation and conversion.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/string">string</a></code></b></td>
+      <td>Utility functions for advanced string manipulation, casing conversion, whitespace stripping, diffing, and safe type casting.</td>
     </tr>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/system">system</a></code></b></td>
-      <td><code>system</code> module, which provides methods to interact with the underlying operating system.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/system">system</a></code></b></td>
+      <td>OS-level automation helpers including clipboard access, file launching, command execution, privilege checks, and dependency installation.</td>
     </tr>
   </tbody>
 </table>
