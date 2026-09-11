@@ -31,7 +31,7 @@ def is_elevated() -> bool:
 
     with _suppress(Exception):
         if _sys.platform == "win32":
-            return _ctypes.windll.shell32.IsUserAnAdmin() != 0
+            return _ctypes.windll.shell32.IsUserAnAdmin() != 0  # type:ignore[attr-defined]
         else:
             return _os.geteuid() == 0  # type:ignore[attr-defined]
 
@@ -220,7 +220,7 @@ def elevate(win_title: str | None = None, args: Sequence[str] | None = None) -> 
         else:
             args_str = f'-c "exec(open(\\"{_sys.argv[0]}\\").read())" {" ".join(args_list)}'
 
-        if _ctypes.windll.shell32.ShellExecuteW(None, "runas", _sys.executable, args_str, None, 1) <= 32:
+        if _ctypes.windll.shell32.ShellExecuteW(None, "runas", _sys.executable, args_str, None, 1) <= 32:  # type:ignore[attr-defined]
             raise PermissionError("Failed to launch elevated process") from None
         else:
             raise SystemExit(0)
@@ -344,9 +344,9 @@ def _persistent_env_path(path: Path, /, *, remove: bool = False) -> None:
         try:
             import winreg
 
-            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment", 0, winreg.KEY_ALL_ACCESS)
-            winreg.SetValueEx(key, "PATH", 0, winreg.REG_EXPAND_SZ, new_path)
-            winreg.CloseKey(key)
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment", 0, winreg.KEY_ALL_ACCESS)  # type:ignore[attr-defined]
+            winreg.SetValueEx(key, "PATH", 0, winreg.REG_EXPAND_SZ, new_path)  # type:ignore[attr-defined]
+            winreg.CloseKey(key)  # type:ignore[attr-defined]
 
         except Exception as exc:
             raise RuntimeError(f"Failed to update PATH in registry:\n  {str(exc).replace('\n', '  \n')}") from exc
