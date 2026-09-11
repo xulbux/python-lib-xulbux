@@ -161,12 +161,13 @@ def escape(string: str, /, str_quotes: Literal["'", '"'] | None = None) -> str:
         .replace("\a", "\\a")
     )
 
-    if str_quotes == '"':
-        return string.replace("\\'", "'").replace('"', '\\"')
-    elif str_quotes == "'":
-        return string.replace('\\"', '"').replace("'", "\\'")
-    else:
-        return string
+    match str_quotes:
+        case '"':
+            return string.replace("\\'", "'").replace('"', '\\"')
+        case "'":
+            return string.replace('\\"', '"').replace("'", "\\'")
+        case _:
+            return string
 
 
 def is_empty(string: str | None, /, *, spaces_are_empty: bool = False) -> bool:
@@ -271,10 +272,7 @@ def get_lines(string: str, /, *, remove_empty_lines: bool = False) -> list[str]:
 
     if not remove_empty_lines:
         return string.splitlines()
-    elif not (lines := string.splitlines()) or not (non_empty_lines := [line for line in lines if line.strip()]):
-        return []
-    else:
-        return non_empty_lines
+    return [line for line in string.splitlines() if line.strip()]
 
 
 def remove_consecutive_empty_lines(string: str, /, max_consecutive: int = 0) -> str:
@@ -350,12 +348,9 @@ def change_tab_spaces(string: str, space_count: int, /, *, remove_empty_lines: b
             return "\n".join(code_lines)
         return string
 
-    result: list[str] = []
-    for line in code_lines:
-        indent_level = (len(line) - len(stripped := line.lstrip())) // tab_spaces
-        result.append((" " * (indent_level * space_count)) + stripped)
-
-    return "\n".join(result)
+    return "\n".join([
+        (" " * (((len(line) - len(stripped := line.lstrip())) // tab_spaces) * space_count)) + stripped for line in code_lines
+    ])
 
 
 def extract_func_calls(code: str, /) -> list[tuple[str, str]]:
@@ -449,7 +444,7 @@ def is_js(code: str, /, *, funcs: set[str] | frozenset[str] = _DEFAULT_JS_FUNCS)
 
     line_endings = [line.strip() for line in code.splitlines() if line.strip()]
 
-    if (semicolon_endings := sum([1 for line in line_endings if line.endswith(";")])) >= 1:  # ruff:ignore[unnecessary-comprehension-in-call]
+    if (semicolon_endings := len([line for line in line_endings if line.endswith(";")])) >= 1:
         js_score += min(semicolon_endings, 2)
     if (opening_braces := code.count("{")) > 0 and opening_braces == code.count("}"):
         js_score += 1
