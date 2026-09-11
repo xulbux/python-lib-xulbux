@@ -141,11 +141,7 @@ from xulbux.base.types import PathsList
     </tr>
     <tr>
       <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/fs">fs</a></code></b></td>
-      <td>File system utilities including fuzzy path resolution, recursive searching, safe directory creation, and common system path lookups.</td>
-    </tr>
-    <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/json">json</a></code></b></td>
-      <td>Enhanced JSON file handling and serialization with non-destructive updates, automatic directory creation, and support for comments.</td>
+      <td>File system utilities including fuzzy path resolution, enhanced JSON file handling, safe directory creation, and common system path lookups.</td>
     </tr>
     <tr>
       <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/regex">regex</a></code></b></td>
