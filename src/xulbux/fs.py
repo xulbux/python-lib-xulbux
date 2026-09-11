@@ -34,19 +34,16 @@ def get_script_dir() -> Path:
     """The path to the directory of the current script."""
 
     if getattr(_sys, "frozen", False):
-        base_path = Path(_sys.executable).parent
+        return Path(_sys.executable).parent
 
-    else:
-        main_module = _sys.modules["__main__"]
+    main_module = _sys.modules["__main__"]
 
-        if hasattr(main_module, "__file__") and main_module.__file__ is not None:
-            base_path = Path(main_module.__file__).resolve().parent
-        elif hasattr(main_module, "__spec__") and main_module.__spec__ and main_module.__spec__.origin is not None:
-            base_path = Path(main_module.__spec__.origin).resolve().parent
-        else:
-            raise RuntimeError("Can only get base directory if accessed from a file")
+    if hasattr(main_module, "__file__") and main_module.__file__ is not None:
+        return Path(main_module.__file__).resolve().parent
+    elif hasattr(main_module, "__spec__") and main_module.__spec__ and main_module.__spec__.origin is not None:
+        return Path(main_module.__spec__.origin).resolve().parent
 
-    return base_path
+    raise RuntimeError("Can only get base directory if accessed from a file")
 
 
 def resolve_path(
@@ -78,28 +75,27 @@ def resolve_path(
     import xulbux as xx
 
     # Resolve a relative file with fuzzy matching:
-    resolved_path = xx.file_sys.resolve_path("config.json", search_in="./settings", fuzzy_match=True)
+    resolved_path = xx.fs.resolve_path("config.json", search_in="./settings", fuzzy_match=True)
     ```"""
 
     search_dirs: list[Path] = []
     path: Path
 
     if isinstance(rel_path, str):
-        if rel_path == "":
+        if not rel_path:
             if raise_error:
                 raise PathNotFoundError("Given 'rel_path' is an empty string")
             return None
-        else:
-            path = Path(rel_path)
+        path = Path(rel_path)
     else:
         path = rel_path
 
     if path.is_absolute():
         return path
 
-    if search_in is not None:
+    elif search_in is not None:
         if isinstance(search_in, (str, Path)):
-            search_dirs.extend([Path(search_in)])
+            search_dirs.append(Path(search_in))
         else:
             search_dirs.extend([Path(path) for path in search_in])
 
@@ -139,7 +135,7 @@ def resolve_or_create_path(
     import xulbux as xx
 
     # Resolve existing file or compute fallback path in script directory:
-    target_path = xx.file_sys.resolve_or_create_path("data/cache.json")
+    target_path = xx.fs.resolve_or_create_path("data/cache.json")
     ```"""
 
     try:
@@ -169,7 +165,7 @@ def create_file(file_path: Path | str, content: str = "", /, *, force: bool = Fa
     import xulbux as xx
 
     # Create file safely or force overwrite:
-    file_path = xx.file_sys.create_file("output/result.txt", "Generated content", force=True)
+    file_path = xx.fs.create_file("output/result.txt", "Generated content", force=True)
     ```"""
 
     path = Path(file_path)
@@ -209,10 +205,10 @@ def rename_file_ext(
     import xulbux as xx
 
     # Rename single extension:
-    new_path = xx.file_sys.rename_file_ext("archive.tar.gz", ".zip")  # archive.tar.zip
+    new_path = xx.fs.rename_file_ext("archive.tar.gz", ".zip")  # archive.tar.zip
 
     # Replace full compound extension and convert to CamelCase:
-    new_path = xx.file_sys.rename_file_ext(
+    new_path = xx.fs.rename_file_ext(
         "my_data_file.tar.gz",
         ".zip",
         full_extension=True,
@@ -223,13 +219,7 @@ def rename_file_ext(
     path = Path(file_path)
     filename_with_ext = path.name
 
-    if full_extension:
-        try:
-            filename = filename_with_ext[: filename_with_ext.index(".")]
-        except ValueError:
-            filename = filename_with_ext
-    else:
-        filename = path.stem
+    filename = filename_with_ext.split(".", 1)[0] if full_extension else path.stem
 
     if camel_case_filename:
         filename = _string_module.to_camel_case(filename)
@@ -247,7 +237,7 @@ def remove(path: Path | str, /, *, only_content: bool = False) -> None:
         is removed and the directory itself is kept."""
 
     if not (path_obj := Path(path)).exists():
-        return None
+        return
 
     def _remove_item(item: Path) -> None:
         try:
@@ -284,9 +274,9 @@ class _ResolvePathHelper:
         if expanded_path.is_absolute():
             # Add root to search dirs:
             if expanded_path.drive:
-                self.search_dirs.extend([Path(expanded_path.drive + _os.sep)])
+                self.search_dirs.append(Path(expanded_path.drive + _os.sep))
             else:
-                self.search_dirs.extend([Path(_os.sep)])
+                self.search_dirs.append(Path(_os.sep))
 
             expanded_path = Path(*expanded_path.parts[1:])  # Remove root from path parts for searching.
 

@@ -576,10 +576,7 @@ def _resolve_styles_to_restore(segment: object, outer_resets: tuple[tuple[int, B
 def _restore_reset_styles(outer_styles: tuple[BaseStyle, ...], segments: tuple[Renderable, ...], /) -> tuple[Renderable, ...]:
     """Internal helper to restore active outer styles behind nested auto-resetting segments."""
 
-    if not (outer_resets := _collect_outer_resets(outer_styles)):
-        return segments
-
-    if not _has_matching_reset(segments, outer_resets):
+    if not (outer_resets := _collect_outer_resets(outer_styles)) or not _has_matching_reset(segments, outer_resets):
         return segments
 
     result: list[Renderable] = []
@@ -1059,7 +1056,7 @@ class _ColorStyle(_SBase):
             red, green, blue = (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF
             return cls(red, green, blue, bg=bg) if bg is not None else cls(red, green, blue)
 
-        if (hex_str := str(color).strip().lstrip("#")).lower().startswith("0x"):
+        elif (hex_str := str(color).strip().lstrip("#")).lower().startswith("0x"):
             hex_str = hex_str[2:]
         if len(hex_str) == 3:
             hex_str = hex_str[0] * 2 + hex_str[1] * 2 + hex_str[2] * 2
@@ -2066,11 +2063,11 @@ class _BgNS:
 
         if space not in {"rgb", "hsl", "hsl_long", "linear_rgb", "oklab"}:
             raise ValueError(f"Invalid gradient space {space!r}. Expected 'rgb', 'hsl', 'hsl_long', 'linear_rgb', or 'oklab'")
-        if granularity not in {"char", "word", "line"}:
+        elif granularity not in {"char", "word", "line"}:
             raise ValueError(f"Invalid granularity {granularity!r}. Expected 'char', 'word', or 'line'")
-        if color_depth not in {"truecolor", "256", "auto"}:
+        elif color_depth not in {"truecolor", "256", "auto"}:
             raise ValueError(f"Invalid color_depth {color_depth!r}. Expected 'truecolor', '256', or 'auto'")
-        if cell_aspect_ratio <= 0.0:
+        elif cell_aspect_ratio <= 0.0:
             raise ValueError(f"The 'cell_aspect_ratio' parameter must be positive, got {cell_aspect_ratio!r}")
 
         return _GradientStyle(
@@ -2290,11 +2287,11 @@ class S(_SBase):
 
         if space not in {"rgb", "hsl", "hsl_long", "linear_rgb", "oklab"}:
             raise ValueError(f"Invalid gradient space {space!r}. Expected 'rgb', 'hsl', 'hsl_long', 'linear_rgb', or 'oklab'")
-        if granularity not in {"char", "word", "line"}:
+        elif granularity not in {"char", "word", "line"}:
             raise ValueError(f"Invalid granularity {granularity!r}. Expected 'char', 'word', or 'line'")
-        if color_depth not in {"truecolor", "256", "auto"}:
+        elif color_depth not in {"truecolor", "256", "auto"}:
             raise ValueError(f"Invalid color_depth {color_depth!r}. Expected 'truecolor', '256', or 'auto'")
-        if cell_aspect_ratio <= 0.0:
+        elif cell_aspect_ratio <= 0.0:
             raise ValueError(f"The 'cell_aspect_ratio' parameter must be positive, got {cell_aspect_ratio!r}")
 
         return _GradientStyle(

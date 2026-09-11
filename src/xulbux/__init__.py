@@ -5,7 +5,7 @@ TYPE_CHECKING: bool = False
 """Flag indicating whether type checking is active during static analysis."""
 
 if TYPE_CHECKING:
-    from . import ansi, cli, color, console, data, file_sys, json, regex, string, system
+    from . import ansi, cli, color, console, data, fs, json, regex, string, system
     from .ansi import S, Term
     from .color import hexa, hsla, rgba
     from .console import ArgumentParser, ParsedArgData, ParsedArgs, ProgressBar, Throbber
@@ -57,7 +57,7 @@ __all__ = [
     "color",
     "console",
     "data",
-    "file_sys",
+    "fs",
     "hexa",
     "hsla",
     "json",

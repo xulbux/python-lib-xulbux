@@ -6,7 +6,7 @@ commands, installing dependencies, and managing application restarts.
 """
 
 from . import console as _console_module
-from . import file_sys as _file_sys_module
+from . import fs as _fs_module
 from .ansi import S
 from .base.types import MissingLibsMsgs
 
@@ -309,9 +309,9 @@ def _get_env_path_target(path: Path | str | None = None, /, *, cwd: bool = False
     if cwd:
         if base_dir:
             raise ValueError("Both 'cwd' and 'base_dir' cannot be True at the same time")
-        return _file_sys_module.get_cwd()
+        return _fs_module.get_cwd()
     elif base_dir:
-        return _file_sys_module.get_script_dir()
+        return _fs_module.get_script_dir()
 
     if path is None:
         raise ValueError("No path provided\nPlease provide a 'path' or set either 'cwd' or 'base_dir' to True")
@@ -394,7 +394,7 @@ class _SystemRestartHelper:
         if self.force:
             return
 
-        if isinstance(command, str):
+        elif isinstance(command, str):
             output = _subprocess.check_output(command, shell=True).decode()
         else:
             output = _subprocess.check_output(command).decode()

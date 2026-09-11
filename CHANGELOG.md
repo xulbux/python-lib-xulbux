@@ -46,12 +46,13 @@
 *   **Python Version Support:**
     *   Dropped support for Python 3.10 and 3.11. **The library now requires Python 3.12 or higher.**
 *   **Architectural & Namespace Refactor:**
+    *   Renamed the `file_sys` module to `fs` for more concise and standard file system operations.
     *   Removed default module classes (`Console`, `System`, `FileSys`, `Data`, `String`, `Code`, `EnvPath`, `Json`, `Regex`, `File`) that acted as namespaces; all methods are now accessible directly as module-level functions (e.g., `xulbux.console.log`).
     *   Properties like `console.w` and `system.is_elevated` have been converted into standard getter functions like `get_width()` and `is_elevated()` to circumvent a MyPyC segmentation fault.
     *   Consolidated module structure:
         -   Moved `code` functions into `string` (`add_indent()`, `get_tab_spaces()`, `change_tab_spaces()`, `extract_func_calls()`, `is_js()`).
         -   Moved `env_path` functions into `system` (`get_env_path()`, `has_env_path()`, `add_env_path()`, `remove_env_path()`).
-        -   Moved `file` functions into `file_sys` (`create_file()`, `rename_file_ext()`).
+        -   Moved `file` functions into `fs` (`create_file()`, `rename_file_ext()`).
 *   **New Operator-Based Styling Engine (`ansi` module):**
     *   Removed the `format_codes` module and bracket syntax in favor of the new operator-based styling engine in the `ansi` module (*including the removal of legacy format-code constants from* `xulbux.base.consts`):
         -   The new `S` class exposes every ANSI style/color attribute and uses `|` to combine styles and `()` to apply them to text, e.g., `(S.BOLD | S.RED)("hi")` and `S.hex("#F67")("hi")`.
@@ -188,7 +189,7 @@
 
 **BREAKING CHANGES:**
 
-*   Renamed the module `path` to `file_sys` and its main class `Path` to `FileSys`, so you can better use it alongside the built-in `pathlib.Path` class without always needing to import one of them under an alias.
+*   Renamed the module `path` to `fs` and its main class `Path` to `FileSys`, so you can better use it alongside the built-in `pathlib.Path` class without always needing to import one of them under an alias.
 *   Renamed most `FileSys` methods to better describe their functionality:
     -   `Path.extend()` is now `FileSys.extend_path()`
     -   `Path.extend_or_make()` is now `FileSys.extend_or_make_path()`

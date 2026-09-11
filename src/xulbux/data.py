@@ -253,7 +253,7 @@ def is_equal(
     if not path_sep:
         raise ValueError(f"The 'path_sep' parameter must be a non-empty string, got {path_sep!r}") from None
 
-    if isinstance(ignore_paths, str):
+    elif isinstance(ignore_paths, str):
         ignore_paths = [ignore_paths]
 
     return _compare_nested(
@@ -543,7 +543,7 @@ def render(
 
     if indent < 0:
         raise ValueError(f"The 'indent' parameter must be a non-negative integer, got {indent!r}") from None
-    if max_width <= 0:
+    elif max_width <= 0:
         raise ValueError(f"The 'max_width' parameter must be a positive integer, got {max_width!r}") from None
 
     return _DataRenderHelper(
@@ -570,7 +570,7 @@ def _compare_nested(data1: Any, data2: Any, /, ignore_paths: list[list[str]], cu
     if type(data1) is not type(data2):
         return False
 
-    if isinstance(data1, dict) and isinstance(data2, dict):
+    elif isinstance(data1, dict) and isinstance(data2, dict):
         dict_data1, dict_data2 = cast("dict[Any, Any]", data1), cast("dict[Any, Any]", data2)
 
         if set(dict_data1.keys()) != set(dict_data2.keys()):
@@ -699,11 +699,11 @@ class _DataRemoveCommentsHelper:
                 if key is not None
             }
 
-        if is_seq_or_set(item):
+        elif is_seq_or_set(item):
             processed = [cleaned for val in item if (cleaned := self.remove_nested_comments(val)) is not None]
             return type(item)(processed)
 
-        if isinstance(item, str):
+        elif isinstance(item, str):
             if self.pattern:
                 if match := self.pattern.match(item):
                     start, end = match.group(1).strip(), match.group(2).strip()
@@ -951,7 +951,7 @@ class _DataRenderHelper:
 
         if self.compactness == 0:
             return True
-        if self.compactness == 2:
+        elif self.compactness == 2:
             return False
 
         complex_types = _JSON_COMPLEX_TYPES if self.as_json else _COMPLEX_TYPES

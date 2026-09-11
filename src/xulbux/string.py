@@ -120,7 +120,7 @@ def normalize_spaces(string: str, /, tab_spaces: int = 4) -> str:
     if tab_spaces < 0:
         raise ValueError(f"The 'tab_spaces' parameter must be non-negative, got {tab_spaces!r}")
 
-    if tab_spaces not in _SPACE_TRANS_CACHE:
+    elif tab_spaces not in _SPACE_TRANS_CACHE:
         table: dict[str, str | int | None] = {
             "\t": " " * tab_spaces,
             "\u2000": " ",

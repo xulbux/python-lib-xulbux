@@ -135,7 +135,7 @@ def show_help() -> None:
             (module_st("color      "), txt_st("RGBA, HSLA & HEXA color models.")),
             (module_st("console    "), txt_st("Loggers, boxes, inputs, progress bars.")),
             (module_st("data       "), txt_st("Deep merge, render, path IDs, cleanup.")),
-            (module_st("file_sys   "), txt_st("Path resolution & file operations.")),
+            (module_st("fs         "), txt_st("Path resolution & file operations.")),
             (module_st("json       "), txt_st("Comment-aware JSON read/write/update.")),
             (module_st("regex      "), txt_st("Dynamic regex generators & LazyRegex.")),
             (module_st("string     "), txt_st("Casing, indentation, JS detection.")),

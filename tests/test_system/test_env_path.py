@@ -45,10 +45,10 @@ def test_add_path_and_remove_path_lifecycle() -> None:
 
 
 def test_get_path_resolution_options() -> None:
-    with patch("xulbux.file_sys.get_cwd", return_value=Path("/mock/cwd")):
+    with patch("xulbux.fs.get_cwd", return_value=Path("/mock/cwd")):
         assert _system_module._get_env_path_target(cwd=True) == Path("/mock/cwd")
 
-    with patch("xulbux.file_sys.get_script_dir", return_value=Path("/mock/script")):
+    with patch("xulbux.fs.get_script_dir", return_value=Path("/mock/script")):
         assert _system_module._get_env_path_target(base_dir=True) == Path("/mock/script")
 
     assert _system_module._get_env_path_target("some/str/path") == Path("some/str/path")

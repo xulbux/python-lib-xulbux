@@ -131,7 +131,7 @@ def _is_number(text: str, /) -> bool:
     if not text:
         return False
 
-    if text[0].isdigit() or (text[0] == "-" and len(text) > 1 and (text[1].isdigit() or text[1] == ".")):
+    elif text[0].isdigit() or (text[0] == "-" and len(text) > 1 and (text[1].isdigit() or text[1] == ".")):
         try:
             float(text)
             return True
@@ -439,7 +439,7 @@ class ArgumentParser:
         if name in self._arg_configs:
             raise ValueError(f"The argument '{name}' is already defined on this 'ArgumentParser', got {name!r}")
 
-        if isinstance(nargs, int):
+        elif isinstance(nargs, int):
             if nargs < 1:
                 raise ValueError(f"The 'nargs' parameter must be an integer >= 1, got {nargs!r}")
         elif nargs not in {"?", "*", "+"}:
@@ -736,35 +736,35 @@ class ArgumentParser:
             state[0] = False
             return S(S.BR.GREEN(cmd_name), S.DIM(suffix) if suffix else "").ansi
 
-        if token == "--":
+        elif token == "--":
             state[0] = False
             state[2] = True
             return S.BR.BLUE(token).ansi
 
-        if state[2] or state[0]:
+        elif state[2] or state[0]:
             is_opt_val = state[0]
             state[0] = False
             return (S.BR.BLUE(token) if is_opt_val else S.BR.CYAN(token)).ansi
 
-        if self.opt_value_sep and self.opt_value_sep in token:
+        elif self.opt_value_sep and self.opt_value_sep in token:
             opt_prefix, opt_val = token.split(self.opt_value_sep, 1)
             if opt_prefix in all_opts or ((self.intermixed or not state[1]) and self._opt_pattern.fullmatch(opt_prefix)):
                 return S.BR.BLUE(opt_prefix, S.DIM(self.opt_value_sep), opt_val).ansi
             state[1] = True
             return S.BR.CYAN(token).ansi
 
-        if token in all_opts:
+        elif token in all_opts:
             if not self.intermixed and state[1]:
                 return S.BR.CYAN(token).ansi
-            if token in value_opts:
+            elif token in value_opts:
                 state[0] = True
             return S.BR.BLUE(token).ansi
 
-        if _is_number(token):
+        elif _is_number(token):
             state[1] = True
             return S.BR.CYAN(token).ansi
 
-        if self._opt_pattern.fullmatch(token):
+        elif self._opt_pattern.fullmatch(token):
             if not self.intermixed and state[1]:
                 return S.BR.CYAN(token).ansi
             return S.BR.BLUE(token).ansi
@@ -933,11 +933,11 @@ class ArgumentParser:
         if cfg["expects_value"] is None:
             return i
 
-        if potential_val is not None:
+        elif potential_val is not None:
             parsed_data[alias]["values"].append(potential_val)
             return i
 
-        if (
+        elif (
             allow_space_value
             and i + 1 < len(raw_args)
             and raw_args[i + 1] not in opt_map
@@ -947,7 +947,7 @@ class ArgumentParser:
             parsed_data[alias]["values"].append(raw_args[i + 1])
             return i + 1
 
-        if not cfg["optional_value"]:
+        elif not cfg["optional_value"]:
             opt_details: list[Renderable] = [f"Option '{potential_opt}' requires a value"]
             extra: list[TextRenderable] = []
 
@@ -982,7 +982,7 @@ class ArgumentParser:
                 arg_tokens.extend(raw_args[i + 1 :])
                 break
 
-            if opt_value_sep and opt_value_sep in arg:
+            elif opt_value_sep and opt_value_sep in arg:
                 parts = arg.split(opt_value_sep, 1)
                 potential_opt, potential_val = parts[0], parts[1]
             else:
@@ -992,7 +992,7 @@ class ArgumentParser:
                 self.print_help()
                 raise SystemExit(0)
 
-            if potential_opt in opt_map:
+            elif potential_opt in opt_map:
                 i = self._consume_opt(
                     raw_args,
                     i,
@@ -1047,7 +1047,7 @@ class ArgumentParser:
 
                 return token_idx + nargs
 
-            if not cfg["required"] and available == 0:
+            elif not cfg["required"] and available == 0:
                 parsed_data[name]["values"] = []
                 parsed_data[name]["exists"] = False
 
@@ -1234,7 +1234,7 @@ def has_color_support() -> bool:
     if not is_tty():
         return False
 
-    if _os.name == "nt":
+    elif _os.name == "nt":
         # Check if VT100 mode is enabled on Windows:
         with suppress(Exception):
             kernel32 = _ctypes.windll.kernel32  # type: ignore[attr-defined]
@@ -1331,9 +1331,9 @@ def log(
 
     if tab_size < 0:
         raise ValueError(f"The 'tab_size' parameter must be a non-negative integer, got {tab_size!r}")
-    if title_px < 0:
+    elif title_px < 0:
         raise ValueError(f"The 'title_px' parameter must be a non-negative integer, got {title_px!r}")
-    if title_mx < 0:
+    elif title_mx < 0:
         raise ValueError(f"The 'title_mx' parameter must be a non-negative integer, got {title_mx!r}")
 
     title = "" if title is None else title.strip()
@@ -2073,7 +2073,7 @@ def box(
     if align not in {"left", "center", "right"}:
         raise ValueError(f"The 'align' parameter must be one of ['left', 'center', 'right'], got {align!r}")
 
-    if indent < 0:
+    elif indent < 0:
         raise ValueError(f"The 'indent' parameter must be a non-negative integer, got {indent!r}")
 
     padding = 1 if has_border else (2 if has_bg else 0)
@@ -2355,9 +2355,9 @@ def input(
 
     if mask_char is not None and len(mask_char) != 1:
         raise ValueError(f"The 'mask_char' parameter must be a single character, got {mask_char!r}")
-    if min_len is not None and min_len < 0:
+    elif min_len is not None and min_len < 0:
         raise ValueError(f"The 'min_len' parameter must be a non-negative integer, got {min_len!r}")
-    if max_len is not None and max_len < 0:
+    elif max_len is not None and max_len < 0:
         raise ValueError(f"The 'max_len' parameter must be a non-negative integer, got {max_len!r}")
 
     helper = _ConsoleInputHelper(
@@ -2513,7 +2513,7 @@ def _read_key_windows() -> str:
 
     if (char := str(getwch())) == "\x03":
         raise KeyboardInterrupt
-    if char in {"\x00", "\xe0"}:
+    elif char in {"\x00", "\xe0"}:
         return char + str(getwch())
 
     return char
@@ -2589,7 +2589,7 @@ def read_key(*, raw: bool = True) -> str:
     if not _sys.stdin.isatty():
         return _sys.stdin.read(1)
 
-    if _sys.platform == "win32":
+    elif _sys.platform == "win32":
         return _read_key_windows()
 
     return _read_key_posix()
@@ -2609,7 +2609,7 @@ def _resolve_title_colors(title_bg_color: object, /) -> tuple[BgColorStyle, FgCo
     if (cached := _TITLE_COLORS_CACHE.get(title_bg_color)) is not None:
         return cached
 
-    if is_bg_color_style(title_bg_color):
+    elif is_bg_color_style(title_bg_color):
         fg_style: FgColorStyle = S.BLACK
 
         if isinstance(title_bg_color, _ColorStyle):
@@ -2991,9 +2991,9 @@ class _ConsoleInputValidator(Validator):
         """Validates the input text according to the minimum length and custom validator function."""
 
         text_to_validate = self.get_text() if self.mask_char else document.text
-        if self.min_len and len(text_to_validate) < self.min_len:
-            raise ValidationError(message="", cursor_position=len(document.text))
-        if self.validator and self.validator(text_to_validate) not in {"", None}:
+        if (self.min_len and len(text_to_validate) < self.min_len) or (
+            self.validator and self.validator(text_to_validate) not in {"", None}
+        ):
             raise ValidationError(message="", cursor_position=len(document.text))
 
 
@@ -3302,7 +3302,7 @@ class ProgressBar(_StdoutInterceptorMixin):
 
         if current < 0:
             raise ValueError(f"The 'current' parameter must be a non-negative integer, got {current!r}")
-        if total <= 0:
+        elif total <= 0:
             raise ValueError(f"The 'total' parameter must be a positive integer, got {total!r}")
 
         try:
@@ -3481,7 +3481,7 @@ class _ProgressContextHelper:
         if current is None and label is None:
             raise TypeError("Either the keyword argument 'current' or 'label' must be provided")
 
-        if current is not None:
+        elif current is not None:
             self.current_progress = current
         if label is not None:
             self.current_label = label

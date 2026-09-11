@@ -140,7 +140,7 @@ from xulbux.base.types import PathsList
       <td>Utilities for processing and managing complex data structures, including deep merging, nested key access, recursive sorting, and syntax-highlighted rendering.</td>
     </tr>
     <tr>
-      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/file_sys">file_sys</a></code></b></td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/fs">fs</a></code></b></td>
       <td>File system utilities including fuzzy path resolution, recursive searching, safe directory creation, and common system path lookups.</td>
     </tr>
     <tr>

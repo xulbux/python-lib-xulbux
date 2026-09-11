@@ -98,12 +98,12 @@ class rgba(_ColorBase):
             self.red, self.green, self.blue, self.alpha = red, green, blue, alpha
             return
 
-        if not (0 <= red <= 255 and 0 <= green <= 255 and 0 <= blue <= 255):
+        elif not (0 <= red <= 255 and 0 <= green <= 255 and 0 <= blue <= 255):
             raise ValueError(
                 "The 'red', 'green' and 'blue' parameters must be integers "
                 f"in range [0, 255] inclusive, got {red=!r} {green=!r} {blue=!r}"
             )
-        if alpha is not None and not (0.0 <= alpha <= 1.0):
+        elif alpha is not None and not (0.0 <= alpha <= 1.0):
             raise ValueError(f"The 'alpha' parameter must be in range [0.0, 1.0] inclusive, got {alpha!r}")
 
         self.red, self.green, self.blue = red, green, blue
@@ -247,7 +247,7 @@ class rgba(_ColorBase):
 
         if not is_valid_rgba(other):
             raise TypeError(f"The 'other' parameter must be a valid RGBA color, got {other!r}")
-        if not (0.0 <= ratio <= 1.0):
+        elif not (0.0 <= ratio <= 1.0):
             raise ValueError(f"The 'ratio' parameter must be in range [0.0, 1.0] inclusive, got {ratio!r}")
 
         other_rgba = as_rgba(other)
@@ -370,11 +370,11 @@ class hsla(_ColorBase):
             self.hue, self.sat, self.light, self.alpha = hue, sat, light, alpha
             return
 
-        if not (0 <= hue <= 360):
+        elif not (0 <= hue <= 360):
             raise ValueError(f"The 'hue' parameter must be in range [0, 360] inclusive, got {hue!r}")
-        if not (0 <= sat <= 100 and 0 <= light <= 100):
+        elif not (0 <= sat <= 100 and 0 <= light <= 100):
             raise ValueError(f"The 'sat' and 'light' parameters must be in range [0, 100] inclusive, got {sat=!r} {light=!r}")
-        if alpha is not None and not (0.0 <= alpha <= 1.0):
+        elif alpha is not None and not (0.0 <= alpha <= 1.0):
             raise ValueError(f"The 'alpha' parameter must be in range [0.0, 1.0] inclusive, got {alpha!r}")
 
         self.hue, self.sat, self.light = hue, sat, light
@@ -521,7 +521,7 @@ class hsla(_ColorBase):
 
         if not is_valid_hsla(other):
             raise TypeError(f"The 'other' parameter must be a valid HSLA color, got {other!r}")
-        if not (0.0 <= ratio <= 1.0):
+        elif not (0.0 <= ratio <= 1.0):
             raise ValueError(f"The 'ratio' parameter must be in range [0.0, 1.0] inclusive, got {ratio!r}")
 
         return self.as_rgba().blend(as_rgba(other), ratio, additive_alpha=additive_alpha).as_hsla()
@@ -583,9 +583,9 @@ class hsla(_ColorBase):
             hue_pos -= 1
         if hue_pos < 1 / 6:
             return chroma_min + (chroma_max - chroma_min) * 6 * hue_pos
-        if hue_pos < 1 / 2:
+        elif hue_pos < 1 / 2:
             return chroma_max
-        if hue_pos < 2 / 3:
+        elif hue_pos < 2 / 3:
             return chroma_min + (chroma_max - chroma_min) * (2 / 3 - hue_pos) * 6
 
         return chroma_min
@@ -641,7 +641,7 @@ class hexa(_ColorBase):
             self.red, self.green, self.blue, self.alpha = _red, _green, _blue, _alpha
             return
 
-        if isinstance(color, hexa):
+        elif isinstance(color, hexa):
             self.red, self.green, self.blue, self.alpha = color.red, color.green, color.blue, color.alpha
 
         elif isinstance(color, str):
@@ -852,7 +852,7 @@ class hexa(_ColorBase):
 
         if not is_valid_hexa(other):
             raise TypeError(f"The 'other' parameter must be a valid HEXA color, got {other!r}")
-        if not (0.0 <= ratio <= 1.0):
+        elif not (0.0 <= ratio <= 1.0):
             raise ValueError(f"The 'ratio' parameter must be in range [0.0, 1.0] inclusive, got {ratio!r}")
 
         red, green, blue, alpha = (
@@ -1076,7 +1076,7 @@ def has_alpha(color: Rgba | Hsla | Hexa, /) -> bool:
     if isinstance(color, (rgba, hsla, hexa)):
         return color.has_alpha()
 
-    if is_valid_hexa(color):
+    elif is_valid_hexa(color):
         if isinstance(color, str):
             if color.startswith("#"):
                 color = color[1:]
@@ -1088,10 +1088,10 @@ def has_alpha(color: Rgba | Hsla | Hexa, /) -> bool:
         # Integers <= 0xFFFFFF represent 24-bit RGB (no alpha); integers > 0xFFFFFF represent 32-bit RGBA:
         return cast("int", color) > 0xFFFFFF
 
-    if isinstance(color, str):
+    elif isinstance(color, str):
         if parsed_rgba := extract_rgba(color, only_first=True):
             return parsed_rgba.has_alpha()
-        if parsed_hsla := extract_hsla(color, only_first=True):
+        elif parsed_hsla := extract_hsla(color, only_first=True):
             return parsed_hsla.has_alpha()
 
     elif (isinstance(color, (list, tuple)) and len(color) == 4) or (isinstance(color, dict) and len(color) == 4):
@@ -1322,7 +1322,7 @@ def rgba_to_hex_int(red: int, green: int, blue: int, alpha: float | None = None,
         raise ValueError(
             f"The 'red', 'green' and 'blue' parameters must be integers in [0, 255], got {red=!r} {green=!r} {blue=!r}"
         )
-    if alpha is not None and not (0.0 <= alpha <= 1.0):
+    elif alpha is not None and not (0.0 <= alpha <= 1.0):
         raise ValueError(f"The 'alpha' parameter must be a float in [0.0, 1.0] or None, got {alpha!r}")
 
     red = max(0, min(255, int(red)))
@@ -1355,7 +1355,7 @@ def hex_int_to_rgba(hex_int: int, /, *, preserve_original: bool = False) -> rgba
     if not (0 <= hex_int <= 0xFFFFFFFF):
         raise ValueError(f"Expected HEX integer in range [0x000000, 0xFFFFFFFF] inclusive, got 0x{hex_int:X}")
 
-    if len(hex_str := f"{hex_int:X}") <= 6:
+    elif len(hex_str := f"{hex_int:X}") <= 6:
         hex_str = hex_str.zfill(6)
         return rgba(
             red if (red := int(hex_str[0:2], 16)) != 1 or preserve_original else 0,
@@ -1985,9 +1985,9 @@ def _resolve_color_stop_with_alpha(
 
     if not stops:
         return ((0, 0, 0), None)
-    if len(stops) == 1 or position <= stops[0][2]:
+    elif len(stops) == 1 or position <= stops[0][2]:
         return (stops[0][0], stops[0][1])
-    if position >= stops[-1][2]:
+    elif position >= stops[-1][2]:
         return (stops[-1][0], stops[-1][1])
 
     rgb_stops = tuple([(item[0], item[2]) for item in stops])
@@ -2065,9 +2065,9 @@ def create_gradient(
 
     if steps < 1:
         raise ValueError(f"The 'steps' parameter must be an integer >= 1, got {steps!r}")
-    if not colors:
+    elif not colors:
         raise ValueError("At least one color stop must be provided for a gradient")
-    if space not in {"rgb", "hsl", "hsl_long", "linear_rgb", "oklab"}:
+    elif space not in {"rgb", "hsl", "hsl_long", "linear_rgb", "oklab"}:
         raise ValueError(f"Unsupported color space {space!r}")
 
     parsed_stops = _parse_color_stops(colors)
