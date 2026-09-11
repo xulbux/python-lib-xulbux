@@ -9,13 +9,23 @@ from __future__ import annotations
 
 from . import regex as _regex_module
 from .base.types import Hexa, HexaDict, Hsla, HslaDict, Rgba, RgbaDict
+from .regex import LazyRegex
 
 import math as _math
-from typing import TYPE_CHECKING, Any, Literal, TypeGuard, cast, overload
-import regex as _rx
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeGuard, cast, overload
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
+
+
+_PATTERNS: Final[LazyRegex] = LazyRegex(
+    rgba_allow_alpha=_regex_module.rgba_str(fix_sep=None, allow_alpha=True),
+    rgba_no_alpha=_regex_module.rgba_str(fix_sep=None, allow_alpha=False),
+    hsla_allow_alpha=_regex_module.hsla_str(fix_sep=None, allow_alpha=True),
+    hsla_no_alpha=_regex_module.hsla_str(fix_sep=None, allow_alpha=False),
+    hexa_allow_alpha=_regex_module.hexa_str(allow_alpha=True),
+    hexa_no_alpha=_regex_module.hexa_str(allow_alpha=False),
+)
 
 
 _SRGB_LINEAR_LUT: tuple[float, ...] = tuple([
@@ -937,7 +947,8 @@ def is_valid_rgba(color: object, /, *, allow_alpha: bool = True) -> TypeGuard[Rg
             return False
 
     elif isinstance(color, str):
-        return bool(_rx.fullmatch(_regex_module.rgba_str(fix_sep=None, allow_alpha=allow_alpha), color))
+        pattern = _PATTERNS.rgba_allow_alpha if allow_alpha else _PATTERNS.rgba_no_alpha
+        return bool(pattern.fullmatch(color))
     return False
 
 
@@ -999,7 +1010,8 @@ def is_valid_hsla(color: object, /, *, allow_alpha: bool = True) -> TypeGuard[Hs
             return False
 
     elif isinstance(color, str):
-        return bool(_rx.fullmatch(_regex_module.hsla_str(fix_sep=None, allow_alpha=allow_alpha), color))
+        pattern = _PATTERNS.hsla_allow_alpha if allow_alpha else _PATTERNS.hsla_no_alpha
+        return bool(pattern.fullmatch(color))
     return False
 
 
@@ -1037,11 +1049,9 @@ def is_valid_hexa(
         color, prefix = (
             (color[1:], "#") if color.startswith("#") else (color[2:], "0x") if color.startswith("0x") else (color, None)
         )
-        return (
-            (bool(_rx.fullmatch(_regex_module.hexa_str(allow_alpha=allow_alpha), color)), prefix)
-            if get_prefix
-            else bool(_rx.fullmatch(_regex_module.hexa_str(allow_alpha=allow_alpha), color))
-        )
+        pattern = _PATTERNS.hexa_allow_alpha if allow_alpha else _PATTERNS.hexa_no_alpha
+        is_match = bool(pattern.fullmatch(color))
+        return (is_match, prefix) if get_prefix else is_match
     return (False, None) if get_prefix else False
 
 
@@ -1157,7 +1167,7 @@ def extract_rgba(string: str, /, *, only_first: bool = False) -> rgba | list[rgb
         otherwise a list of all found colors."""
 
     if only_first:
-        if not (match := _rx.search(_regex_module.rgba_str(allow_alpha=True), string)):
+        if not (match := _PATTERNS.rgba_allow_alpha.search(string)):
             return None
 
         groups = match.groups()
@@ -1170,7 +1180,7 @@ def extract_rgba(string: str, /, *, only_first: bool = False) -> rgba | list[rgb
         )
 
     else:
-        if not (matches := _rx.findall(_regex_module.rgba_str(allow_alpha=True), string)):
+        if not (matches := _PATTERNS.rgba_allow_alpha.findall(string)):
             return None
 
         return [
@@ -1201,7 +1211,7 @@ def extract_hsla(string: str, /, *, only_first: bool = False) -> hsla | list[hsl
         otherwise a list of all found colors."""
 
     if only_first:
-        if not (match := _rx.search(_regex_module.hsla_str(allow_alpha=True), string)):
+        if not (match := _PATTERNS.hsla_allow_alpha.search(string)):
             return None
 
         groups = match.groups()
@@ -1214,7 +1224,7 @@ def extract_hsla(string: str, /, *, only_first: bool = False) -> hsla | list[hsl
         )
 
     else:
-        if not (matches := _rx.findall(_regex_module.hsla_str(allow_alpha=True), string)):
+        if not (matches := _PATTERNS.hsla_allow_alpha.findall(string)):
             return None
 
         return [
@@ -1612,8 +1622,8 @@ def _rgb_to_hsl(red: int, green: int, blue: int, /) -> tuple[float, float, float
     norm_green = green / 255.0
     norm_blue = blue / 255.0
 
-    max_val = max([norm_red, norm_green, norm_blue])
-    min_val = min([norm_red, norm_green, norm_blue])
+    max_val = max(norm_red, norm_green, norm_blue)
+    min_val = min(norm_red, norm_green, norm_blue)
     delta_val = max_val - min_val
     light_val = (max_val + min_val) / 2.0
 
