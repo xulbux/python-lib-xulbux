@@ -9,13 +9,11 @@ def test_lazy_regex_initialization() -> None:
 
 def test_lazy_regex_attribute_access_and_caching() -> None:
     lazy = LazyRegex(digits=r"\d+")
+    pattern = lazy.digits
 
-    pattern1 = lazy.digits
-    assert pattern1.pattern == r"\d+"
+    assert pattern.pattern == r"\d+"
     assert "digits" in lazy.__dict__
-
-    pattern2 = lazy.digits
-    assert pattern1 is pattern2
+    assert pattern is lazy.digits
 
 
 def test_lazy_regex_missing_attribute_raises_attribute_error() -> None:

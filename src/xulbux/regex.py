@@ -17,7 +17,8 @@ def quotes() -> str:
     *   `quote` – The quote type (single or double).
     *   `string` – Everything inside the found quote pair.\n
     ----------------------------------------------------------------------------------------------------
-    **Attention:** Requires non-standard library `regex`, not standard library `re`!\n
+    **Attention:**<br>
+    Requires non-standard library `regex`, not standard library `re`!\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
 
@@ -62,7 +63,8 @@ def brackets(
     *   `ignore_in_strings` – Whether to ignore closing brackets that are inside
         strings/quotes (e.g., `'…)…'` or `"…)…"`).\n
     ----------------------------------------------------------------------------------------------------
-    **Attention:** Requires non-standard library `regex`, not standard library `re`!\n
+    **Attention:**<br>
+    Requires non-standard library `regex`, not standard library `re`!\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usages
 
@@ -156,14 +158,14 @@ def brackets(
     ```
     <!-- DOCS: </AttachedCode> -->"""
 
-    gr = "" if is_group else "?:"
+    group_prefix = "" if is_group else "?:"
     b1 = _rx.escape(bracket1) if len(bracket1) == 1 else bracket1
     b2 = _rx.escape(bracket2) if len(bracket2) == 1 else bracket2
     s1 = r"\s*" if strip_spaces else ""
     s2 = "" if strip_spaces else r"\s*"
 
     if ignore_in_strings:
-        return rf"""(?x){b1}{s1}({gr}{s2}(?:
+        return rf"""(?x){b1}{s1}({group_prefix}{s2}(?:
                 [^{b1}{b2}"']
                 |"(?:\\.|[^"\\])*"
                 |'(?:\\.|[^'\\])*'
@@ -175,7 +177,7 @@ def brackets(
                 )*{b2}
             )*{s2}){s1}{b2}"""
     else:
-        return rf"""(?x){b1}{s1}({gr}{s2}(?:
+        return rf"""(?x){b1}{s1}({group_prefix}{s2}(?:
                 [^{b1}{b2}]
                 |{b1}(?:
                     [^{b1}{b2}]
@@ -189,15 +191,18 @@ def outside_strings(pattern: str = r".*", /) -> str:
     ----------------------------------------------------------------------------------------------------
     *   `pattern` – The pattern to match outside of strings/quotes.\n
     ----------------------------------------------------------------------------------------------------
+    **Attention:**<br>
+    Requires non-standard library `regex`, not standard library `re`!\n
+    ----------------------------------------------------------------------------------------------------
     #### Example Usage
 
     ```python
     import xulbux as xx
-    import re
+    import regex
 
     pattern = xx.regex.outside_strings(r"\\d+")
     text = 'Number 123 and "string 456" and 789'
-    matches = re.findall(pattern, text)
+    matches = regex.findall(pattern, text)
     ```
 
     <!-- DOCS: <AttachedCode> -->
@@ -211,7 +216,11 @@ def outside_strings(pattern: str = r".*", /) -> str:
     ```
     <!-- DOCS: </AttachedCode> -->"""
 
-    return rf"""(?<!["'])(?:{pattern})(?!["'])"""
+    return rf"""(?x)
+        "(?:\\.|[^"\\])*"(*SKIP)(*FAIL)
+        | '(?:\\.|[^'\\])*'(*SKIP)(*FAIL)
+        | (?:{pattern})
+    """
 
 
 def all_except(disallowed_pattern: str, /, ignore_pattern: str = "", *, is_group: bool = False) -> str:
@@ -225,17 +234,20 @@ def all_except(disallowed_pattern: str, /, ignore_pattern: str = "", *, is_group
         the `->`-arrows will be allowed, even though they have `>` in them.
     *   `is_group` – Whether to create a capturing group for the matched content.\n
     ----------------------------------------------------------------------------------------------------
+    **Attention:**<br>
+    Requires non-standard library `regex`, not standard library `re`!\n
+    ----------------------------------------------------------------------------------------------------
     #### Example Usages
 
     **Single exclusion:**
 
     ```python
     import xulbux as xx
-    import re
+    import regex
 
     pattern = xx.regex.all_except(">")
     text = "Hello > World"
-    matches = re.match(pattern, text)
+    matches = regex.match(pattern, text)
     ```
 
     <!-- DOCS: <AttachedCode> -->
@@ -252,11 +264,11 @@ def all_except(disallowed_pattern: str, /, ignore_pattern: str = "", *, is_group
 
     ```python
     import xulbux as xx
-    import re
+    import regex
 
     pattern = xx.regex.all_except(">", "->")
     text = "Arrow -> and greater > sign"
-    match = re.match(pattern, text)
+    match = regex.match(pattern, text)
     ```
 
     <!-- DOCS: <AttachedCode> -->
@@ -269,11 +281,16 @@ def all_except(disallowed_pattern: str, /, ignore_pattern: str = "", *, is_group
     ```
     <!-- DOCS: </AttachedCode> -->"""
 
-    gr = "" if is_group else "?:"
+    group_prefix = "" if is_group else "?:"
+    ignore_alt = rf"|(?:{ignore_pattern})" if ignore_pattern else ""
 
-    return rf"""(?x)({gr}
-            (?:(?!{ignore_pattern}).)*
-            (?:(?!{outside_strings(disallowed_pattern)}).)*
+    return rf"""(?x)({group_prefix}
+            (?:
+                "(?:\\.|[^"\\])*"
+                | '(?:\\.|[^'\\])*'
+                {ignore_alt}
+                | (?!{disallowed_pattern}).
+            )*
         )"""
 
 
@@ -287,7 +304,8 @@ def func_call(func_name: str | None = None, /) -> str:
     1.  The function name (or any function name if `func_name` is `None`).
     2.  Everything inside the function call's parentheses (the arguments).\n
     ----------------------------------------------------------------------------------------------------
-    **Attention:** Requires non-standard library `regex`, not standard library `re`!\n
+    **Attention:**<br>
+    Requires non-standard library `regex`, not standard library `re`!\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usages
 
@@ -638,7 +656,8 @@ class LazyRegex:
     *   `**patterns` – Keyword arguments where the key is the name of the pattern
         and the value is the regex pattern string to compile.\n
     ----------------------------------------------------------------------------------------------------
-    **Attention:** Requires non-standard library `regex`, not standard library `re`!\n
+    **Attention:**<br>
+    Requires non-standard library `regex`, not standard library `re`!\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
 
