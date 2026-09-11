@@ -818,10 +818,7 @@ class ArgumentParser:
 
         fits_wide = True
         for _, comment in highlighted_examples:
-            desc_raw_len = 2 + len(comment if isinstance(comment, str) else S(comment).raw)
-            line_len = 2 + max_example_len + 4 + desc_raw_len
-
-            if line_len > console_width:
+            if (8 + max_example_len + len(comment if isinstance(comment, str) else S(comment).raw)) > console_width:
                 fits_wide = False
                 break
 
@@ -981,9 +978,7 @@ class ArgumentParser:
         i = 0
 
         while i < len(raw_args):
-            arg = raw_args[i]
-
-            if arg == "--":
+            if (arg := raw_args[i]) == "--":
                 arg_tokens.extend(raw_args[i + 1 :])
                 break
 
@@ -1025,10 +1020,8 @@ class ArgumentParser:
 
         total = 0
         for next_name in self._args_order[arg_idx + 1 :]:
-            sub_cfg = self._arg_configs[next_name]
-            if sub_cfg["required"]:
-                sub_nargs = sub_cfg["nargs"]
-                if isinstance(sub_nargs, int):
+            if (sub_cfg := self._arg_configs[next_name])["required"]:
+                if isinstance(sub_nargs := sub_cfg["nargs"], int):
                     total += sub_nargs
                 elif sub_nargs == "+":
                     total += 1
@@ -2926,9 +2919,8 @@ class _ConsoleInputHelper:
         with _suppress(Exception):
             buffer = event.app.current_buffer
             cursor_pos = buffer.cursor_position
-            has_selection = buffer.selection_state is not None
 
-            if has_selection:
+            if buffer.selection_state is not None:
                 start, end = buffer.document.selection_range()
                 self.result_text = self.result_text[:start] + self.result_text[end:]
                 buffer.cursor_position = start
