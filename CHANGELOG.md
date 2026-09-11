@@ -40,6 +40,8 @@
     -   Added `console.read_key()` for reading single key presses and ANSI escape sequences in the terminal with cross-platform support.
     -   Implemented a custom stub generator for improved `.pyi` type stub generation during the build process.
     -   Added color space interpolation and multi-stop scale generators in `color`: `interpolate_color()` and `create_gradient()`, supporting RGB, HSL (shortest and long arc), Linear RGB, and Oklab color spaces.
+    -   Added `allow_strings: bool = True` parameter to `is_valid_rgba()` and `is_valid_hsla()`, supporting overloaded type guards to validate either `Rgba | str` or strictly non-string `Rgba`/`Hsla` types.
+    -   Added `Seq[T]`, `is_seq()`, and `is_dict()` type definitions and type guard helpers to `xulbux.base.types`.
 
 **BREAKING CHANGES:**
 
@@ -70,6 +72,10 @@
     -   Replaced the separator-based path ID format (e.g., `"1>011"`) in `data.get_path_id()` with a compact, separator-free uppercase hexadecimal encoding (e.g., `"1011"`, `"10C"`).
     -   Replaced runtime type tuples like `DataObjTT` with type guard functions like `is_data_obj()`.
     -   Changed `IndexIterable` to `SeqOrSet[T]`, and added `is_seq_or_set()`.
+    -   Removed raw `str` and `list[float]` from `Rgba` and `Hsla` type aliases, reserving them strictly for structured color representations (*objects, tuples, lists of integers, and TypedDicts*).
+    -   Updated `RgbaDict`, `HslaDict`, and `HexaDict` schemas to disallow explicit `None` for the optional `alpha` key (`alpha: NotRequired[float]` *and* `NotRequired[str]`).
+    -   `rgba.blend()` and `hsla.blend()` no longer accept color strings directly (*raising* `TypeError`); color strings must be converted beforehand via `to_rgba()` or `to_hsla()`.
+    -   `is_valid_rgba()` and `is_valid_hsla()` now reject 4-element sequences with `None` as the fourth element and dictionaries with `alpha: None`.
 *   **Renamed Functions & Methods:**
     *   **`color`:**
         -   `text_color_for_on_bg()` (and `fg_for_on_bg()`) → `get_text_fg()`.

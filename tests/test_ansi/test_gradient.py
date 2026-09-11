@@ -50,7 +50,7 @@ def test_gradient_creation_and_properties() -> None:
 
 
 def test_gradient_empty_and_single_char() -> None:
-    grad = S.gradient("#ff0000", "#0000ff")
+    grad = S.gradient("#ff0000", "#0000ff", color_depth="truecolor")
 
     empty_res = grad("")
     assert isinstance(empty_res, S)
@@ -115,13 +115,13 @@ def test_gradient_angles_and_2d() -> None:
 
 def test_gradient_skip_whitespace() -> None:
     # `skip_whitespace=True` (default); spaces should not get colored codes:
-    grad_skip = S.gradient("#ff0000", "#0000ff", skip_whitespace=True)
+    grad_skip = S.gradient("#ff0000", "#0000ff", skip_whitespace=True, color_depth="truecolor")
     styled_skip = grad_skip("A B")
     assert styled_skip.raw == "A B"
     assert styled_skip.ansi == "\x1b[38;2;255;0;0mA\x1b[39m \x1b[38;2;0;0;255mB\x1b[39m"
 
     # `skip_whitespace=False`; spaces should have color codes:
-    grad_keep = S.gradient("#ff0000", "#0000ff", skip_whitespace=False)
+    grad_keep = S.gradient("#ff0000", "#0000ff", skip_whitespace=False, color_depth="truecolor")
     styled_keep = grad_keep("A B")
     assert styled_keep.raw == "A B"
     assert styled_keep.ansi.startswith("\x1b[38;2;255;0;0mA")
@@ -140,11 +140,28 @@ def test_gradient_color_depth_256() -> None:
     assert "\x1b[48;5;" in bg_styled_256.ansi
 
 
-def test_gradient_color_depth_auto() -> None:
+def test_gradient_color_depth_auto(monkeypatch: pytest.MonkeyPatch) -> None:
     grad_auto = S.gradient("#ff0000", "#0000ff", color_depth="auto")
     styled_auto = grad_auto("AB")
     assert isinstance(styled_auto, S)
     assert styled_auto.raw == "AB"
+
+    # [1] On Unix without COLORTERM, auto falls back to 256 colors:
+    monkeypatch.setattr("sys.platform", "linux")
+    monkeypatch.delenv("COLORTERM", raising=False)
+    styled_256 = grad_auto("AB")
+    assert "\x1b[38;5;" in styled_256.ansi
+
+    # [2] On Unix with COLORTERM="truecolor" (or "24bit"), auto uses 24-bit truecolor:
+    monkeypatch.setenv("COLORTERM", "truecolor")
+    styled_truecolor = grad_auto("AB")
+    assert "\x1b[38;2;" in styled_truecolor.ansi
+
+    # [3] On Windows, auto uses 24-bit truecolor:
+    monkeypatch.setattr("sys.platform", "win32")
+    monkeypatch.delenv("COLORTERM", raising=False)
+    styled_win = grad_auto("AB")
+    assert "\x1b[38;2;" in styled_win.ansi
 
 
 def test_gradient_color_inputs_and_stops() -> None:
@@ -162,7 +179,7 @@ def test_gradient_color_inputs_and_stops() -> None:
     assert "\x1b[38;2;0;0;255mC" in styled_stops.ansi
 
     # Single stop gradient:
-    single_stop_grad = S.gradient("#ff0000")
+    single_stop_grad = S.gradient("#ff0000", color_depth="truecolor")
     styled_single = single_stop_grad("Hello")
     assert "\x1b[38;2;255;0;0mH" in styled_single.ansi
 

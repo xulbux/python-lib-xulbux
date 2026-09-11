@@ -8,7 +8,7 @@ for interpolating, lightening, darkening, and blending colors.
 from __future__ import annotations
 
 from . import regex as _regex_module
-from .base.types import Hexa, HexaDict, Hsla, HslaDict, Rgba, RgbaDict
+from .base.types import Hexa, HexaDict, Hsla, HslaDict, Rgba, RgbaDict, is_dict, is_seq
 from .regex import LazyRegex
 
 import math as _math
@@ -109,7 +109,7 @@ class rgba(_ColorBase):
         self.red, self.green, self.blue = red, green, blue
         self.alpha = None if alpha is None else float(alpha)
 
-    def __iter__(self) -> Iterator[int | float | None]:
+    def __iter__(self) -> Iterator[int | float]:
         yield self.red
         yield self.green
         yield self.blue
@@ -120,11 +120,11 @@ class rgba(_ColorBase):
     @overload
     def __getitem__(self, idx: Literal[0, 1, 2], /) -> int: ...
     @overload
-    def __getitem__(self, idx: Literal[3], /) -> float | None: ...
+    def __getitem__(self, idx: Literal[3], /) -> float: ...
     @overload
-    def __getitem__(self, idx: int, /) -> int | float | None: ...
+    def __getitem__(self, idx: int, /) -> int | float: ...
 
-    def __getitem__(self, idx: int, /) -> int | float | None:
+    def __getitem__(self, idx: int, /) -> int | float:
         if idx == 0 or (idx == -3 and self.alpha is None) or (idx == -4 and self.alpha is not None):
             return self.red
         elif idx == 1 or (idx == -2 and self.alpha is None) or (idx == -3 and self.alpha is not None):
@@ -156,6 +156,9 @@ class rgba(_ColorBase):
 
     def as_dict(self) -> RgbaDict:
         """Returns the color components as a dictionary with keys `"red"`, `"green"`, `"blue"` and optionally `"alpha"`."""
+
+        if self.alpha is None:
+            return RgbaDict(red=self.red, green=self.green, blue=self.blue)
 
         return RgbaDict(red=self.red, green=self.green, blue=self.blue, alpha=self.alpha)
 
@@ -245,21 +248,21 @@ class rgba(_ColorBase):
                 and 100% of the `other` color (0:2 mixture).
         *   `additive_alpha` – Whether to blend the alpha channels additively or not."""
 
-        if not is_valid_rgba(other):
+        if not is_valid_rgba(other, allow_strings=False):
             raise TypeError(f"The 'other' parameter must be a valid RGBA color, got {other!r}")
         elif not (0.0 <= ratio <= 1.0):
             raise ValueError(f"The 'ratio' parameter must be in range [0.0, 1.0] inclusive, got {ratio!r}")
 
-        other_rgba = as_rgba(other)
+        other_rgba = to_rgba(other)
 
         red = int(max(0, min(255, int((self.red * (1 - ratio)) + (other_rgba.red * ratio) + 0.5))))
         green = int(max(0, min(255, int((self.green * (1 - ratio)) + (other_rgba.green * ratio) + 0.5))))
         blue = int(max(0, min(255, int((self.blue * (1 - ratio)) + (other_rgba.blue * ratio) + 0.5))))
-        none_alpha = self.alpha is None and (len(other_rgba) <= 3 or other_rgba[3] is None)
+        none_alpha = self.alpha is None and other_rgba.alpha is None
 
         if not none_alpha:
             self_a: float = 1.0 if self.alpha is None else self.alpha
-            other_a: float = cast("float", 1.0 if other_rgba[3] is None else other_rgba[3]) if len(other_rgba) > 3 else 1.0
+            other_a: float = 1.0 if other_rgba.alpha is None else other_rgba.alpha
 
             if additive_alpha:
                 # Additive blend calculation
@@ -380,7 +383,7 @@ class hsla(_ColorBase):
         self.hue, self.sat, self.light = hue, sat, light
         self.alpha = None if alpha is None else float(alpha)
 
-    def __iter__(self) -> Iterator[int | float | None]:
+    def __iter__(self) -> Iterator[int | float]:
         yield self.hue
         yield self.sat
         yield self.light
@@ -391,11 +394,11 @@ class hsla(_ColorBase):
     @overload
     def __getitem__(self, idx: Literal[0, 1, 2], /) -> int: ...
     @overload
-    def __getitem__(self, idx: Literal[3], /) -> float | None: ...
+    def __getitem__(self, idx: Literal[3], /) -> float: ...
     @overload
-    def __getitem__(self, idx: int, /) -> int | float | None: ...
+    def __getitem__(self, idx: int, /) -> int | float: ...
 
-    def __getitem__(self, idx: int, /) -> int | float | None:
+    def __getitem__(self, idx: int, /) -> int | float:
         if idx == 0 or (idx == -3 and self.alpha is None) or (idx == -4 and self.alpha is not None):
             return self.hue
         elif idx == 1 or (idx == -2 and self.alpha is None) or (idx == -3 and self.alpha is not None):
@@ -427,6 +430,9 @@ class hsla(_ColorBase):
 
     def as_dict(self) -> HslaDict:
         """Returns the color components as a dictionary with keys `"hue"`, `"sat"`, `"light"` and optionally `"alpha"`."""
+
+        if self.alpha is None:
+            return HslaDict(hue=self.hue, sat=self.sat, light=self.light)
 
         return HslaDict(hue=self.hue, sat=self.sat, light=self.light, alpha=self.alpha)
 
@@ -519,12 +525,12 @@ class hsla(_ColorBase):
                 and 100% of the `other` color (0:2 mixture).
         *   `additive_alpha` – whether to blend the alpha channels additively or not."""
 
-        if not is_valid_hsla(other):
+        if not is_valid_hsla(other, allow_strings=False):
             raise TypeError(f"The 'other' parameter must be a valid HSLA color, got {other!r}")
         elif not (0.0 <= ratio <= 1.0):
             raise ValueError(f"The 'ratio' parameter must be in range [0.0, 1.0] inclusive, got {ratio!r}")
 
-        return self.as_rgba().blend(as_rgba(other), ratio, additive_alpha=additive_alpha).as_hsla()
+        return self.as_rgba().blend(to_rgba(other), ratio, additive_alpha=additive_alpha).as_hsla()
 
     def is_dark(self) -> bool:
         """Returns `True` if the color is considered dark (`lightness < 50%`)."""
@@ -747,11 +753,11 @@ class hexa(_ColorBase):
         """Returns the color components as a dictionary with hex string values
         for keys `"red"`, `"green"`, `"blue"` and optionally `"alpha"`."""
 
+        if self.alpha is None:
+            return HexaDict(red=f"{self.red:02X}", green=f"{self.green:02X}", blue=f"{self.blue:02X}")
+
         return HexaDict(
-            red=f"{self.red:02X}",
-            green=f"{self.green:02X}",
-            blue=f"{self.blue:02X}",
-            alpha=(None if self.alpha is None else f"{int(self.alpha * 255):02X}"),
+            red=f"{self.red:02X}", green=f"{self.green:02X}", blue=f"{self.blue:02X}", alpha=f"{int(self.alpha * 255):02X}"
         )
 
     def as_rgba(self, *, round_alpha: bool = True) -> rgba:
@@ -856,7 +862,7 @@ class hexa(_ColorBase):
             raise ValueError(f"The 'ratio' parameter must be in range [0.0, 1.0] inclusive, got {ratio!r}")
 
         red, green, blue, alpha = (
-            self.as_rgba(round_alpha=False).blend(as_rgba(other), ratio, additive_alpha=additive_alpha).as_tuple()
+            self.as_rgba(round_alpha=False).blend(to_rgba(other), ratio, additive_alpha=additive_alpha).as_tuple()
         )
         return hexa(_red=red, _green=green, _blue=blue, _alpha=alpha)
 
@@ -889,129 +895,173 @@ class hexa(_ColorBase):
         return self.as_hsla(round_alpha=False).complementary().as_hexa()
 
 
-def is_valid_rgba(color: object, /, *, allow_alpha: bool = True) -> TypeGuard[Rgba]:
+@overload
+def is_valid_rgba(
+    color: object,
+    /,
+    *,
+    allow_alpha: bool = True,
+    allow_strings: Literal[True] = True,
+) -> TypeGuard[Rgba | str]: ...
+@overload
+def is_valid_rgba(
+    color: object,
+    /,
+    *,
+    allow_alpha: bool = True,
+    allow_strings: Literal[False],
+) -> TypeGuard[Rgba]: ...
+@overload
+def is_valid_rgba(
+    color: object,
+    /,
+    *,
+    allow_alpha: bool = True,
+    allow_strings: bool = True,
+) -> TypeGuard[Rgba | str] | TypeGuard[Rgba]: ...
+
+
+def is_valid_rgba(
+    color: object,
+    /,
+    *,
+    allow_alpha: bool = True,
+    allow_strings: bool = True,
+) -> TypeGuard[Rgba | str] | TypeGuard[Rgba]:
     """Check if the given color is a valid RGBA color.\n
     ----------------------------------------------------------------------------------------------------
     *   `color` – The color to check (can be in any supported format).
-    *   `allow_alpha` – Whether to allow alpha channel in the color."""
+    *   `allow_alpha` – Whether to allow alpha channel in the color.
+    *   `allow_strings` – Whether to allow color strings."""
 
     if isinstance(color, rgba):
         return True
 
-    elif isinstance(color, (list, tuple)):
-        color_seq = cast("list[Any] | tuple[Any, ...]", color)
+    elif is_seq(color):
         if (
             allow_alpha
-            and len(color_seq) == 4
-            and (isinstance(color_seq[0], int) and isinstance(color_seq[1], int) and isinstance(color_seq[2], int))
-            and isinstance(color_seq[3], (float, type(None)))
+            and len(color) == 4
+            and (isinstance(color[0], int) and isinstance(color[1], int) and isinstance(color[2], int))
+            and isinstance(color[3], float)
         ):
-            return (
-                0 <= color_seq[0] <= 255
-                and 0 <= color_seq[1] <= 255
-                and 0 <= color_seq[2] <= 255
-                and (color_seq[3] is None or 0 <= color_seq[3] <= 1)
-            )
-        elif len(color_seq) == 3 and (
-            isinstance(color_seq[0], int) and isinstance(color_seq[1], int) and isinstance(color_seq[2], int)
-        ):
-            return 0 <= color_seq[0] <= 255 and 0 <= color_seq[1] <= 255 and 0 <= color_seq[2] <= 255
+            return 0 <= color[0] <= 255 and 0 <= color[1] <= 255 and 0 <= color[2] <= 255 and 0.0 <= color[3] <= 1.0
+        elif len(color) == 3 and (isinstance(color[0], int) and isinstance(color[1], int) and isinstance(color[2], int)):
+            return 0 <= color[0] <= 255 and 0 <= color[1] <= 255 and 0 <= color[2] <= 255
         else:
             return False
 
-    elif isinstance(color, dict):
-        color_dict = cast("dict[str, Any]", color)
+    elif is_dict(color):
         if (
             allow_alpha
-            and len(color_dict) == 4
+            and len(color) == 4
             and (
-                isinstance(color_dict.get("red"), int)
-                and isinstance(color_dict.get("green"), int)
-                and isinstance(color_dict.get("blue"), int)
+                isinstance(color.get("red"), int)
+                and isinstance(color.get("green"), int)
+                and isinstance(color.get("blue"), int)
             )
-            and isinstance(color_dict.get("alpha", "no alpha"), (float, type(None)))
+            and isinstance(color.get("alpha"), float)
         ):
             return (
-                0 <= color_dict["red"] <= 255
-                and 0 <= color_dict["green"] <= 255
-                and 0 <= color_dict["blue"] <= 255
-                and (color_dict["alpha"] is None or 0 <= color_dict["alpha"] <= 1)
+                0 <= color["red"] <= 255
+                and 0 <= color["green"] <= 255
+                and 0 <= color["blue"] <= 255
+                and 0.0 <= color["alpha"] <= 1.0
             )
-        elif len(color_dict) == 3 and (
-            isinstance(color_dict.get("red"), int)
-            and isinstance(color_dict.get("green"), int)
-            and isinstance(color_dict.get("blue"), int)
+        elif len(color) == 3 and (
+            isinstance(color.get("red"), int) and isinstance(color.get("green"), int) and isinstance(color.get("blue"), int)
         ):
-            return 0 <= color_dict["red"] <= 255 and 0 <= color_dict["green"] <= 255 and 0 <= color_dict["blue"] <= 255
+            return 0 <= color["red"] <= 255 and 0 <= color["green"] <= 255 and 0 <= color["blue"] <= 255
         else:
             return False
 
-    elif isinstance(color, str):
+    elif allow_strings and isinstance(color, str):
         pattern = _PATTERNS.rgba_allow_alpha if allow_alpha else _PATTERNS.rgba_no_alpha
         return bool(pattern.fullmatch(color))
+
     return False
 
 
-def is_valid_hsla(color: object, /, *, allow_alpha: bool = True) -> TypeGuard[Hsla]:
+@overload
+def is_valid_hsla(
+    color: object,
+    /,
+    *,
+    allow_alpha: bool = True,
+    allow_strings: Literal[True] = True,
+) -> TypeGuard[Hsla | str]: ...
+@overload
+def is_valid_hsla(
+    color: object,
+    /,
+    *,
+    allow_alpha: bool = True,
+    allow_strings: Literal[False],
+) -> TypeGuard[Hsla]: ...
+@overload
+def is_valid_hsla(
+    color: object,
+    /,
+    *,
+    allow_alpha: bool = True,
+    allow_strings: bool = True,
+) -> TypeGuard[Hsla | str] | TypeGuard[Hsla]: ...
+
+
+def is_valid_hsla(
+    color: object,
+    /,
+    *,
+    allow_alpha: bool = True,
+    allow_strings: bool = True,
+) -> TypeGuard[Hsla | str] | TypeGuard[Hsla]:
     """Check if the given color is a valid HSLA color.\n
     ----------------------------------------------------------------------------------------------------
     *   `color` – The color to check (can be in any supported format).
-    *   `allow_alpha` – Whether to allow alpha channel in the color."""
+    *   `allow_alpha` – Whether to allow alpha channel in the color.
+    *   `allow_strings` – Whether to allow color strings."""
 
     if isinstance(color, hsla):
         return True
 
-    elif isinstance(color, (list, tuple)):
-        color_seq = cast("list[Any] | tuple[Any, ...]", color)
+    elif is_seq(color):
         if (
             allow_alpha
-            and len(color_seq) == 4
-            and (isinstance(color_seq[0], int) and isinstance(color_seq[1], int) and isinstance(color_seq[2], int))
-            and isinstance(color_seq[3], (float, type(None)))
+            and len(color) == 4
+            and (isinstance(color[0], int) and isinstance(color[1], int) and isinstance(color[2], int))
+            and isinstance(color[3], float)
         ):
-            return (
-                0 <= color_seq[0] <= 360
-                and 0 <= color_seq[1] <= 100
-                and 0 <= color_seq[2] <= 100
-                and (color_seq[3] is None or 0 <= color_seq[3] <= 1)
-            )
-        elif len(color_seq) == 3 and (
-            isinstance(color_seq[0], int) and isinstance(color_seq[1], int) and isinstance(color_seq[2], int)
-        ):
-            return 0 <= color_seq[0] <= 360 and 0 <= color_seq[1] <= 100 and 0 <= color_seq[2] <= 100
+            return 0 <= color[0] <= 360 and 0 <= color[1] <= 100 and 0 <= color[2] <= 100 and 0.0 <= color[3] <= 1.0
+        elif len(color) == 3 and (isinstance(color[0], int) and isinstance(color[1], int) and isinstance(color[2], int)):
+            return 0 <= color[0] <= 360 and 0 <= color[1] <= 100 and 0 <= color[2] <= 100
         else:
             return False
 
-    elif isinstance(color, dict):
-        color_dict = cast("dict[str, Any]", color)
+    elif is_dict(color):
         if (
             allow_alpha
-            and len(color_dict) == 4
+            and len(color) == 4
             and (
-                isinstance(color_dict.get("hue"), int)
-                and isinstance(color_dict.get("sat"), int)
-                and isinstance(color_dict.get("light"), int)
+                isinstance(color.get("hue"), int) and isinstance(color.get("sat"), int) and isinstance(color.get("light"), int)
             )
-            and isinstance(color_dict.get("alpha", "no alpha"), (float, type(None)))
+            and isinstance(color.get("alpha"), float)
         ):
             return (
-                0 <= color_dict["hue"] <= 360
-                and 0 <= color_dict["sat"] <= 100
-                and 0 <= color_dict["light"] <= 100
-                and (color_dict["alpha"] is None or 0 <= color_dict["alpha"] <= 1)
+                0 <= color["hue"] <= 360
+                and 0 <= color["sat"] <= 100
+                and 0 <= color["light"] <= 100
+                and 0.0 <= color["alpha"] <= 1.0
             )
-        elif len(color_dict) == 3 and (
-            isinstance(color_dict.get("hue"), int)
-            and isinstance(color_dict.get("sat"), int)
-            and isinstance(color_dict.get("light"), int)
+        elif len(color) == 3 and (
+            isinstance(color.get("hue"), int) and isinstance(color.get("sat"), int) and isinstance(color.get("light"), int)
         ):
-            return 0 <= color_dict["hue"] <= 360 and 0 <= color_dict["sat"] <= 100 and 0 <= color_dict["light"] <= 100
+            return 0 <= color["hue"] <= 360 and 0 <= color["sat"] <= 100 and 0 <= color["light"] <= 100
         else:
             return False
 
-    elif isinstance(color, str):
+    elif allow_strings and isinstance(color, str):
         pattern = _PATTERNS.hsla_allow_alpha if allow_alpha else _PATTERNS.hsla_no_alpha
         return bool(pattern.fullmatch(color))
+
     return False
 
 
@@ -1035,7 +1085,7 @@ def is_valid_hexa(
     *   `color` – The color to check (can be in any supported format).
     *   `allow_alpha` – Whether to allow alpha channel in the color.
     *   `get_prefix` – If true, the prefix used in the color (if any)
-        is returned along with validity."""
+    *   is returned along with validity."""
 
     if isinstance(color, hexa):
         return (True, "#") if get_prefix else True
@@ -1052,6 +1102,7 @@ def is_valid_hexa(
         pattern = _PATTERNS.hexa_allow_alpha if allow_alpha else _PATTERNS.hexa_no_alpha
         is_match = bool(pattern.fullmatch(color))
         return (is_match, prefix) if get_prefix else is_match
+
     return (False, None) if get_prefix else False
 
 
@@ -1094,13 +1145,13 @@ def has_alpha(color: Rgba | Hsla | Hexa, /) -> bool:
         elif parsed_hsla := extract_hsla(color, only_first=True):
             return parsed_hsla.has_alpha()
 
-    elif (isinstance(color, (list, tuple)) and len(color) == 4) or (isinstance(color, dict) and len(color) == 4):
+    elif (is_seq(color) and len(color) == 4) or (is_dict(color) and len(color) == 4):
         return True
 
     return False
 
 
-def as_rgba(color: Rgba | Hsla | Hexa, /) -> rgba:
+def to_rgba(color: Rgba | Hsla | Hexa, /) -> rgba:
     """Will try to convert any color type to a color of type RGBA.\n
     ----------------------------------------------------------------------------------------------------
     *   `color` – The color to convert (can be in any supported format)."""
@@ -1117,7 +1168,7 @@ def as_rgba(color: Rgba | Hsla | Hexa, /) -> rgba:
     raise ValueError(f"Could not convert color {color!r} to RGBA\nMust be a valid RGBA, HSLA, or HEXA color")
 
 
-def as_hsla(color: Rgba | Hsla | Hexa, /) -> hsla:
+def to_hsla(color: Rgba | Hsla | Hexa, /) -> hsla:
     """Will try to convert any color type to a color of type HSLA.\n
     ----------------------------------------------------------------------------------------------------
     *   `color` – The color to convert (can be in any supported format)."""
@@ -1134,7 +1185,7 @@ def as_hsla(color: Rgba | Hsla | Hexa, /) -> hsla:
     raise ValueError(f"Could not convert color {color!r} to HSLA\nMust be a valid RGBA, HSLA, or HEXA color")
 
 
-def as_hexa(color: Rgba | Hsla | Hexa, /) -> hexa:
+def to_hexa(color: Rgba | Hsla | Hexa, /) -> hexa:
     """Will try to convert any color type to a color of type HEXA.\n
     ----------------------------------------------------------------------------------------------------
     *   `color` – The color to convert (can be in any supported format)."""
@@ -1239,28 +1290,26 @@ def extract_hsla(string: str, /, *, only_first: bool = False) -> hsla | list[hsl
         ]
 
 
-def _parse_rgba(color: Rgba, /) -> rgba:
+def _parse_rgba(color: Rgba | str, /) -> rgba:
     """Internal method to parse a color to an RGBA object."""
 
     if isinstance(color, rgba):
         return color
 
-    elif isinstance(color, (list, tuple)):
-        array_color = cast("list[Any] | tuple[Any, ...]", color)
-        if len(array_color) == 4:
-            return rgba(int(array_color[0]), int(array_color[1]), int(array_color[2]), float(array_color[3]), _validate=False)
-        elif len(array_color) == 3:
-            return rgba(int(array_color[0]), int(array_color[1]), int(array_color[2]), None, _validate=False)
+    elif is_seq(color):
+        if len(color) == 4:
+            return rgba(int(color[0]), int(color[1]), int(color[2]), float(color[3]), _validate=False)
+        elif len(color) == 3:
+            return rgba(int(color[0]), int(color[1]), int(color[2]), None, _validate=False)
         raise ValueError(f"Could not parse RGBA color: {color!r}")
 
-    elif isinstance(color, dict):
-        dict_color = cast("dict[str, Any]", color)
+    elif is_dict(color):
         try:
             return rgba(
-                int(dict_color["red"]),
-                int(dict_color["green"]),
-                int(dict_color["blue"]),
-                dict_color.get("alpha"),
+                int(color["red"]),
+                int(color["green"]),
+                int(color["blue"]),
+                color.get("alpha"),
                 _validate=False,
             )
         except (KeyError, ValueError):
@@ -1272,28 +1321,26 @@ def _parse_rgba(color: Rgba, /) -> rgba:
     raise ValueError(f"Could not parse RGBA color: {color!r}")
 
 
-def _parse_hsla(color: Hsla, /) -> hsla:
+def _parse_hsla(color: Hsla | str, /) -> hsla:
     """Internal method to parse a color to an HSLA object."""
 
     if isinstance(color, hsla):
         return color
 
-    elif isinstance(color, (list, tuple)):
-        array_color = cast("list[Any] | tuple[Any, ...]", color)
+    elif is_seq(color):
         if len(color) == 4:
-            return hsla(int(array_color[0]), int(array_color[1]), int(array_color[2]), float(array_color[3]), _validate=False)
+            return hsla(int(color[0]), int(color[1]), int(color[2]), float(color[3]), _validate=False)
         elif len(color) == 3:
-            return hsla(int(array_color[0]), int(array_color[1]), int(array_color[2]), None, _validate=False)
+            return hsla(int(color[0]), int(color[1]), int(color[2]), None, _validate=False)
         raise ValueError(f"Could not parse HSLA color: {color!r}")
 
-    elif isinstance(color, dict):
-        dict_color = cast("dict[str, Any]", color)
+    elif is_dict(color):
         try:
             return hsla(
-                int(dict_color["hue"]),
-                int(dict_color["sat"]),
-                int(dict_color["light"]),
-                dict_color.get("alpha"),
+                int(color["hue"]),
+                int(color["sat"]),
+                int(color["light"]),
+                color.get("alpha"),
                 _validate=False,
             )
         except (KeyError, ValueError):
@@ -1482,7 +1529,7 @@ def get_text_fg(text_bg_color: Rgba | Hexa, /) -> rgba | hexa | int:
 
     was_hexa, was_int = is_valid_hexa(text_bg_color), isinstance(text_bg_color, int)
 
-    text_bg_rgba = as_rgba(text_bg_color)
+    text_bg_rgba = to_rgba(text_bg_color)
     luminance = 0.2126 * text_bg_rgba[0] + 0.7152 * text_bg_rgba[1] + 0.0722 * text_bg_rgba[2]
 
     return (
@@ -1515,7 +1562,7 @@ def adjust_lightness(color: Rgba | Hexa, light_change: float, /) -> rgba | hexa:
         raise ValueError(f"The 'light_change' parameter must be in range [-1.0, 1.0] inclusive, got {light_change!r}")
 
     was_hexa = is_valid_hexa(color)
-    hsla_color = as_hsla(color)
+    hsla_color = to_hsla(color)
 
     hue, sat, light, alpha = (
         int(hsla_color[0]),
@@ -1551,7 +1598,7 @@ def adjust_saturation(color: Rgba | Hexa, sat_change: float, /) -> rgba | hexa:
         raise ValueError(f"The 'sat_change' parameter must be in range [-1.0, 1.0] inclusive, got {sat_change!r}")
 
     was_hexa = is_valid_hexa(color)
-    hsla_color = as_hsla(color)
+    hsla_color = to_hsla(color)
 
     hue, sat, light, alpha = (
         int(hsla_color[0]),
@@ -1787,9 +1834,9 @@ def _interpolate_color(
     red2: int,
     green2: int,
     blue2: int,
-    ratio: float,
     /,
     *,
+    ratio: float,
     space: Literal["rgb", "hsl", "hsl_long", "linear_rgb", "oklab"] = "hsl",
 ) -> tuple[int, int, int]:
     """Internal function to interpolate two RGB colors using the specified color space."""
@@ -1833,7 +1880,7 @@ def _resolve_color_stop(
 
         if pos1 <= position <= pos2:
             seg_ratio = (position - pos1) / seg_len if (seg_len := pos2 - pos1) > 1e-9 else 0.0
-            return _interpolate_color(rgb1[0], rgb1[1], rgb1[2], rgb2[0], rgb2[1], rgb2[2], seg_ratio, space=space)
+            return _interpolate_color(rgb1[0], rgb1[1], rgb1[2], rgb2[0], rgb2[1], rgb2[2], ratio=seg_ratio, space=space)
 
     return stops[-1][0]  # coverage:ignore[defensive-return]
 
@@ -1902,10 +1949,8 @@ def _extract_rgb_fast(color: _ColorBase | Rgba | Hsla | Hexa, /) -> tuple[int, i
     elif isinstance(color, hsla):
         return hsla._hsl_to_rgb(color.hue, color.sat, color.light)
 
-    elif isinstance(color, (tuple, list)) and len(color) in {3, 4}:
-        red_val, green_val, blue_val = color[0], color[1], color[2]
-        if red_val is not None and green_val is not None and blue_val is not None:
-            return (int(red_val), int(green_val), int(blue_val))
+    elif is_seq(color) and len(color) in {3, 4}:
+        return (int(color[0]), int(color[1]), int(color[2]))
 
     elif isinstance(color, int):
         if not (0x000000 <= color <= 0xFFFFFF):
@@ -1929,10 +1974,10 @@ def _extract_rgb_fast(color: _ColorBase | Rgba | Hsla | Hexa, /) -> tuple[int, i
                 int(hex_clean[4:6], 16),
             )
 
-        color_obj = as_rgba(color)
+        color_obj = to_rgba(color)
         return (color_obj.red, color_obj.green, color_obj.blue)
 
-    color_obj = as_rgba(cast("Any", color))
+    color_obj = to_rgba(cast("Any", color))
     return (color_obj.red, color_obj.green, color_obj.blue)
 
 
@@ -1941,10 +1986,11 @@ def _extract_alpha_fast(color: _ColorBase | Rgba | Hsla | Hexa, /) -> float | No
 
     if isinstance(color, (rgba, hsla, hexa)):
         return color.alpha
-    elif isinstance(color, (tuple, list)) and len(color) == 4 and color[3] is not None:
+    elif is_seq(color) and len(color) == 4:
         return float(color[3])
-    elif isinstance(color, dict) and "alpha" in color and color["alpha"] is not None:
+    elif is_dict(color) and "alpha" in color:
         return float(color["alpha"])
+
     return None
 
 
@@ -1960,18 +2006,11 @@ def _parse_color_stops(colors: Sequence[ColorStop], /) -> tuple[tuple[tuple[int,
     for item in colors:
         if isinstance(item, tuple) and len(item) == 2:
             raw_color = item[0]
-            raw_items.append((
-                (_extract_rgb_fast(raw_color), _extract_alpha_fast(raw_color)),
-                float(item[1]),
-            ))
+            raw_items.append(((_extract_rgb_fast(raw_color), _extract_alpha_fast(raw_color)), float(item[1])))
         else:
-            raw_items.append((
-                (_extract_rgb_fast(item), _extract_alpha_fast(item)),
-                None,
-            ))
+            raw_items.append(((_extract_rgb_fast(item), _extract_alpha_fast(item)), None))
 
-    distributed = _distribute_color_stops(raw_items)
-    return tuple([(item[0][0], item[0][1], item[1]) for item in distributed])
+    return tuple([(item[0][0], item[0][1], item[1]) for item in _distribute_color_stops(raw_items)])
 
 
 def _resolve_color_stop_with_alpha(
@@ -1990,8 +2029,7 @@ def _resolve_color_stop_with_alpha(
     elif position >= stops[-1][2]:
         return (stops[-1][0], stops[-1][1])
 
-    rgb_stops = tuple([(item[0], item[2]) for item in stops])
-    interp_rgb = _resolve_color_stop(rgb_stops, position, space=space)
+    interp_rgb = _resolve_color_stop(tuple([(item[0], item[2]) for item in stops]), position, space=space)
 
     for i in range(len(stops) - 1):
         _, alpha1, pos1 = stops[i]
@@ -2034,7 +2072,9 @@ def interpolate_color(
     rgb1 = _extract_rgb_fast(color1)
     rgb2 = _extract_rgb_fast(color2)
 
-    red, green, blue = _interpolate_color(rgb1[0], rgb1[1], rgb1[2], rgb2[0], rgb2[1], rgb2[2], clamped_ratio, space=space)
+    red, green, blue = _interpolate_color(
+        rgb1[0], rgb1[1], rgb1[2], rgb2[0], rgb2[1], rgb2[2], ratio=clamped_ratio, space=space
+    )
 
     alpha1 = _extract_alpha_fast(color1)
     alpha2 = _extract_alpha_fast(color2)

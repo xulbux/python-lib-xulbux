@@ -35,6 +35,8 @@ def test_rgba_to_hex_int_and_back() -> None:
 def test_is_valid_rgba() -> None:
     assert _color_module.is_valid_rgba((255, 0, 0)) is True
     assert _color_module.is_valid_rgba((255, 0, 0, 0.5)) is True
+    assert _color_module.is_valid_rgba([255, 0, 0]) is True
+    assert _color_module.is_valid_rgba([255, 0, 0, 0.5]) is True
     assert _color_module.is_valid_rgba("rgb(255, 0, 0)") is True
     assert _color_module.is_valid_rgba("rgba(255, 0, 0, .5)") is True
     assert _color_module.is_valid_rgba({"red": 255, "green": 0, "blue": 0}) is True
@@ -44,18 +46,29 @@ def test_is_valid_rgba() -> None:
     assert _color_module.is_valid_rgba((255, 0)) is False
     assert _color_module.is_valid_rgba((255, 0, 0, 2)) is False
     assert _color_module.is_valid_rgba("not a color") is False
+    assert _color_module.is_valid_rgba((255, 0, 0, None)) is False
+    assert _color_module.is_valid_rgba({"red": 255, "green": 0, "blue": 0, "alpha": None}) is False
     assert _color_module.is_valid_rgba((255, 0, 0), allow_alpha=False) is True
     assert _color_module.is_valid_rgba((255, 0, 0, 0.5), allow_alpha=False) is False
+    assert _color_module.is_valid_rgba([255, 0, 0, 0.5], allow_alpha=False) is False
+    assert _color_module.is_valid_rgba("rgb(255, 0, 0)", allow_strings=False) is False
+    assert _color_module.is_valid_rgba("rgba(255, 0, 0, .5)", allow_strings=False) is False
+    assert _color_module.is_valid_rgba((255, 0, 0), allow_strings=False) is True
+    assert _color_module.is_valid_rgba([255, 0, 0], allow_strings=False) is True
 
 
 def test_is_valid_hsla() -> None:
     assert _color_module.is_valid_hsla((0, 100, 50)) is True
     assert _color_module.is_valid_hsla((0, 100, 50, 0.5)) is True
+    assert _color_module.is_valid_hsla([0, 100, 50]) is True
+    assert _color_module.is_valid_hsla([0, 100, 50, 0.5]) is True
     assert _color_module.is_valid_hsla("hsl(0, 100%, 50%)") is True
     assert _color_module.is_valid_hsla("hsla(0, 100%, 50%, .5)") is True
     assert _color_module.is_valid_hsla({"hue": 0, "sat": 100, "light": 50}) is True
     assert _color_module.is_valid_hsla({"hue": 0, "sat": 100, "light": 50, "alpha": 0.5}) is True
     assert _color_module.is_valid_hsla(hsla(0, 100, 50)) is True
+    assert _color_module.is_valid_hsla((0, 100, 50, None)) is False
+    assert _color_module.is_valid_hsla({"hue": 0, "sat": 100, "light": 50, "alpha": None}) is False
     assert _color_module.is_valid_hsla((370, 100, 50)) is False
     assert _color_module.is_valid_hsla((0, 101, 50)) is False
     assert _color_module.is_valid_hsla((0, 100, 101)) is False
@@ -63,6 +76,11 @@ def test_is_valid_hsla() -> None:
     assert _color_module.is_valid_hsla("not a color") is False
     assert _color_module.is_valid_hsla((0, 100, 50), allow_alpha=False) is True
     assert _color_module.is_valid_hsla((0, 100, 50, 0.5), allow_alpha=False) is False
+    assert _color_module.is_valid_hsla([0, 100, 50, 0.5], allow_alpha=False) is False
+    assert _color_module.is_valid_hsla("hsl(0, 100%, 50%)", allow_strings=False) is False
+    assert _color_module.is_valid_hsla("hsla(0, 100%, 50%, .5)", allow_strings=False) is False
+    assert _color_module.is_valid_hsla((0, 100, 50), allow_strings=False) is True
+    assert _color_module.is_valid_hsla([0, 100, 50], allow_strings=False) is True
     assert _color_module.is_valid_hsla({"hue": 0}) is False
 
 
@@ -102,6 +120,8 @@ def test_is_valid() -> None:
 def test_has_alpha() -> None:
     assert _color_module.has_alpha((255, 0, 0)) is False
     assert _color_module.has_alpha((255, 0, 0, 0.5)) is True
+    assert _color_module.has_alpha([255, 0, 0]) is False
+    assert _color_module.has_alpha([255, 0, 0, 0.5]) is True
     assert _color_module.has_alpha(rgba(255, 0, 0)) is False
     assert _color_module.has_alpha(rgba(255, 0, 0, 0.5)) is True
     assert _color_module.has_alpha(hsla(0, 100, 50)) is False
@@ -125,47 +145,48 @@ def test_has_alpha() -> None:
     assert _color_module.has_alpha("hsla(0,100%,50%,.5)") is True
     assert _color_module.has_alpha("rgb(0,0,0)") is False
     assert _color_module.has_alpha("rgba(0,0,0,.5)") is True
-    assert _color_module.has_alpha([255, 0, 0]) is False
-    assert _color_module.has_alpha([255, 0, 0, 0.5]) is True  # type:ignore[arg-type]
     assert _color_module.has_alpha({"red": 255, "green": 0, "blue": 0}) is False
     assert _color_module.has_alpha({"red": 255, "green": 0, "blue": 0, "alpha": 0.5}) is True
     assert _color_module.has_alpha("invalid") is False
 
 
 def test_color_conversions() -> None:
-    color_rgba = _color_module.as_rgba("#FF00007F")
+    color_rgba = _color_module.to_rgba("#FF00007F")
     assert isinstance(color_rgba, rgba)
-    assert _color_module.as_rgba(color_rgba) is color_rgba
-    assert isinstance(_color_module.as_rgba(hsla(0, 100, 50)), rgba)
-    assert isinstance(_color_module.as_rgba((255, 0, 0)), rgba)
-    assert isinstance(_color_module.as_rgba("hsl(180, 50%, 50%)"), rgba)
-    assert isinstance(_color_module.as_rgba({"hue": 0, "sat": 100, "light": 50}), rgba)
-    assert isinstance(_color_module.as_rgba(0xFF0000), rgba)
+    assert _color_module.to_rgba(color_rgba) is color_rgba
+    assert isinstance(_color_module.to_rgba(hsla(0, 100, 50)), rgba)
+    assert isinstance(_color_module.to_rgba((255, 0, 0)), rgba)
+    assert isinstance(_color_module.to_rgba([255, 0, 0]), rgba)
+    assert isinstance(_color_module.to_rgba("hsl(180, 50%, 50%)"), rgba)
+    assert isinstance(_color_module.to_rgba({"hue": 0, "sat": 100, "light": 50}), rgba)
+    assert isinstance(_color_module.to_rgba(0xFF0000), rgba)
     with pytest.raises(ValueError):
-        _color_module.as_rgba("invalid")
+        _color_module.to_rgba("invalid")
 
-    color_hsla = _color_module.as_hsla((255, 0, 0, 0.5))
+    color_hsla = _color_module.to_hsla((255, 0, 0, 0.5))
     assert isinstance(color_hsla, hsla)
-    assert _color_module.as_hsla(color_hsla) is color_hsla
-    assert isinstance(_color_module.as_hsla(rgba(255, 0, 0)), hsla)
-    assert isinstance(_color_module.as_hsla("rgb(255, 200, 200)"), hsla)
-    assert isinstance(_color_module.as_hsla("#F00"), hsla)
-    assert isinstance(_color_module.as_hsla({"hue": 0, "sat": 100, "light": 50}), hsla)
-    assert isinstance(_color_module.as_hsla(0xFF0000), hsla)
+    assert _color_module.to_hsla(color_hsla) is color_hsla
+    assert isinstance(_color_module.to_hsla(rgba(255, 0, 0)), hsla)
+    assert isinstance(_color_module.to_hsla([255, 0, 0, 0.5]), hsla)
+    assert isinstance(_color_module.to_hsla("rgb(255, 200, 200)"), hsla)
+    assert isinstance(_color_module.to_hsla("#F00"), hsla)
+    assert isinstance(_color_module.to_hsla({"hue": 0, "sat": 100, "light": 50}), hsla)
+    assert isinstance(_color_module.to_hsla(0xFF0000), hsla)
     with pytest.raises(ValueError):
-        _color_module.as_hsla("invalid")
+        _color_module.to_hsla("invalid")
 
-    color_hexa = _color_module.as_hexa((255, 0, 0, 0.5))
+    color_hexa = _color_module.to_hexa((255, 0, 0, 0.5))
     assert isinstance(color_hexa, hexa)
-    assert _color_module.as_hexa(color_hexa) is color_hexa
-    assert isinstance(_color_module.as_hexa(rgba(255, 0, 0)), hexa)
-    assert isinstance(_color_module.as_hexa(hsla(0, 100, 50)), hexa)
-    assert isinstance(_color_module.as_hexa("rgb(255, 200, 200)"), hexa)
-    assert isinstance(_color_module.as_hexa("#F00"), hexa)
-    assert isinstance(_color_module.as_hexa({"hue": 0, "sat": 100, "light": 50}), hexa)
-    assert isinstance(_color_module.as_hexa(0xFF0000), hexa)
+    assert _color_module.to_hexa(color_hexa) is color_hexa
+    assert isinstance(_color_module.to_hexa(rgba(255, 0, 0)), hexa)
+    assert isinstance(_color_module.to_hexa([255, 0, 0]), hexa)
+    assert isinstance(_color_module.to_hexa(hsla(0, 100, 50)), hexa)
+    assert isinstance(_color_module.to_hexa("rgb(255, 200, 200)"), hexa)
+    assert isinstance(_color_module.to_hexa("#F00"), hexa)
+    assert isinstance(_color_module.to_hexa({"hue": 0, "sat": 100, "light": 50}), hexa)
+    assert isinstance(_color_module.to_hexa(0xFF0000), hexa)
     with pytest.raises(ValueError):
-        _color_module.as_hexa("invalid")
+        _color_module.to_hexa("invalid")
 
 
 def test_str_to_rgba() -> None:

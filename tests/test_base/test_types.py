@@ -1,31 +1,20 @@
 from pathlib import Path
 from typing import Any
-from xulbux.base.types import AllTextChars, ProgressUpdater, is_data_obj, is_paths_list, is_seq_or_set
+from xulbux.base.types import AllTextChars, ProgressUpdater, is_data_obj, is_dict, is_paths_list, is_seq, is_seq_or_set
 
 
-def test_is_paths_list_valid_sequences() -> None:
-    assert is_paths_list([Path("."), "test"]) is True
-    assert is_paths_list(["a", "b", "c"]) is True
-    assert is_paths_list((Path("."), "test")) is True
-    assert is_paths_list(("single",)) is True
-    assert is_paths_list([]) is True
-
-
-def test_is_paths_list_invalid_inputs() -> None:
-    assert is_paths_list([Path("."), 123]) is False
-    assert is_paths_list([123, 456]) is False
-    assert is_paths_list("not_a_list") is False
-    assert is_paths_list(123) is False
-
-
-def test_is_data_obj_types() -> None:
-    assert is_data_obj([1, 2, 3]) is True
-    assert is_data_obj((1, 2, 3)) is True
-    assert is_data_obj({1, 2, 3}) is True
-    assert is_data_obj(frozenset([1, 2, 3])) is True
-    assert is_data_obj({"key": "val"}) is True
-    assert is_data_obj("not_a_data_obj") is False
-    assert is_data_obj(42) is False
+def test_is_seq() -> None:
+    assert is_seq([1, 2]) is True
+    assert is_seq((1, 2)) is True
+    assert is_seq({1, 2}) is False
+    assert is_seq(frozenset([1, 2])) is False
+    assert is_seq({"dict": "value"}) is False
+    assert is_seq("string") is False
+    assert is_seq([1, 2, 3], int) is True
+    assert is_seq(["a", "b"], str) is True
+    assert is_seq([1, "a"], (int, str)) is True
+    assert is_seq([1, "a"], int) is False
+    assert is_seq([1, 2, 3.5], int) is False
 
 
 def test_is_seq_or_set_without_item_type() -> None:
@@ -43,6 +32,42 @@ def test_is_seq_or_set_with_item_type_matching() -> None:
     assert is_seq_or_set([1, "a"], (int, str)) is True
     assert is_seq_or_set([1, "a"], int) is False
     assert is_seq_or_set([1, 2, 3.5], int) is False
+
+
+def test_is_data_obj_types() -> None:
+    assert is_data_obj([1, 2, 3]) is True
+    assert is_data_obj((1, 2, 3)) is True
+    assert is_data_obj({1, 2, 3}) is True
+    assert is_data_obj(frozenset([1, 2, 3])) is True
+    assert is_data_obj({"key": "val"}) is True
+    assert is_data_obj("not_a_data_obj") is False
+    assert is_data_obj(42) is False
+
+
+def test_is_dict() -> None:
+    assert is_dict({}) is True
+    assert is_dict({"a": 1, "b": 2}) is True
+    assert is_dict([1, 2, 3]) is False
+    assert is_dict((1, 2, 3)) is False
+    assert is_dict({1, 2, 3}) is False
+    assert is_dict("not_a_dict") is False
+    assert is_dict(123) is False
+    assert is_dict(None) is False
+
+
+def test_is_paths_list_valid_sequences() -> None:
+    assert is_paths_list([Path("."), "test"]) is True
+    assert is_paths_list(["a", "b", "c"]) is True
+    assert is_paths_list((Path("."), "test")) is True
+    assert is_paths_list(("single",)) is True
+    assert is_paths_list([]) is True
+
+
+def test_is_paths_list_invalid_inputs() -> None:
+    assert is_paths_list([Path("."), 123]) is False
+    assert is_paths_list([123, 456]) is False
+    assert is_paths_list("not_a_list") is False
+    assert is_paths_list(123) is False
 
 
 def test_all_text_chars_instantiation() -> None:

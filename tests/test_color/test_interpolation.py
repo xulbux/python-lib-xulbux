@@ -274,7 +274,7 @@ def test_interpolation_edge_cases_and_branches() -> None:
     # _extract_rgb_fast edge cases:
     # 1. 4-element numeric tuple:
     assert _color_module._extract_rgb_fast((255, 0, 0, 1.0)) == (255, 0, 0)
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         _color_module._extract_rgb_fast(cast("Any", (None, 0, 0)))
     # 2. Dict falling through to as_rgba:
     assert _color_module._extract_rgb_fast(cast("Any", {"red": 255, "green": 0, "blue": 0})) == (255, 0, 0)
@@ -286,13 +286,11 @@ def test_interpolation_edge_cases_and_branches() -> None:
 
     # _extract_alpha_fast edge cases:
     assert _color_module._extract_alpha_fast((255, 0, 0, 0.5)) == pytest.approx(0.5)
-    assert _color_module._extract_alpha_fast((255, 0, 0, None)) is None
-    assert _color_module._extract_alpha_fast(cast("Any", {"red": 255, "green": 0, "blue": 0, "alpha": 0.7})) == pytest.approx(
-        0.7
-    )
-    assert _color_module._extract_alpha_fast(cast("Any", {"red": 255, "green": 0, "blue": 0, "alpha": None})) is None
-    assert _color_module._extract_alpha_fast(cast("Any", 0xFF0000)) is None
+    assert _color_module._extract_alpha_fast((255, 0, 0)) is None
+    assert _color_module._extract_alpha_fast({"red": 255, "green": 0, "blue": 0, "alpha": 0.7}) == pytest.approx(0.7)
+    assert _color_module._extract_alpha_fast({"red": 255, "green": 0, "blue": 0}) is None
+    assert _color_module._extract_alpha_fast(0xFF0000) is None
 
     # _interpolate_color invalid space:
     with pytest.raises(ValueError, match="Unsupported color space"):
-        _color_module._interpolate_color(255, 0, 0, 0, 0, 255, 0.5, space=cast("Any", "invalid"))
+        _color_module._interpolate_color(255, 0, 0, 0, 0, 255, ratio=0.5, space=cast("Any", "invalid"))

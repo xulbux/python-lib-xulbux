@@ -82,7 +82,7 @@ def test_hexa_str_and_repr() -> None:
 
 def test_hexa_dict() -> None:
     assert hexa("#FF000080").as_dict() == {"red": "FF", "green": "00", "blue": "00", "alpha": "80"}
-    assert hexa("#FF0000").as_dict() == {"red": "FF", "green": "00", "blue": "00", "alpha": None}
+    assert hexa("#FF0000").as_dict() == {"red": "FF", "green": "00", "blue": "00"}
 
 
 def test_hexa_values() -> None:

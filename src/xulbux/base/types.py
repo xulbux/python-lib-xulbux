@@ -20,45 +20,39 @@ if TYPE_CHECKING:
         from typing_extensions import TypeIs
 
 
-# ******************************************************** PRIMITIVES *********************************************************
-
-type Int_0_100 = int
-"""Integer constrained to the range [0, 100] inclusive."""
-type Int_0_255 = int
-"""Integer constrained to the range [0, 255] inclusive."""
-type Int_0_360 = int
-"""Integer constrained to the range [0, 360] inclusive."""
-type Float_0_1 = float
-"""Float constrained to the range [0.0, 1.0] inclusive."""
-
-
 # ************************************************** COLLECTIONS & ITERABLES **************************************************
 
-type PathsList = list[Path] | list[str] | list[Path | str] | tuple[Path, ...] | tuple[str, ...] | tuple[Path | str, ...]
-"""Union of all supported collection types for paths."""
+
+type Seq[T] = list[T] | tuple[T, ...]
+"""Union of all built-in sequence types (`list`, `tuple`)."""
 
 
-def is_paths_list(obj: object, /) -> TypeIs[PathsList]:
-    """Returns true if `obj` is an instance that matches the `PathsList` type."""
+@overload
+def is_seq(obj: object, /) -> TypeIs[Seq[Any]]: ...
+@overload
+def is_seq[T](obj: object, item_type: type[T] | tuple[type[T], ...], /) -> TypeIs[Seq[T]]: ...
+@overload
+def is_seq(obj: object, item_type: None, /) -> TypeIs[Seq[Any]]: ...
 
-    if isinstance(obj, (list, tuple)):
-        # Don't use `all()` as for-loop is more performant:
-        for item in cast("list[Any] | tuple[Any, ...]", obj):  # ruff:ignore[reimplemented-builtin]
-            if not isinstance(item, (Path, str)):
-                return False
+
+def is_seq(obj: object, item_type: type[Any] | tuple[type[Any], ...] | None = None, /) -> bool:
+    """Returns true if `obj` is an instance that matches the `Seq` type,
+    optionally checking if all contained elements are instances of `item_type`.\n
+    ----------------------------------------------------------------------------------------------------
+    *   `obj` – The object to check.
+    *   `item_type` – An optional type or tuple of types to check each contained element against."""
+
+    if not isinstance(obj, (list, tuple)):
+        return False
+    elif item_type is None:
         return True
 
-    return False
+    # Don't use `all()` as for-loop is more performant:
+    for item in cast("Iterable[Any]", obj):  # ruff:ignore[reimplemented-builtin]
+        if not isinstance(item, item_type):
+            return False
 
-
-type DataObj = list[Any] | tuple[Any, ...] | set[Any] | frozenset[Any] | dict[Any, Any]
-"""Union of supported data structures used in the `data` module."""
-
-
-def is_data_obj(obj: object, /) -> TypeIs[DataObj]:
-    """Returns true if `obj` is an instance that matches the `DataObj` type."""
-
-    return isinstance(obj, (list, tuple, set, frozenset, dict))
+    return True
 
 
 type SeqOrSet[T] = list[T] | tuple[T, ...] | set[T] | frozenset[T]
@@ -91,6 +85,39 @@ def is_seq_or_set(obj: object, item_type: type[Any] | tuple[type[Any], ...] | No
             return False
 
     return True
+
+
+type DataObj = list[Any] | tuple[Any, ...] | set[Any] | frozenset[Any] | dict[Any, Any]
+"""Union of supported data structures used in the `data` module."""
+
+
+def is_data_obj(obj: object, /) -> TypeIs[DataObj]:
+    """Returns true if `obj` is an instance that matches the `DataObj` type."""
+
+    return isinstance(obj, (list, tuple, set, frozenset, dict))
+
+
+def is_dict(obj: object, /) -> TypeIs[dict[Any, Any]]:
+    """Returns true if `obj` is an instance that matches the `dict` type."""
+
+    return isinstance(obj, dict)
+
+
+type PathsList = list[Path] | list[str] | list[Path | str] | tuple[Path, ...] | tuple[str, ...] | tuple[Path | str, ...]
+"""Union of all supported collection types for paths."""
+
+
+def is_paths_list(obj: object, /) -> TypeIs[PathsList]:
+    """Returns true if `obj` is an instance that matches the `PathsList` type."""
+
+    if isinstance(obj, (list, tuple)):
+        # Don't use `all()` as for-loop is more performant:
+        for item in cast("list[Any] | tuple[Any, ...]", obj):  # ruff:ignore[reimplemented-builtin]
+            if not isinstance(item, (Path, str)):
+                return False
+        return True
+
+    return False
 
 
 # ********************************************************** COLORS ***********************************************************
@@ -126,27 +153,27 @@ class _HexaObj(Protocol):
 class RgbaDict(TypedDict):
     """Dictionary schema for RGBA color components."""
 
-    red: Int_0_255
+    red: int
     """The red channel in range [0, 255] inclusive."""
-    green: Int_0_255
+    green: int
     """The green channel in range [0, 255] inclusive."""
-    blue: Int_0_255
+    blue: int
     """The blue channel in range [0, 255] inclusive."""
-    alpha: NotRequired[Float_0_1 | None]
-    """The alpha channel in range [0.0, 1.0] inclusive or `None` if not set."""
+    alpha: NotRequired[float]
+    """The alpha channel in range [0.0, 1.0] inclusive."""
 
 
 class HslaDict(TypedDict):
     """Dictionary schema for HSLA color components."""
 
-    hue: Int_0_360
+    hue: int
     """The hue channel in range [0, 360] inclusive."""
-    sat: Int_0_100
+    sat: int
     """The saturation channel in range [0, 100] inclusive."""
-    light: Int_0_100
+    light: int
     """The lightness channel in range [0, 100] inclusive."""
-    alpha: NotRequired[Float_0_1 | None]
-    """The alpha channel in range [0.0, 1.0] inclusive or `None` if not set."""
+    alpha: NotRequired[float]
+    """The alpha channel in range [0.0, 1.0] inclusive."""
 
 
 class HexaDict(TypedDict):
@@ -158,34 +185,21 @@ class HexaDict(TypedDict):
     """The green channel in range [0, 255] inclusive."""
     blue: str
     """The blue channel in range [0, 255] inclusive."""
-    alpha: NotRequired[str | None]
-    """The alpha channel in range [0.0, 1.0] inclusive or `None` if not set."""
+    alpha: NotRequired[str]
+    """The alpha channel in range [0.0, 1.0] inclusive."""
 
 
-type Rgba = (
-    tuple[Int_0_255, Int_0_255, Int_0_255]
-    | tuple[Int_0_255, Int_0_255, Int_0_255, Float_0_1 | None]
-    | list[Int_0_255]
-    | list[Int_0_255 | Float_0_1 | None]
-    | RgbaDict
-    | _RgbaObj
-    | str
-)
-"""Matches all supported RGBA color value formats."""
+type Rgba = tuple[int, int, int] | tuple[int, int, int, float] | list[int] | list[int | float] | RgbaDict | _RgbaObj
+"""Structured RGBA color representations:<br>
+3- or 4-item `tuple` or `list` (RGB[A]), `RgbaDict`, or an RGBA protocol-compatible object."""
 
-type Hsla = (
-    tuple[Int_0_360, Int_0_100, Int_0_100]
-    | tuple[Int_0_360, Int_0_100, Int_0_100, Float_0_1 | None]
-    | list[Int_0_360 | Int_0_100]
-    | list[Int_0_360 | Int_0_100 | Float_0_1 | None]
-    | HslaDict
-    | _HslaObj
-    | str
-)
-"""Matches all supported HSLA color value formats."""
+type Hsla = tuple[int, int, int] | tuple[int, int, int, float] | list[int] | list[int | float] | HslaDict | _HslaObj
+"""Structured HSLA color representations:<br>
+3- or 4-item `tuple` or `list` (HSL[A]), `HslaDict`, or an HSLA protocol-compatible object."""
 
 type Hexa = str | int | _HexaObj
-"""Matches all supported HEXA color value formats."""
+"""Hexadecimal color representations:<br>
+Hex `str` (with or without prefix), 24-bit hex `int`, or a HEXA protocol-compatible object."""
 
 
 # **************************************************** SYSTEM & UTILITIES *****************************************************

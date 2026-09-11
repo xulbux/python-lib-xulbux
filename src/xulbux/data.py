@@ -8,7 +8,7 @@ syntax-highlighted rendering, and data type conversions.
 from . import string as _string_module
 from .ansi import AnyStyle, S
 from .base.types import DataObj as DataObjType
-from .base.types import SeqOrSet, is_data_obj, is_seq_or_set
+from .base.types import SeqOrSet, is_data_obj, is_dict, is_seq, is_seq_or_set
 from .regex import LazyRegex
 
 import base64 as _base64
@@ -393,15 +393,14 @@ def get_value_by_path_id(data: DataObjType, path_id: str, /, *, get_key: bool = 
     current_data: Any = data
 
     for i, path_idx in enumerate(path):
-        if isinstance(current_data, dict):
-            dict_data = cast("dict[Any, Any]", current_data)
-            keys: list[Any] = list(dict_data.keys())
+        if is_dict(current_data):
+            keys: list[Any] = list(current_data.keys())
 
             if i == len(path) - 1 and get_key:
                 return keys[path_idx]
 
-            parent = dict_data
-            current_data = dict_data[keys[path_idx]]
+            parent = current_data
+            current_data = current_data[keys[path_idx]]
 
         elif is_seq_or_set(current_data):
             if i == len(path) - 1 and get_key:
@@ -570,34 +569,28 @@ def _compare_nested(data1: Any, data2: Any, /, ignore_paths: list[list[str]], cu
     if type(data1) is not type(data2):
         return False
 
-    elif isinstance(data1, dict) and isinstance(data2, dict):
-        dict_data1, dict_data2 = cast("dict[Any, Any]", data1), cast("dict[Any, Any]", data2)
-
-        if set(dict_data1.keys()) != set(dict_data2.keys()):
+    elif is_dict(data1) and is_dict(data2):
+        if set(data1.keys()) != set(data2.keys()):
             return False
 
-        for key in dict_data1:
-            if not _compare_nested(
-                dict_data1[key], dict_data2[key], ignore_paths=ignore_paths, current_path=[*current_path, key]
-            ):
-                return False
-
-        return True
-
-    elif isinstance(data1, (list, tuple)) and isinstance(data2, (list, tuple)):
-        array_data1, array_data2 = cast("SeqOrSet[Any]", data1), cast("SeqOrSet[Any]", data2)
-
-        if len(array_data1) != len(array_data2):
-            return False
-
-        for i, (item1, item2) in enumerate(zip(array_data1, array_data2, strict=False)):
-            if not _compare_nested(item1, item2, ignore_paths=ignore_paths, current_path=[*current_path, str(i)]):
+        for key in data1:
+            if not _compare_nested(data1[key], data2[key], ignore_paths=ignore_paths, current_path=[*current_path, key]):
                 return False
 
         return True
 
     elif isinstance(data1, (set, frozenset)):
         return data1 == data2
+
+    elif is_seq(data1) and is_seq(data2):
+        if len(data1) != len(data2):
+            return False
+
+        for i, (item1, item2) in enumerate(zip(data1, data2, strict=False)):
+            if not _compare_nested(item1, item2, ignore_paths=ignore_paths, current_path=[*current_path, str(i)]):
+                return False
+
+        return True
 
     return data1 == data2
 
@@ -629,22 +622,20 @@ def _set_nested_val(data: DataObjType, id_path: list[int], value: Any, /) -> Any
     current_data: Any = data
 
     if len(id_path) == 1:
-        if isinstance(current_data, dict):
-            dict_data = cast("dict[Any, Any]", current_data)
-            keys, dict_data = list(dict_data.keys()), dict(dict_data)
-            dict_data[keys[id_path[0]]] = value
-            return dict_data
+        if is_dict(current_data):
+            keys, current_data = list(current_data.keys()), current_data
+            current_data[keys[id_path[0]]] = value
+            return current_data
         elif is_seq_or_set(current_data):
             was_t, current_data = type(current_data), list(current_data)
             current_data[id_path[0]] = value
             return was_t(current_data)
 
     else:
-        if isinstance(current_data, dict):
-            dict_data = cast("dict[Any, Any]", current_data)
-            keys, dict_data = list(dict_data.keys()), dict(dict_data)
-            dict_data[keys[id_path[0]]] = _set_nested_val(dict_data[keys[id_path[0]]], id_path[1:], value)
-            return dict_data
+        if is_dict(current_data):
+            keys, current_data = list(current_data.keys()), current_data
+            current_data[keys[id_path[0]]] = _set_nested_val(current_data[keys[id_path[0]]], id_path[1:], value)
+            return current_data
         elif is_seq_or_set(current_data):
             was_t, current_data = type(current_data), list(current_data)
             current_data[id_path[0]] = _set_nested_val(current_data[id_path[0]], id_path[1:], value)
@@ -689,12 +680,11 @@ class _DataRemoveCommentsHelper:
     def remove_nested_comments(self, item: Any, /) -> Any:
         """Recursively removes comments from the given item, which can be a dictionary, list, tuple, or string."""
 
-        if isinstance(item, dict):
-            dict_item = cast("dict[Any, Any]", item)
+        if is_dict(item):
             return {
                 key: val
                 for key, val in [
-                    (self.remove_nested_comments(key), self.remove_nested_comments(val)) for key, val in dict_item.items()
+                    (self.remove_nested_comments(key), self.remove_nested_comments(val)) for key, val in item.items()
                 ]
                 if key is not None
             }
@@ -876,8 +866,8 @@ class _DataRenderHelper:
     def format_value(self, value: Any, /, current_indent: int | None = None) -> str:
         """Formats a single value based on its type and the current indentation level."""
 
-        if current_indent is not None and isinstance(value, dict):
-            return self.format_dict(cast("dict[Any, Any]", value), current_indent + self.indent)
+        if current_indent is not None and is_dict(value):
+            return self.format_dict(value, current_indent + self.indent)
 
         elif current_indent is not None and hasattr(value, "__dict__"):
             return self.format_dict(value.__dict__, current_indent + self.indent)
@@ -930,20 +920,13 @@ class _DataRenderHelper:
             return 0
 
         score = 1
-        if isinstance(data, dict):
-            for val in cast("dict[Any, Any]", data).values():
+        complex_data = cast("DataObjType", data)
+
+        if is_dict(complex_data):
+            for val in complex_data.values():
                 score += self.get_complexity(val)
-        elif isinstance(data, list):
-            for item in cast("list[Any]", data):
-                score += self.get_complexity(item)
-        elif isinstance(data, tuple):
-            for item in cast("tuple[Any, ...]", data):
-                score += self.get_complexity(item)
-        elif isinstance(data, set):
-            for item in cast("set[Any]", data):
-                score += self.get_complexity(item)
-        elif isinstance(data, frozenset):
-            for item in cast("frozenset[Any]", data):
+        elif is_seq_or_set(complex_data):
+            for item in complex_data:
                 score += self.get_complexity(item)
 
         return score

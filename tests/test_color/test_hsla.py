@@ -75,6 +75,7 @@ def test_hsla_str_and_repr() -> None:
 
 def test_hsla_dict_and_values() -> None:
     assert hsla(180, 50, 50, 0.5).as_dict() == {"hue": 180, "sat": 50, "light": 50, "alpha": 0.5}
+    assert hsla(180, 50, 50).as_dict() == {"hue": 180, "sat": 50, "light": 50}
     assert hsla(180, 50, 50, 0.5).as_tuple() == (180, 50, 50, 0.5)
 
 
@@ -150,7 +151,10 @@ def test_hsla_blend() -> None:
         color1.blend(color2, 1.5)
 
     with pytest.raises(TypeError):
-        color1.blend("invalid", 0.5)  # pyright:ignore[reportArgumentType]
+        color1.blend("invalid", 0.5)  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
+
+    with pytest.raises(TypeError):
+        color1.blend("hsl(0, 100%, 50%)", 0.5)  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
 
     blended_no_alpha = hsla(180, 50, 50).blend(hsla(0, 50, 50), 0.5)
     assert blended_no_alpha.alpha is None

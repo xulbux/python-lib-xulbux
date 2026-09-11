@@ -78,6 +78,7 @@ def test_rgba_str_and_repr() -> None:
 
 def test_rgba_dict_and_values() -> None:
     assert rgba(255, 128, 0, 0.5).as_dict() == {"red": 255, "green": 128, "blue": 0, "alpha": 0.5}
+    assert rgba(255, 128, 0).as_dict() == {"red": 255, "green": 128, "blue": 0}
     assert rgba(255, 128, 0, 0.5).as_tuple() == (255, 128, 0, 0.5)
 
 
@@ -158,7 +159,10 @@ def test_rgba_blend() -> None:
         color_red.blend(color_blue, 1.5)
 
     with pytest.raises(TypeError):
-        color_red.blend("invalid", 0.5)  # pyright:ignore[reportArgumentType]
+        color_red.blend("invalid", 0.5)  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
+
+    with pytest.raises(TypeError):
+        color_red.blend("rgb(0, 0, 255)", 0.5)  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
 
     blended_additive = color_red.blend(color_blue, 0.5, additive_alpha=True)
     assert blended_additive.alpha is not None and math.isclose(blended_additive.alpha, 1.0)
