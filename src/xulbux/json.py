@@ -63,11 +63,11 @@ def read(
         content = file.read()
 
     try:
-        data = _json.loads(content)
+        data = cast("dict[str, Any]", _json.loads(content))
     except _json.JSONDecodeError as exc:
         raise ValueError(f"Error parsing JSON in {file_path!r}:\n  {'\n  '.join(str(exc).splitlines())}") from exc
 
-    if not (processed_data := dict(_data_module.remove_comments(data, comment_start=comment_start, comment_end=comment_end))):
+    if not (processed_data := _data_module.remove_comments(data, comment_start=comment_start, comment_end=comment_end)):
         raise ValueError(f"The JSON file {file_path!r} contains no data")
 
     return (processed_data, data) if return_original else processed_data
@@ -177,19 +177,19 @@ def update(
     <!-- DOCS: </AttachedCode> -->"""
 
     processed_data, data = read(json_file, comment_start=comment_start, comment_end=comment_end, return_original=True)
+    path_updates: dict[str, Any] = {}
 
-    update: dict[str, Any] = {}
     for val_path, new_val in update_values.items():
         try:
             if (path_id := _data_module.get_path_id(processed_data, val_path, path_sep=path_sep)) is not None:
-                update[path_id] = new_val
+                path_updates[path_id] = new_val
             else:
                 data = _create_nested_path(data, val_path.split(path_sep), new_val)
         except Exception:
             data = _create_nested_path(data, val_path.split(path_sep), new_val)
 
-    if update:
-        data = _data_module.set_value_by_path_id(data, update)
+    if path_updates:
+        data = _data_module.set_value_by_path_id(data, path_updates)
 
     create(json_file, data, force=True)
 
@@ -198,36 +198,38 @@ def _create_nested_path(data_obj: dict[str, Any], path_keys: list[str], value: A
     """Internal method that creates nested dictionaries/lists based on the
     given path keys and sets the specified value at the end of the path."""
 
-    last_idx, current = len(path_keys) - 1, data_obj
+    last_idx, current = len(path_keys) - 1, cast("dict[str, Any] | list[Any]", data_obj)
 
     for i, key in enumerate(path_keys):
         if i == last_idx:
             if isinstance(current, dict):
                 current[key] = value
 
-            elif isinstance(current, list) and key.isdigit():
-                while len(cast("list[Any]", current)) <= (idx := int(key)):
-                    cast("list[Any]", current).append(None)
+            elif isinstance(current, list) and key.isdigit():  # pyright:ignore[reportUnnecessaryIsInstance]
+                idx = int(key)
+                while len(current) <= idx:
+                    current.append(None)
                 current[idx] = value
 
             else:
-                raise TypeError(f"Cannot set key '{key}' on {type(cast('Any', current))}")
+                raise TypeError(f"Cannot set key {key!r} on {type(current).__name__}")
 
         else:
             next_key = path_keys[i + 1]
             if isinstance(current, dict):
                 if key not in current:
                     current[key] = [] if next_key.isdigit() else {}
-                current = cast("dict[str, Any]", current)[key]  # pyright:ignore[reportUnnecessaryCast]
+                current = cast("dict[str, Any] | list[Any]", current[key])
 
-            elif isinstance(current, list) and key.isdigit():
-                while len(cast("list[Any]", current)) <= (idx := int(key)):
-                    cast("list[Any]", current).append(None)
+            elif isinstance(current, list) and key.isdigit():  # pyright:ignore[reportUnnecessaryIsInstance]
+                idx = int(key)
+                while len(current) <= idx:
+                    current.append(None)
                 if current[idx] is None:
                     current[idx] = [] if next_key.isdigit() else {}
-                current = cast("list[Any]", current)[idx]
+                current = cast("dict[str, Any] | list[Any]", current[idx])
 
             else:
-                raise TypeError(f"Cannot navigate through {type(cast('Any', current))}")
+                raise TypeError(f"Cannot navigate through {type(current).__name__}")
 
     return data_obj

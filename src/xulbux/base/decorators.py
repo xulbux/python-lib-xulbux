@@ -60,16 +60,16 @@ class _SafeDeprecated:
         return arg  # If it's a class or something else, just return it.
 
 
+deprecated: Final[type[_SafeDeprecated]] = _SafeDeprecated
+
+
 if TYPE_CHECKING:
     import sys
 
     if sys.version_info >= (3, 13):
-        from warnings import deprecated as deprecated
+        from warnings import deprecated as deprecated  # type:ignore[assignment]  # pyright:ignore[reportAssignmentType,reportGeneralTypeIssues]
     else:
-        from typing_extensions import deprecated as deprecated
-
-else:
-    deprecated: Final[type[_SafeDeprecated]] = _SafeDeprecated
+        from typing_extensions import deprecated as deprecated  # type:ignore[assignment]  # pyright:ignore[reportAssignmentType,reportGeneralTypeIssues]
 
 
 def _noop_decorator[T](obj: T) -> T:
