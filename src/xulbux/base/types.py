@@ -225,4 +225,4 @@ class ProgressUpdater(Protocol):
 
     def __call__(self, current: int | None = None, label: Renderable | None = None) -> None:
         """Update the current progress value and/or label."""
-        ...
+        ...  # coverage:ignore[protocol]

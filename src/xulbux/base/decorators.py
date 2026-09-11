@@ -34,7 +34,7 @@ class _SafeDeprecated:
 
     def __call__(self, arg: Any, /) -> Any:
         if _sys.version_info >= (3, 13):
-            from warnings import deprecated as _dep  # type: ignore[attr-defined]
+            from warnings import deprecated as _dep
         else:
             try:
                 from typing_extensions import deprecated as _dep
@@ -60,15 +60,16 @@ class _SafeDeprecated:
         return arg  # If it's a class or something else, just return it.
 
 
-deprecated: Final[type[_SafeDeprecated]] = _SafeDeprecated
-
 if TYPE_CHECKING:
     import sys
 
     if sys.version_info >= (3, 13):
-        from warnings import deprecated as deprecated  # type:ignore[assignment]  # pyright:ignore[reportAssignmentType,reportGeneralTypeIssues]
+        from warnings import deprecated as deprecated
     else:
-        from typing_extensions import deprecated as deprecated  # type:ignore[assignment]  # pyright:ignore[reportAssignmentType,reportGeneralTypeIssues]
+        from typing_extensions import deprecated as deprecated
+
+else:
+    deprecated: Final[type[_SafeDeprecated]] = _SafeDeprecated
 
 
 def _noop_decorator[T](obj: T) -> T:

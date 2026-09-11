@@ -52,7 +52,7 @@ def test_all_text_chars_instantiation() -> None:
 def test_progress_updater_protocol() -> None:
     class SampleProgressUpdater(ProgressUpdater):
         def __call__(self, current: Any = None, label: Any = None) -> None:  # pyright:ignore[reportIncompatibleMethodOverride]
-            super().__call__(current=current, label=label)  # type:ignore[safe-super]  # pyright:ignore[reportAbstractUsage]
+            pass
 
     updater = SampleProgressUpdater()
     updater(current=50, label="Loading")
