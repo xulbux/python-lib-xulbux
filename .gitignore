@@ -4,15 +4,15 @@ __pypackages__/
 .pytest_cache/
 .pytest_tmp/
 .ruff_cache/
-.venv/
 *.egg-info/
-build/
-dist/
-docs/.build/
-docs/node_modules/
-docs/src/.vitepress/cache/
-docs/src/.vitepress/dist/
-mutants/
+/.venv/
+/build/
+/dist/
+/docs/.build/
+/docs/node_modules/
+/docs/src/.vitepress/cache/
+/docs/src/.vitepress/dist/
+/mutants/
 
 .coverage
 *.py[cdio]

@@ -3,7 +3,7 @@ name: test
 description: Strict guidelines and commands for running tests and maintaining 100% test coverage in the xulbux library.
 ---
 
-# test
+# Test
 
 In accordance with the 100% test coverage policy in `AGENTS.md` Section 2, use this skill to create, organize, run, and maintain tests in the `xulbux` library. All tests must be clean, logically organized, and maintainable.
 

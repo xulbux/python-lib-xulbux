@@ -3,7 +3,7 @@ name: docs
 description: Strict guidelines for writing documentation, docstrings, special docs components, and comments in the xulbux library.
 ---
 
-# docs
+# Docs
 
 When working in the `xulbux` repository, any AI agent or automated assistant MUST adhere strictly to the following rules regarding documentation, docstrings, and code comments.
 
