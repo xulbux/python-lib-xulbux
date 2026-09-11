@@ -61,29 +61,35 @@ def test_get_latest_version_thread_creation_failure() -> None:
         assert get_latest_version() is None
 
 
-def test_is_latest_version_evaluations() -> None:
+@pytest.mark.parametrize(
+    "latest_version_ret, expected",
+    [
+        (None, None),
+        ("", None),
+        ("v1.0.0", True),
+        ("v99.0.0", False),
+        ("invalid_semver", None),
+    ],
+)
+def test_is_latest_version_evaluations(latest_version_ret: str | None, expected: bool | None) -> None:
+    with (
+        patch("xulbux.cli.help.__version__", "1.0.0"),
+        patch("xulbux.cli.help.get_latest_version", return_value=latest_version_ret),
+    ):
+        assert is_latest_version() is expected
+
+
+@pytest.mark.parametrize(
+    "provided_version, expected",
+    [
+        ("1.0.0", True),
+        ("2.0.0", False),
+        ("0.9.0", True),
+    ],
+)
+def test_is_latest_version_with_provided_version(provided_version: str, expected: bool) -> None:
     with patch("xulbux.cli.help.__version__", "1.0.0"):
-        with patch("xulbux.cli.help.get_latest_version", return_value=None):
-            assert is_latest_version() is None
-
-        with patch("xulbux.cli.help.get_latest_version", return_value=""):
-            assert is_latest_version() is None
-
-        with patch("xulbux.cli.help.get_latest_version", return_value="v1.0.0"):
-            assert is_latest_version() is True
-
-        with patch("xulbux.cli.help.get_latest_version", return_value="v99.0.0"):
-            assert is_latest_version() is False
-
-        with patch("xulbux.cli.help.get_latest_version", return_value="invalid_semver"):
-            assert is_latest_version() is None
-
-
-def test_is_latest_version_with_provided_version() -> None:
-    with patch("xulbux.cli.help.__version__", "1.0.0"):
-        assert is_latest_version("1.0.0") is True
-        assert is_latest_version("2.0.0") is False
-        assert is_latest_version("0.9.0") is True
+        assert is_latest_version(provided_version) is expected
 
 
 def test_show_help_prints_and_pauses(capsys: pytest.CaptureFixture[str]) -> None:

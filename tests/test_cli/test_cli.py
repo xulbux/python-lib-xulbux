@@ -18,49 +18,36 @@ def test_cli_entrypoint_registered_in_pyproject() -> None:
     assert scripts["xulbux-lib"] == "xulbux.cli:main"
 
 
-def test_cli_main_ansi_subcommand(capsys: pytest.CaptureFixture[str]) -> None:
-    with patch.object(sys, "argv", ["xulbux-lib", "ansi"]):
+@pytest.mark.parametrize(
+    "args, expected_outputs",
+    [
+        (["xulbux-lib", "ansi"], ["Text Styles", "Foreground Colors"]),
+        (["xulbux-lib", "c256"], ["000", "255"]),
+        (["xulbux-lib", "tc"], ["▄"]),
+        (["xulbux-lib", "tc", "#FF0000"], ["▄"]),
+    ],
+)
+def test_cli_main_subcommands(capsys: pytest.CaptureFixture[str], args: list[str], expected_outputs: list[str]) -> None:
+    with patch.object(sys, "argv", args):
         main()
         captured = capsys.readouterr()
-        assert "Text Styles" in captured.out
-        assert "Foreground Colors" in captured.out
+        for expected in expected_outputs:
+            assert expected in captured.out
 
 
-def test_cli_main_color256_subcommand(capsys: pytest.CaptureFixture[str]) -> None:
-    with patch.object(sys, "argv", ["xulbux-lib", "c256"]):
+@pytest.mark.parametrize(
+    "args, expected_outputs",
+    [
+        (["xulbux-lib"], ["Commands:", "xulbux-lib"]),
+        (["xulbux-lib", "unknown_cmd"], ["Commands:"]),
+    ],
+)
+def test_cli_main_help_subcommands(capsys: pytest.CaptureFixture[str], args: list[str], expected_outputs: list[str]) -> None:
+    with patch.object(sys, "argv", args), patch("xulbux.console.pause_exit"):
         main()
         captured = capsys.readouterr()
-        assert "000" in captured.out
-        assert "255" in captured.out
-
-
-def test_cli_main_true_color_subcommand(capsys: pytest.CaptureFixture[str]) -> None:
-    with patch.object(sys, "argv", ["xulbux-lib", "tc"]):
-        main()
-        captured = capsys.readouterr()
-        assert "▄" in captured.out
-
-
-def test_cli_main_true_color_with_color(capsys: pytest.CaptureFixture[str]) -> None:
-    with patch.object(sys, "argv", ["xulbux-lib", "tc", "#FF0000"]):
-        main()
-        captured = capsys.readouterr()
-        assert "▄" in captured.out
-
-
-def test_cli_main_default_help_subcommand(capsys: pytest.CaptureFixture[str]) -> None:
-    with patch.object(sys, "argv", ["xulbux-lib"]), patch("xulbux.console.pause_exit"):
-        main()
-        captured = capsys.readouterr()
-        assert "Commands:" in captured.out
-        assert "xulbux-lib" in captured.out
-
-
-def test_cli_main_unknown_subcommand(capsys: pytest.CaptureFixture[str]) -> None:
-    with patch.object(sys, "argv", ["xulbux-lib", "unknown_cmd"]), patch("xulbux.console.pause_exit"):
-        main()
-        captured = capsys.readouterr()
-        assert "Commands:" in captured.out
+        for expected in expected_outputs:
+            assert expected in captured.out
 
 
 def test_cli_main_keyboard_interrupt() -> None:

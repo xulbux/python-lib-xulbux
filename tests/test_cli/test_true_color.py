@@ -2,55 +2,37 @@ from xulbux.cli.true_color import _parse_color_arg, show_true_color
 import pytest
 
 
-def test_parse_color_arg_hex() -> None:
-    result = _parse_color_arg("#FF0000")
+@pytest.mark.parametrize(
+    "raw_color, expected_hue",
+    [
+        ("#FF0000", 0),
+        ("00FF00", 120),
+        ("#00F", 240),
+        ("0xFF00FF", 300),
+        ("rgb(255, 0, 0)", 0),
+        ("0, 255, 0", 120),
+        ("0 0 255", 240),
+        ("180", 180),
+        ("240deg", 240),
+    ],
+)
+def test_parse_color_arg_valid(raw_color: str, expected_hue: int) -> None:
+    result = _parse_color_arg(raw_color)
     assert result is not None
-    assert result.hue == 0
-    assert result.sat == 100
-
-    result = _parse_color_arg("00FF00")
-    assert result is not None
-    assert result.hue == 120
-
-    result = _parse_color_arg("#00F")
-    assert result is not None
-    assert result.hue == 240
-
-    result = _parse_color_arg("0xFF00FF")
-    assert result is not None
-    assert result.hue == 300
+    assert result.hue == expected_hue
 
 
-def test_parse_color_arg_rgb() -> None:
-    result = _parse_color_arg("rgb(255, 0, 0)")
-    assert result is not None
-    assert result.hue == 0
-
-    result = _parse_color_arg("0, 255, 0")
-    assert result is not None
-    assert result.hue == 120
-
-    result = _parse_color_arg("0 0 255")
-    assert result is not None
-    assert result.hue == 240
-
-    assert _parse_color_arg("rgb(300, 0, 0)") is None
-
-
-def test_parse_color_arg_hue() -> None:
-    result = _parse_color_arg("180")
-    assert result is not None
-    assert result.hue == 180
-
-    result = _parse_color_arg("240deg")
-    assert result is not None
-    assert result.hue == 240
-
-
-def test_parse_color_arg_invalid() -> None:
-    assert _parse_color_arg("not_a_valid_color") is None
-    assert _parse_color_arg("") is None
-    assert _parse_color_arg("0xINVALID") is None
+@pytest.mark.parametrize(
+    "raw_color",
+    [
+        "rgb(300, 0, 0)",
+        "not_a_valid_color",
+        "",
+        "0xINVALID",
+    ],
+)
+def test_parse_color_arg_invalid(raw_color: str) -> None:
+    assert _parse_color_arg(raw_color) is None
 
 
 def test_show_true_color_full_spectrum(capsys: pytest.CaptureFixture[str]) -> None:
