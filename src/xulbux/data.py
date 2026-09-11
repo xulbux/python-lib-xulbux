@@ -406,7 +406,7 @@ def get_value_by_path_id(data: DataObjType, path_id: str, /, *, get_key: bool = 
         elif is_seq_or_set(current_data):
             if i == len(path) - 1 and get_key:
                 if parent is None or not isinstance(parent, dict):
-                    raise ValueError(f"Cannot get key from a non-dict parent at path '{path[: i + 1]}'") from None
+                    raise ValueError(f"Cannot get key from a non-dict parent at path {path[: i + 1]!r}") from None
 
                 for key, value in parent.items():
                     if value is current_data:
@@ -418,7 +418,7 @@ def get_value_by_path_id(data: DataObjType, path_id: str, /, *, get_key: bool = 
             current_data = list(current_data)[path_idx]  # Convert to list for indexing.
 
         else:
-            raise TypeError(f"Unsupported type '{type(current_data)}' at path '{path[: i + 1]}'")
+            raise TypeError(f"Unsupported type {type(current_data).__name__!r} at path {path[: i + 1]!r}")
 
     return current_data
 
@@ -620,7 +620,7 @@ def _sep_path_id(path_id: str, /) -> list[int]:
                 if valid:
                     return [int(payload[i : i + chunk_len], 16) for i in range(0, len(payload), chunk_len)]
 
-    raise ValueError(f"Path ID '{path_id}' is an invalid format") from None
+    raise ValueError(f"Path ID {path_id!r} is an invalid format") from None
 
 
 def _set_nested_val(data: DataObjType, id_path: list[int], value: Any, /) -> Any:
@@ -777,31 +777,31 @@ class _DataGetPathIdHelper:
 
         if self.ignore_not_found:
             return None
-        raise KeyError(f"Key '{key}' not found in dict") from None
+        raise KeyError(f"Key {key!r} not found in dict") from None
 
     def process_iterable_key(self, key: str, /) -> int | None:
         """Process an index for iterable data. Returns the index or `None` if not found."""
 
         try:
-            index = int(key)
+            idx = int(key)
         except ValueError:
             if self.ignore_not_found:
                 return None
             raise TypeError(
-                f"Index '{key}' is invalid for '{type(self.current_data).__name__}', expected an integer"
+                f"Index {key!r} is invalid for {type(self.current_data).__name__!r}, expected an integer"
             ) from None
 
         try:
             items = list(self.current_data)
-            if index < 0:
-                index += len(items)
-            self.current_data = items[index]
-            return index
+            if idx < 0:
+                idx += len(items)
+            self.current_data = items[idx]
+            return idx
 
         except IndexError:
             if self.ignore_not_found:
                 return None
-            raise IndexError(f"Index {int(key)} out of range") from None
+            raise IndexError(f"Index {idx!r} out of range") from None
 
 
 class _DataRenderHelper:
@@ -846,7 +846,9 @@ class _DataRenderHelper:
             elif isinstance(syntax_highlighting, dict):
                 self.styles.update({key: val for key, val in syntax_highlighting.items() if key in self.styles})
             else:
-                raise TypeError(f"The 'syntax_highlighting' parameter must be a dict or bool, got {type(syntax_highlighting)}")
+                raise TypeError(
+                    f"The 'syntax_highlighting' parameter must be a dict or bool, got {type(syntax_highlighting).__name__!r}"
+                )
 
             sep = self._hl("punctuation", sep)
 

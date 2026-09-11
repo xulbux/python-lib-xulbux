@@ -30,10 +30,10 @@ def is_elevated() -> bool:
     """Whether the current process has elevated privileges or not."""
 
     with _suppress(Exception):
-        if _os.name == "nt":
-            return _ctypes.windll.shell32.IsUserAnAdmin() != 0  # type: ignore[attr-defined]
-        elif _os.name == "posix":
-            return _os.geteuid() == 0  # type:ignore[attr-defined]  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType,reportUnknownVariableType]
+        if _sys.platform == "win32":
+            return _ctypes.windll.shell32.IsUserAnAdmin() != 0
+        else:
+            return _os.geteuid() == 0  # type:ignore[attr-defined]
 
     return False
 
@@ -59,7 +59,7 @@ def is_mac() -> bool:
 def is_unix() -> bool:
     """Whether the current operating system is a Unix-like OS (Linux, macOS, BSD, …) or not."""
 
-    return _os.name == "posix"
+    return _sys.platform != "win32"
 
 
 def get_hostname() -> str:
@@ -210,7 +210,7 @@ def elevate(win_title: str | None = None, args: Sequence[str] | None = None) -> 
     args_list = args or []
 
     # Windows:
-    if _os.name == "nt":
+    if _sys.platform == "win32":
         if win_title:
             args_str = (
                 '-c "import ctypes; '
@@ -220,7 +220,7 @@ def elevate(win_title: str | None = None, args: Sequence[str] | None = None) -> 
         else:
             args_str = f'-c "exec(open(\\"{_sys.argv[0]}\\").read())" {" ".join(args_list)}'
 
-        if _ctypes.windll.shell32.ShellExecuteW(None, "runas", _sys.executable, args_str, None, 1) <= 32:  # type: ignore[attr-defined]
+        if _ctypes.windll.shell32.ShellExecuteW(None, "runas", _sys.executable, args_str, None, 1) <= 32:
             raise PermissionError("Failed to launch elevated process") from None
         else:
             raise SystemExit(0)
@@ -335,13 +335,15 @@ def _persistent_env_path(path: Path, /, *, remove: bool = False) -> None:
             current_paths = [*current_paths, path_resolved]
 
     # Convert to strings only for setting the environment variable:
-    path_strings = [str(env_path) for env_path in current_paths]
-    _os.environ["PATH"] = new_path = _os.pathsep.join(dict.fromkeys([env_path for env_path in path_strings if env_path]))
+    _os.environ["PATH"] = new_path = _os.pathsep.join(
+        dict.fromkeys([str(env_path) for env_path in current_paths if str(env_path)])
+    )
 
     # Windows:
     if _sys.platform == "win32":
         try:
-            winreg = __import__("winreg")
+            import winreg
+
             key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment", 0, winreg.KEY_ALL_ACCESS)
             winreg.SetValueEx(key, "PATH", 0, winreg.REG_EXPAND_SZ, new_path)
             winreg.CloseKey(key)
@@ -361,10 +363,9 @@ def _persistent_env_path(path: Path, /, *, remove: bool = False) -> None:
             file.seek(0)
 
             if remove:
-                new_content = [line for line in content.splitlines() if not line.endswith(f':{path_resolved}"')]
-                file.write("\n".join(new_content))
+                file.write("\n".join([line for line in content.splitlines() if not line.endswith(f':{path_resolved}"')]))
             else:
-                file.write(f'{content.rstrip()}\n# Added by `python-lib-xulbux`.\nexport PATH="{new_path}"\n')
+                file.write(f'{content.rstrip()}\n# Added by Python lib `xulbux`.\nexport PATH="{new_path}"\n')
 
             file.truncate()
 
@@ -381,12 +382,12 @@ class _SystemRestartHelper:
         self.force: bool = force
 
     def __call__(self) -> None:
-        if (system := _platform.system().lower()) == "windows":
+        if _sys.platform == "win32":
             self.restart_windows()
-        elif system in {"linux", "darwin"}:
+        elif _sys.platform.startswith("linux") or _sys.platform == "darwin":
             self.restart_posix()
         else:
-            raise NotImplementedError(f"Restart not implemented for '{system}' systems")
+            raise NotImplementedError(f"Restart not implemented for {_sys.platform!r} systems")
 
     def check_running_processes(self, command: str | list[str], /, skip_lines: int = 0) -> None:
         """Check if processes are running and raise error if force is False."""
@@ -406,17 +407,14 @@ class _SystemRestartHelper:
                 continue
 
             line_lower = line.lower()
-            has_proc = False
 
             for proc in {"bash", "cmd", "powershell", "ps", "pwsh", "python", "sh", "tasklist", "zsh"}:
                 if proc in line_lower:
-                    has_proc = True
                     break
-
-            if not has_proc:
+            else:
                 processes.append(line)
 
-        if len(processes) > 0:  # Excluding Python and shell processes.
+        if processes:  # Excluding Python and shell processes.
             raise RuntimeError("Processes are still running\nTo restart anyway set parameter 'force' to True")
 
     def restart_windows(self) -> None:
@@ -510,4 +508,4 @@ class _SystemCheckLibsHelper:
                 _subprocess.check_call([_sys.executable, "-m", "pip", "install", lib])
                 missing.remove(lib)
 
-        return None if len(missing) == 0 else missing
+        return missing if missing else None

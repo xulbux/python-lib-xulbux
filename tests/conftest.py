@@ -62,6 +62,17 @@ def mock_os_darwin(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(PosixPath, "resolve", _mock_path_resolve)
 
 
+@pytest.fixture
+def mock_os_unknown(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Mocks the OS to be detected as an unknown OS for testing purposes."""
+
+    monkeypatch.setattr("os.name", "unknown")
+    monkeypatch.setattr("platform.system", lambda: "Unknown")
+    monkeypatch.setattr("sys.platform", "unknown")
+    monkeypatch.setattr(Path, "__new__", _mock_path_new)
+    monkeypatch.setattr(Path, "resolve", _mock_path_resolve)
+
+
 # ***************************************************** SUBPROCESS MOCKS ******************************************************
 
 

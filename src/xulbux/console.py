@@ -218,7 +218,7 @@ class ParsedArgData:
         try:
             return cast_type(self.values[0])
         except Exception as exc:
-            raise ValueError(f"Failed to cast value '{self.values[0]}' to {cast_type}") from exc
+            raise ValueError(f"Failed to cast value {self.values[0]!r} to type of {cast_type.__name__!r}") from exc
 
     @overload
     def vals(self) -> tuple[str, ...]: ...
@@ -250,7 +250,7 @@ class ParsedArgData:
         try:
             return tuple([cast_type(current_val := val) for val in self.values])
         except Exception as exc:
-            raise ValueError(f"Failed to cast value '{current_val}' to {cast_type}") from exc
+            raise ValueError(f"Failed to cast value {current_val!r} to type of {cast_type.__name__!r}") from exc
 
     def __bool__(self) -> bool:
         return self.exists
@@ -279,13 +279,13 @@ class ParsedArgs:
 
     def __getattr__(self, name: str) -> ParsedArgData:
         if name.startswith("_"):
-            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+            raise AttributeError(f"{type(self).__name__!r} object has no attribute {name!r}")
         try:
             return self._args[name]
         except KeyError as exc:
             defined_aliases = ", ".join([repr(key) for key in sorted(self._args.keys())])
             defined_msg = f"Available arguments: {defined_aliases}" if defined_aliases else ""
-            raise AttributeError(f"Argument '{name}' is not defined on '{type(self).__name__}'\n{defined_msg}") from exc
+            raise AttributeError(f"Argument {name!r} is not defined on {type(self).__name__!r}\n{defined_msg}") from exc
 
     def __repr__(self) -> str:
         return f"ParsedArgs(args={self._args})"
@@ -437,7 +437,7 @@ class ArgumentParser:
                 raise ValueError(f"The argument name {name!r} cannot start with prefix char {char!r}")
 
         if name in self._arg_configs:
-            raise ValueError(f"The argument '{name}' is already defined on this 'ArgumentParser', got {name!r}")
+            raise ValueError(f"The argument {name!r} is already defined on this {type(self).__name__!r}, got {name!r}")
 
         elif isinstance(nargs, int):
             if nargs < 1:
@@ -495,13 +495,13 @@ class ArgumentParser:
             if existing_cfg["opts"] is not None and (overlap := set(opts).intersection(existing_cfg["opts"])):
                 raise ValueError(
                     f"The 'opts' parameter options {overlap} overlap with "
-                    f"existing argument '{existing_arg}' options {existing_cfg['opts']}"
+                    f"existing argument {existing_arg!r} options {existing_cfg['opts']}"
                 )
 
         if (target_alias := self._deduce_alias(opts) if alias is None else alias).startswith("_"):
             raise ValueError(f"The 'alias' parameter cannot start with an underscore, got {target_alias!r}")
         elif target_alias in self._arg_configs:
-            raise ValueError(f"The alias '{target_alias}' is already defined on this 'ArgumentParser'")
+            raise ValueError(f"The alias {target_alias!r} is already defined on this {type(self).__name__!r}")
 
         placeholder: str | None
         optional_value: bool
@@ -519,7 +519,7 @@ class ArgumentParser:
         else:
             raise ValueError(
                 "The 'expects_value' parameter must be False or a string containing only letters, digits, "
-                f"underscores, or hyphens (optionally ending with '?'), got {expects_value!r}"
+                f"underscores, or hyphens, optionally ending with '?', got {expects_value!r}"
             )
 
         self._arg_configs[target_alias] = {
@@ -948,7 +948,7 @@ class ArgumentParser:
             return i + 1
 
         elif not cfg["optional_value"]:
-            opt_details: list[Renderable] = [f"Option '{potential_opt}' requires a value"]
+            opt_details: list[Renderable] = [f"Option {potential_opt!r} requires a value"]
             extra: list[TextRenderable] = []
 
             if cfg["expects_value"]:
@@ -1011,7 +1011,7 @@ class ArgumentParser:
                 arg_tokens.append(arg)
 
             else:
-                self._error(f"Unrecognized option: '{potential_opt}'")
+                self._error(f"Unrecognized option: {potential_opt!r}")
 
             i += 1
 
@@ -1053,7 +1053,7 @@ class ArgumentParser:
 
                 return token_idx
 
-            arg_details: list[Renderable] = [f"Missing required argument '{name}'"]
+            arg_details: list[Renderable] = [f"Missing required argument {name!r}"]
             if cfg["choices"]:
                 arg_details.append(S.DIM(f" (choices: {', '.join(cfg['choices'])})"))
 
@@ -1064,7 +1064,7 @@ class ArgumentParser:
             parsed_data[name]["exists"] = False
 
             if cfg["required"]:
-                arg_details_req: list[Renderable] = [f"Missing required argument '{name}'"]
+                arg_details_req: list[Renderable] = [f"Missing required argument {name!r}"]
                 if cfg["choices"]:
                     arg_details_req.append(S.DIM(f" (choices: {', '.join(cfg['choices'])})"))
 
@@ -1088,7 +1088,7 @@ class ArgumentParser:
 
         if not self._args_order:
             if num_tokens > 0:
-                self._error(f"Unrecognized argument: '{arg_tokens[0]}'")
+                self._error(f"Unrecognized argument: {arg_tokens[0]!r}")
             return
 
         token_idx = 0
@@ -1100,7 +1100,7 @@ class ArgumentParser:
             )
 
         if token_idx < num_tokens:
-            self._error(f"Unrecognized argument: '{arg_tokens[token_idx]}'")
+            self._error(f"Unrecognized argument: {arg_tokens[token_idx]!r}")
 
     def _validate_parsed_data(self, parsed_data: dict[str, dict[str, Any]]) -> None:
         """Internal method to validate the parsed data against the argument configurations."""
@@ -1108,7 +1108,7 @@ class ArgumentParser:
         for alias, cfg in self._arg_configs.items():
             if cfg["required"] and not parsed_data[alias]["exists"]:
                 if cfg["is_arg"]:
-                    arg_details: list[Renderable] = [f"Missing required argument '{alias}'"]
+                    arg_details: list[Renderable] = [f"Missing required argument {alias!r}"]
                     if cfg["choices"]:
                         arg_details.append(S.DIM(f" (choices: {', '.join(cfg['choices'])})"))
 
@@ -1116,14 +1116,14 @@ class ArgumentParser:
 
                 else:
                     self._error(
-                        f"Missing required option '{alias}'",
+                        f"Missing required option {alias!r}",
                         S.DIM(f" ({', '.join(self._sort_opts(cast('Iterable[str]', cfg['opts'])))})"),
                     )
 
             if cfg["choices"] and parsed_data[alias]["exists"]:
                 for val in parsed_data[alias]["values"]:
                     if val not in cfg["choices"]:
-                        choice_details: list[Renderable] = [f"Invalid choice '{val}' for '{alias}'"]
+                        choice_details: list[Renderable] = [f"Invalid choice {val!r} for {alias!r}"]
                         if cfg["opts"] is not None:
                             choice_details.append(S.DIM(f" ({', '.join(self._sort_opts(cfg['opts']))})"))
                         choice_details.append(f"\nAllowed: {', '.join(cfg['choices'])}")
@@ -1234,7 +1234,7 @@ def has_color_support() -> bool:
     if not is_tty():
         return False
 
-    elif _os.name == "nt":
+    elif _sys.platform == "win32":
         # Check if VT100 mode is enabled on Windows:
         with suppress(Exception):
             kernel32 = _ctypes.windll.kernel32  # type: ignore[attr-defined]
@@ -2509,12 +2509,10 @@ def _read_key_windows() -> str:
 
     import msvcrt as _msvcrt
 
-    getwch = getattr(_msvcrt, "getwch")  # ruff:ignore[get-attr-with-constant]
-
-    if (char := str(getwch())) == "\x03":
+    if (char := str(_msvcrt.getwch())) == "\x03":  # type: ignore[attr-defined]
         raise KeyboardInterrupt
     elif char in {"\x00", "\xe0"}:
-        return char + str(getwch())
+        return char + str(_msvcrt.getwch())  # type: ignore[attr-defined]
 
     return char
 
@@ -2853,7 +2851,7 @@ class _ConsoleInputHelper:
                 toolbar_msgs.append(S((S.BOLD | S.hex("#000") | S.BG.BR.RED), f" {validation_error_msg} ", S.RESET_BG).ansi)
             if self.filtered_chars:
                 plural = "" if len(char_list := "".join(sorted(self.filtered_chars))) == 1 else "s"
-                toolbar_msgs.append((S.BOLD | S.hex("#000") | S.BG.YELLOW)(f"( Char{plural} '{char_list}' not allowed )").ansi)
+                toolbar_msgs.append((S.BOLD | S.hex("#000") | S.BG.YELLOW)(f"( Char{plural} {char_list!r} not allowed )").ansi)
                 self.filtered_chars.clear()
             if self.min_len and len(text_to_check) < self.min_len:
                 toolbar_msgs.append(

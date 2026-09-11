@@ -9,11 +9,8 @@ def test_restart_negative_wait_raises_value_error() -> None:
         _system_module.restart(wait=-1)
 
 
-def test_restart_unsupported_system_raises_not_implemented() -> None:
-    with (
-        patch("platform.system", return_value="FreeBSD"),
-        pytest.raises(NotImplementedError, match="Restart not implemented for 'freebsd' systems"),
-    ):
+def test_restart_unsupported_system_raises_not_implemented(mock_os_unknown: None) -> None:
+    with pytest.raises(NotImplementedError, match="Restart not implemented for 'unknown' systems"):
         _system_module.restart()
 
 

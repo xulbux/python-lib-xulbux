@@ -353,7 +353,7 @@ def _config_terminal() -> None:
 
     _sys.stdout.flush()
 
-    if _os.name == "nt":
+    if _sys.platform == "win32":
         with _suppress(Exception):
             kernel32 = _ctypes.windll.kernel32  # type: ignore[attr-defined]
             handle = kernel32.GetStdHandle(-11)  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
@@ -1773,7 +1773,7 @@ class _GradientStyle(_SBase):
 
         is_256 = self._color_depth == "256" or (
             self._color_depth == "auto"
-            and not (_os.name == "nt" or _os.getenv("COLORTERM", "").lower() in {"truecolor", "24bit"})
+            and not (_sys.platform == "win32" or _os.getenv("COLORTERM", "").lower() in {"truecolor", "24bit"})
         )
 
         color_reset = "\x1b[49m" if self._bg else "\x1b[39m"

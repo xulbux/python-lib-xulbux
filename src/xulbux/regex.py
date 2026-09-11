@@ -681,4 +681,4 @@ class LazyRegex:
             setattr(self, name, compiled := _rx.compile(self._patterns[name]))
             return compiled
 
-        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+        raise AttributeError(f"{type(self).__name__!r} object has no attribute {name!r}")

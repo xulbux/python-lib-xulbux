@@ -118,23 +118,23 @@ class rgba(_ColorBase):
             yield self.alpha
 
     @overload
-    def __getitem__(self, index: Literal[0, 1, 2], /) -> int: ...
+    def __getitem__(self, idx: Literal[0, 1, 2], /) -> int: ...
     @overload
-    def __getitem__(self, index: Literal[3], /) -> float | None: ...
+    def __getitem__(self, idx: Literal[3], /) -> float | None: ...
     @overload
-    def __getitem__(self, index: int, /) -> int | float | None: ...
+    def __getitem__(self, idx: int, /) -> int | float | None: ...
 
-    def __getitem__(self, index: int, /) -> int | float | None:
-        if index == 0 or (index == -3 and self.alpha is None) or (index == -4 and self.alpha is not None):
+    def __getitem__(self, idx: int, /) -> int | float | None:
+        if idx == 0 or (idx == -3 and self.alpha is None) or (idx == -4 and self.alpha is not None):
             return self.red
-        elif index == 1 or (index == -2 and self.alpha is None) or (index == -3 and self.alpha is not None):
+        elif idx == 1 or (idx == -2 and self.alpha is None) or (idx == -3 and self.alpha is not None):
             return self.green
-        elif index == 2 or (index == -1 and self.alpha is None) or (index == -2 and self.alpha is not None):
+        elif idx == 2 or (idx == -1 and self.alpha is None) or (idx == -2 and self.alpha is not None):
             return self.blue
-        elif (index == 3 or index == -1) and self.alpha is not None:
+        elif (idx == 3 or idx == -1) and self.alpha is not None:
             return self.alpha
 
-        raise IndexError("Rgba index out of range")
+        raise IndexError(f"{type(self).__name__!r} index {idx!r} out of range")
 
     def __eq__(self, other: object, /) -> bool:
         """Check if two `rgba` objects are the same color."""
@@ -389,23 +389,23 @@ class hsla(_ColorBase):
             yield self.alpha
 
     @overload
-    def __getitem__(self, index: Literal[0, 1, 2], /) -> int: ...
+    def __getitem__(self, idx: Literal[0, 1, 2], /) -> int: ...
     @overload
-    def __getitem__(self, index: Literal[3], /) -> float | None: ...
+    def __getitem__(self, idx: Literal[3], /) -> float | None: ...
     @overload
-    def __getitem__(self, index: int, /) -> int | float | None: ...
+    def __getitem__(self, idx: int, /) -> int | float | None: ...
 
-    def __getitem__(self, index: int, /) -> int | float | None:
-        if index == 0 or (index == -3 and self.alpha is None) or (index == -4 and self.alpha is not None):
+    def __getitem__(self, idx: int, /) -> int | float | None:
+        if idx == 0 or (idx == -3 and self.alpha is None) or (idx == -4 and self.alpha is not None):
             return self.hue
-        elif index == 1 or (index == -2 and self.alpha is None) or (index == -3 and self.alpha is not None):
+        elif idx == 1 or (idx == -2 and self.alpha is None) or (idx == -3 and self.alpha is not None):
             return self.sat
-        elif index == 2 or (index == -1 and self.alpha is None) or (index == -2 and self.alpha is not None):
+        elif idx == 2 or (idx == -1 and self.alpha is None) or (idx == -2 and self.alpha is not None):
             return self.light
-        elif (index == 3 or index == -1) and self.alpha is not None:
+        elif (idx == 3 or idx == -1) and self.alpha is not None:
             return self.alpha
 
-        raise IndexError("Hsla index out of range")
+        raise IndexError(f"{type(self).__name__!r} index {idx!r} out of range")
 
     def __eq__(self, other: object, /) -> bool:
         """Check if two `hsla` objects are the same color."""
@@ -679,7 +679,7 @@ class hexa(_ColorBase):
                     int(color[6:8], 16) / 255.0,
                 )
             else:
-                raise ValueError(f"Invalid HEXA color string '{color}'\nMust be in formats RGB, RGBA, RRGGBB or RRGGBBAA")
+                raise ValueError(f"Invalid HEXA color string {color!r}\nMust be in formats RGB, RGBA, RRGGBB or RRGGBBAA")
 
         elif isinstance(color, int):
             self.red, self.green, self.blue, self.alpha = hex_int_to_rgba(color).as_tuple()
@@ -706,17 +706,17 @@ class hexa(_ColorBase):
         if self.alpha is not None:
             yield f"{int(self.alpha * 255):02X}"
 
-    def __getitem__(self, index: int, /) -> str:
-        if index == 0 or (index == -3 and self.alpha is None) or (index == -4 and self.alpha is not None):
+    def __getitem__(self, idx: int, /) -> str:
+        if idx == 0 or (idx == -3 and self.alpha is None) or (idx == -4 and self.alpha is not None):
             return f"{self.red:02X}"
-        elif index == 1 or (index == -2 and self.alpha is None) or (index == -3 and self.alpha is not None):
+        elif idx == 1 or (idx == -2 and self.alpha is None) or (idx == -3 and self.alpha is not None):
             return f"{self.green:02X}"
-        elif index == 2 or (index == -1 and self.alpha is None) or (index == -2 and self.alpha is not None):
+        elif idx == 2 or (idx == -1 and self.alpha is None) or (idx == -2 and self.alpha is not None):
             return f"{self.blue:02X}"
-        elif (index == 3 or index == -1) and self.alpha is not None:
+        elif (idx == 3 or idx == -1) and self.alpha is not None:
             return f"{int(self.alpha * 255):02X}"
 
-        raise IndexError("Hexa index out of range")
+        raise IndexError(f"{type(self).__name__!r} index {idx!r} out of range")
 
     def __eq__(self, other: object, /) -> bool:
         """Check if two `hexa` objects are the same color."""

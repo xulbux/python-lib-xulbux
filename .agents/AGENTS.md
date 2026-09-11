@@ -5,7 +5,7 @@ When working on this repository, any AI agent or automated assistant must adhere
 ## 1. Strict Typing (MyPyC Compatibility)
 
 This entire library (including all Python files across all subdirectories of `src/xulbux/`, such as `base/`, `cli/`, etc.) is compiled to C using **MyPyC**. Therefore, **EVERYTHING** must be meticulously and strictly type-hinted. Do not ever use `Any` unless it is fundamentally impossible to type-hint otherwise. All changes must be fully statically analyzable to compile correctly.
-*   **No `# type:ignore` Comments:** `# type:ignore` comments are completely forbidden across the library. When suppression is fundamentally unavoidable, only specific `# pyright:ignore[…]` comments with explicit rule IDs and no spaces after commas between rule names (e.g., `# pyright:ignore[reportUnknownMemberType,reportAttributeAccessIssue]`) are permitted.
+*   **No `# type:ignore` Comments:** `# type:ignore` comments are generally forbidden across the library. You must instead use specific `# pyright:ignore[…]` comments with explicit rule IDs and no spaces after commas between rule names (e.g., `# pyright:ignore[reportUnknownMemberType,reportAttributeAccessIssue]`). The ONLY exception is for MyPy/MyPyC: you are permitted to use `# type:ignore[...]` (with explicit rule IDs) if and only if it is absolutely fundamentally required to bypass a MyPyC/MyPy compiler error that cannot be resolved via `# pyright:ignore[…]` or standard typing adjustments, AND rewriting the code to bypass the error statically would decrease performance or reduce code readability.
 
 ## 2. Validation & Testing
 

@@ -485,7 +485,7 @@ def _create_nested_path(data_obj: dict[str, Any], path_keys: list[str], value: A
                 current[idx] = value
 
             else:
-                raise TypeError(f"Cannot set key {key!r} on {type(current).__name__}")
+                raise TypeError(f"Cannot set key {key!r} on {type(current).__name__!r}")
 
         else:
             next_key = path_keys[i + 1]
@@ -503,7 +503,7 @@ def _create_nested_path(data_obj: dict[str, Any], path_keys: list[str], value: A
                 current = cast("dict[str, Any] | list[Any]", current[idx])
 
             else:
-                raise TypeError(f"Cannot navigate through {type(current).__name__}")
+                raise TypeError(f"Cannot navigate through {type(current).__name__!r}")
 
     return data_obj
 

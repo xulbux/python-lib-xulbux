@@ -1,7 +1,6 @@
 from collections.abc import Callable
 from unittest.mock import MagicMock, patch
 import xulbux.system as _system_module
-import pytest
 
 
 def test_is_elevated_windows_admin(mock_os_windows: None, mock_ctypes_windll: Callable[..., MagicMock]) -> None:
@@ -40,8 +39,7 @@ def test_is_elevated_posix_exception(mock_os_linux: None) -> None:
         assert _system_module.is_elevated() is False
 
 
-def test_is_elevated_unknown_os(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("os.name", "unknown_os")
+def test_is_elevated_unknown_os(mock_os_unknown: None) -> None:
     assert _system_module.is_elevated() is False
 
 
