@@ -91,12 +91,12 @@ def remove_empty_items[DataObj: DataObjType](data: DataObj, /, *, spaces_are_emp
         processed_items = [
             (item if not is_data_obj(item) else remove_empty_items(item, spaces_are_empty=spaces_are_empty))
             for item in data
-            if not (isinstance(item, (str, type(None))) and _string_module.is_empty(item, spaces_are_empty=spaces_are_empty))
+            if not (
+                (item is None or isinstance(item, str)) and _string_module.is_empty(item, spaces_are_empty=spaces_are_empty)
+            )
         ]
 
-        return type(data)([
-            item for item in processed_items if not (not item and isinstance(item, (list, tuple, dict, set, frozenset)))
-        ])
+        return type(data)([item for item in processed_items if not (not item and isinstance(item, _COMPLEX_TYPES))])
 
 
 def remove_duplicates[DataObj: DataObjType](data: DataObj, /) -> DataObj:
@@ -395,7 +395,7 @@ def get_value_by_path_id(data: DataObjType, path_id: str, /, *, get_key: bool = 
     for i, path_idx in enumerate(path):
         if isinstance(current_data, dict):
             dict_data = cast("dict[Any, Any]", current_data)
-            keys: list[str] = list(dict_data.keys())
+            keys: list[Any] = list(dict_data.keys())
 
             if i == len(path) - 1 and get_key:
                 return keys[path_idx]
