@@ -116,16 +116,16 @@ def test_nested_tuples_auto_restore() -> None:
 
 def test_matmul_operator_auto_restore() -> None:
     assert (
-        S.GREEN @ ("Green ", S.RED("Red "), "Green again")
+        S.GREEN("Green ", S.RED("Red "), "Green again")
     ).ansi == "\x1b[32mGreen \x1b[31mRed \x1b[39m\x1b[32mGreen again\x1b[39m"
     assert (
-        S.hex("#00ff00") @ ("Hex green ", S.hex("#ff0000")("Hex red "), "Hex green again")
+        S.hex("#00ff00")("Hex green ", S.hex("#ff0000")("Hex red "), "Hex green again")
     ).ansi == "\x1b[38;2;0;255;0mHex green \x1b[38;2;255;0;0mHex red \x1b[39m\x1b[38;2;0;255;0mHex green again\x1b[39m"
     assert (
-        S.color256(46) @ ("256 green ", S.color256(196)("256 red "), "256 green again")
+        S.color256(46)("256 green ", S.color256(196)("256 red "), "256 green again")
     ).ansi == "\x1b[38;5;46m256 green \x1b[38;5;196m256 red \x1b[39m\x1b[38;5;46m256 green again\x1b[39m"
     assert (
-        (S.BOLD | S.GREEN) @ ("Bold green ", S.RED("Bold red "), "Bold green again")
+        (S.BOLD | S.GREEN)("Bold green ", S.RED("Bold red "), "Bold green again")
     ).ansi == "\x1b[1;32mBold green \x1b[31mBold red \x1b[39m\x1b[32mBold green again\x1b[22;39m"
 
 

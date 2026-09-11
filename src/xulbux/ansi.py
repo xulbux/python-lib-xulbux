@@ -655,6 +655,19 @@ class _SBase:
 
     # ************************** OPERATORS **************************
 
+    def __or__(self, other: AnyStyle) -> _StyleGroup:
+        """Combines this style with another code or group via `|`."""
+
+        self_codes = self._codes if isinstance(self, _StyleGroup) else (cast("BaseStyle", self),)
+        other_codes = other._codes if isinstance(other, _StyleGroup) else (other,)
+        return _StyleGroup(*self_codes, *other_codes)
+
+    def __ror__(self, other: BaseStyle) -> _StyleGroup:
+        """Combines this style with another code or group via `|`."""
+
+        self_codes = self._codes if isinstance(self, _StyleGroup) else (cast("BaseStyle", self),)
+        return _StyleGroup(other, *self_codes)
+
     def __add__(self, other: Renderable, /) -> S:
         """Concatenate an `_SBase` object with another renderable object."""
 
@@ -982,19 +995,6 @@ class _Style(_SBase):
     def __hash__(self) -> int:
         return hash(self._value)
 
-    def __or__(self, other: AnyStyle) -> _StyleGroup:
-        """Combines this style with another code or group via `|`."""
-
-        if isinstance(other, _StyleGroup):
-            return _StyleGroup(self, *other._codes)
-
-        return _StyleGroup(self, other)
-
-    def __ror__(self, other: BaseStyle) -> _StyleGroup:
-        """Combines this style with another code or group via `|`."""
-
-        return _StyleGroup(other, self)
-
     def __call__(self, *text: Renderable) -> S:
         """Applies this style code to the given text, auto-resetting after."""
 
@@ -1009,23 +1009,6 @@ class _Style(_SBase):
             oc[0],
             oc[1],
             _restore_reset_styles((self,), text),
-            reset_codes=_style_reset_codes(self),
-        )
-
-    def __matmul__(self, text: Renderable) -> S:
-        """Applies this style code to the given text, auto-resetting after."""
-
-        try:
-            oc = self._oc
-        except AttributeError:
-            cached = _STANDARD_SEQS.get(int(self))
-            oc = _build_open_close(_StyleGroup(self)) if cached is None else cached
-            self._oc = oc
-
-        return _render_styled(
-            oc[0],
-            oc[1],
-            _restore_reset_styles((self,), cast("tuple[Renderable, ...]", text if isinstance(text, tuple) else (text,))),
             reset_codes=_style_reset_codes(self),
         )
 
@@ -1086,19 +1069,6 @@ class _ColorStyle(_SBase):
 
         return cls(int(hex_str[0:2], 16), int(hex_str[2:4], 16), int(hex_str[4:6], 16), bg=bg)
 
-    def __or__(self, other: AnyStyle) -> _StyleGroup:
-        """Combines this color style with another style or group via `|`."""
-
-        if isinstance(other, _StyleGroup):
-            return _StyleGroup(self, *other._codes)
-
-        return _StyleGroup(self, other)
-
-    def __ror__(self, other: BaseStyle) -> _StyleGroup:
-        """Combines this color style with another style or group via `|`."""
-
-        return _StyleGroup(other, self)
-
     def __call__(self, *text: Renderable) -> S:
         """Applies this color style to the given text, auto-resetting after."""
 
@@ -1106,16 +1076,6 @@ class _ColorStyle(_SBase):
             (self._open_seq,),
             (self._close_seq,),
             _restore_reset_styles((self,), text),
-            reset_codes=(49 if self._bg else 39,),
-        )
-
-    def __matmul__(self, text: Renderable) -> S:
-        """Applies this color style to the given text, auto-resetting after."""
-
-        return _render_styled(
-            (self._open_seq,),
-            (self._close_seq,),
-            _restore_reset_styles((self,), cast("tuple[Renderable, ...]", text if isinstance(text, tuple) else (text,))),
             reset_codes=(49 if self._bg else 39,),
         )
 
@@ -1297,19 +1257,6 @@ class _Color256Style(_SBase):
 
         self.ansi = self._open_seq
 
-    def __or__(self, other: AnyStyle) -> _StyleGroup:
-        """Combines this 256-color style with another style or group via `|`."""
-
-        if isinstance(other, _StyleGroup):
-            return _StyleGroup(self, *other._codes)
-
-        return _StyleGroup(self, other)
-
-    def __ror__(self, other: BaseStyle) -> _StyleGroup:
-        """Combines this 256-color style with another style or group via `|`."""
-
-        return _StyleGroup(other, self)
-
     def __call__(self, *text: Renderable) -> S:
         """Applies this 256-color style to the given text, auto-resetting after."""
 
@@ -1317,16 +1264,6 @@ class _Color256Style(_SBase):
             (self._open_seq,),
             (self._close_seq,),
             _restore_reset_styles((self,), text),
-            reset_codes=(49 if self._bg else 39,),
-        )
-
-    def __matmul__(self, text: Renderable) -> S:
-        """Applies this 256-color style to the given text, auto-resetting after."""
-
-        return _render_styled(
-            (self._open_seq,),
-            (self._close_seq,),
-            _restore_reset_styles((self,), cast("tuple[Renderable, ...]", text if isinstance(text, tuple) else (text,))),
             reset_codes=(49 if self._bg else 39,),
         )
 
@@ -1438,28 +1375,10 @@ class _Link(_SBase):
         self._close_seq: str = "\x1b]8;;\x1b\\"
         self.ansi = self._open_seq
 
-    def __or__(self, other: AnyStyle) -> _StyleGroup:
-        """Combines this link style with another style or group via `|`."""
-
-        if isinstance(other, _StyleGroup):
-            return _StyleGroup(self, *other._codes)
-
-        return _StyleGroup(self, other)
-
-    def __ror__(self, other: BaseStyle) -> _StyleGroup:
-        """Combines this link style with another style or group via `|`."""
-
-        return _StyleGroup(other, self)
-
     def __call__(self, *text: Renderable) -> S:
         """Applies this link style to the given text, auto-resetting after."""
 
         return _render_styled((self._open_seq,), (self._close_seq,), text)
-
-    def __matmul__(self, text: Renderable) -> S:
-        """Applies this link style to the given text, auto-resetting after."""
-
-        return _render_styled((self._open_seq,), (self._close_seq,), (text,))
 
     def __repr__(self) -> str:
         """Returns a string representation of this link style, showing the URL it points to."""
@@ -1611,28 +1530,10 @@ class _GradientStyle(_SBase):
         self._bg: bool = bg
         self.ansi = ""
 
-    def __or__(self, other: AnyStyle) -> _StyleGroup:
-        """Combines this gradient style with another style or group via `|`."""
-
-        if isinstance(other, _StyleGroup):
-            return _StyleGroup(self, *other._codes)
-
-        return _StyleGroup(self, other)
-
-    def __ror__(self, other: BaseStyle) -> _StyleGroup:
-        """Combines this gradient style with another style or group via `|`."""
-
-        return _StyleGroup(other, self)
-
     def __call__(self, *text: Renderable) -> S:
         """Applies this gradient style to the given text, auto-resetting after."""
 
         return self._render_gradient(text)
-
-    def __matmul__(self, text: Renderable) -> S:
-        """Applies this gradient style to the given text, auto-resetting after."""
-
-        return self._render_gradient((text,))
 
     def __repr__(self) -> str:
         """Returns a string representation of this gradient style."""
@@ -1976,19 +1877,6 @@ class _StyleGroup(_SBase):
 
         return iter(self._codes)
 
-    def __or__(self, other: AnyStyle) -> _StyleGroup:
-        """Combines this style group with another style or group via `|`."""
-
-        if isinstance(other, _StyleGroup):
-            return _StyleGroup(*self._codes, *other._codes)
-
-        return _StyleGroup(*self._codes, other)
-
-    def __ror__(self, other: BaseStyle) -> _StyleGroup:
-        """Combines this style group with another style or group via `|`."""
-
-        return _StyleGroup(other, *self._codes)
-
     def __call__(self, *text: Renderable) -> S:
         """Applies this style group to the given text, auto-resetting after."""
 
@@ -2010,11 +1898,6 @@ class _StyleGroup(_SBase):
             _restore_reset_styles(self._codes, text),
             reset_codes=tuple(group_resets),
         )
-
-    def __matmul__(self, text: Renderable) -> S:
-        """Applies this style group to the given text, auto-resetting after."""
-
-        return self(text)
 
     def __repr__(self) -> str:
         """Returns a string representation of this style group, showing its individual codes."""

@@ -182,7 +182,7 @@ def test_gradient_composition_and_operators() -> None:
     assert "\x1b[4m" in styled_rev.ansi
 
     # Matmul operator:
-    matmul_res = grad @ "Hello"
+    matmul_res = grad("Hello")
     assert isinstance(matmul_res, S)
     assert matmul_res.raw == "Hello"
 

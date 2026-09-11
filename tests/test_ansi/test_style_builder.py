@@ -131,7 +131,7 @@ def test_hyperlink_builder() -> None:
     assert path_link == S.link(Path("tests/test_ansi"))
     assert (path_link == "not_a_link") is False
     assert path_link("text").raw == "text"
-    assert (path_link @ "text").raw == "text"
+    assert (path_link("text")).raw == "text"
     assert _Link.__ror__(path_link, S.BOLD) == (S.BOLD | path_link)
 
 
@@ -311,7 +311,7 @@ def test_individual_style_string_helpers() -> None:
     assert color_style == S.hex("#FF0000")
     assert color_style != S.hex("#0000FF")
     assert color_style != "not_a_color_style"
-    assert (color_style @ "text").raw == "text"
+    assert (color_style("text")).raw == "text"
 
     stream_col = io.StringIO()
     color_style.print(file=stream_col)
@@ -380,7 +380,7 @@ def test_individual_style_string_helpers() -> None:
 
     # Custom `_Style` outside standard precomputed sequences:
     custom_style_matmul = _Style(999)
-    assert (custom_style_matmul @ "custom").raw == "custom"
+    assert (custom_style_matmul("custom")).raw == "custom"
     custom_style_call = _Style(998)
     assert custom_style_call("custom").raw == "custom"
 
@@ -493,7 +493,7 @@ def test_256_color_styles() -> None:
     assert group_fg("text").ansi == "\x1b[1;38;5;196mtext\x1b[22;39m"
 
     # Single item application:
-    assert (S.color256(10) @ "item").ansi == "\x1b[38;5;10mitem\x1b[39m"
+    assert (S.color256(10)("item")).ansi == "\x1b[38;5;10mitem\x1b[39m"
 
     # Reverse combining:
     r_comb = S.BOLD.__ror__(S.color256(5))

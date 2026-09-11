@@ -1,5 +1,6 @@
 import io
 from xulbux.ansi import S
+import pytest
 
 
 def test_s_construction_and_properties() -> None:
@@ -28,6 +29,11 @@ def test_s_slicing_and_containment() -> None:
     assert "World" in styled
     assert "lo Wo" in S(S.RED("Hello "), S.BLUE("World"))
     assert "xyz" not in styled
+
+    styled2 = S("foo", S.BOLD("bar"), "baz")
+    sliced2 = styled2[2:7]
+    assert sliced2.raw == "obarb"
+    assert "\x1b[1m" in sliced2.ansi
 
 
 def test_s_concatenation_and_repetition() -> None:
@@ -59,16 +65,16 @@ def test_s_concatenation_and_repetition() -> None:
 def test_s_matmul_operator() -> None:
     base_text = "Important Notification"
 
-    applied_left = (S.BOLD | S.RED) @ base_text
+    applied_left = (S.BOLD | S.RED)(base_text)
     assert isinstance(applied_left, S)
     assert applied_left.raw == "Important Notification"
     assert applied_left.ansi == "\x1b[1;31mImportant Notification\x1b[22;39m"
 
-    single_matmul = S.UNDERLINE @ "Underlined"
+    single_matmul = S.UNDERLINE("Underlined")
     assert isinstance(single_matmul, S)
     assert single_matmul.ansi == "\x1b[4mUnderlined\x1b[24m"
 
-    group_matmul_styled = (S.BOLD | S.BLUE) @ S("Nested")
+    group_matmul_styled = (S.BOLD | S.BLUE)(S("Nested"))
     assert isinstance(group_matmul_styled, S)
     assert group_matmul_styled.raw == "Nested"
 
@@ -86,12 +92,23 @@ def test_s_equality() -> None:
     assert "S(" in repr(text1)
 
 
-def test_s_print() -> None:
+def test_s_print(capsys: pytest.CaptureFixture[str]) -> None:
     stream = io.StringIO()
     text = S.GREEN("Success")
 
     text.print(file=stream)
     assert stream.getvalue() == "\x1b[32mSuccess\x1b[39m\n"
+
+    text.print()
+    captured = capsys.readouterr()
+    assert captured.out == "\x1b[32mSuccess\x1b[39m\n"
+
+    # Test nested tuple rendering
+    nested = S.RED("a", ("b", S.BLUE("c")))
+    assert "b" in nested.raw
+
+    nested_no_reset = S.BOLD("a", ("b", "c"))
+    assert "c" in nested_no_reset.raw
 
 
 def test_s_render_dispatch_and_fallbacks() -> None:
