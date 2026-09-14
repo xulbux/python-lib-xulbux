@@ -8,7 +8,10 @@
     'JetBrains Mono NF', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas,
     'Liberation Mono', 'Courier New', monospace;
 
+  --base-brand: #7e52ff;
+
   /* Terminal Theme */
+
   --term-black: #303134;
   --term-br-black: #66676a;
   --term-red: #ff6467;
@@ -27,6 +30,7 @@
   --term-br-white: #fbfcff;
 
   /* Light Theme */
+
   --vp-c-bg: #ffffff;
   --vp-c-bg-alt: #fafafa;
   --vp-c-bg-elv: #ffffff;
@@ -42,31 +46,20 @@
   --vp-c-text-2: rgba(0 0 0 / 0.6);
   --vp-c-text-3: rgba(0 0 0 / 0.38);
 
-  --base-brand: #7e52ff;
   --vp-c-brand-1: var(--base-brand);
   --vp-c-brand-2: color-mix(in srgb, var(--base-brand), white 20%);
   --vp-c-brand-3: color-mix(in srgb, var(--base-brand), white 40%);
 
-  /* Nav Bar Translucent Glass */
   --vp-nav-bg-color: color-mix(in srgb, var(--vp-c-bg) 75%, transparent);
+  --vp-local-nav-bg-color: var(--vp-nav-bg-color);
 
-  /* Button Overrides */
   --vp-button-brand-bg: var(--vp-c-brand-1);
   --vp-button-brand-text: #ffffff;
   --vp-button-brand-hover-bg: color-mix(in srgb, var(--vp-c-brand-2), var(--vp-c-brand-1) 50%);
   --vp-button-brand-active-bg: var(--vp-c-brand-2);
 
-  --vp-button-alt-bg: var(--vp-c-bg-soft);
-  --vp-button-alt-text: var(--vp-c-text-1);
-  --vp-button-alt-hover-bg: color-mix(in srgb, var(--vp-c-border), var(--vp-c-bg-soft) 50%);
-  --vp-button-alt-active-bg: var(--vp-c-border);
+  /* Dark Theme */
 
-  --vp-button-sponsor-bg: var(--vp-c-bg-soft);
-  --vp-button-sponsor-text: var(--vp-c-text-1);
-  --vp-button-sponsor-hover-bg: color-mix(in srgb, var(--vp-c-border), var(--vp-c-bg-soft) 50%);
-  --vp-button-sponsor-active-bg: var(--vp-c-border);
-
-  /* Dark Theme*/
   --dark-vp-c-bg: #101010;
   --dark-vp-c-bg-alt: #000000;
   --dark-vp-c-bg-elv: #1a1a1a;
@@ -86,6 +79,9 @@
   --dark-vp-c-brand-2: color-mix(in srgb, var(--base-brand), white 20%);
   --dark-vp-c-brand-3: var(--base-brand);
 
+  --dark-vp-nav-bg-color: color-mix(in srgb, var(--dark-vp-c-bg) 64%, transparent);
+  --dark-vp-local-nav-bg-color: var(--dark-vp-nav-bg-color);
+
   --dark-vp-button-brand-bg: var(--dark-vp-c-brand-3);
   --dark-vp-button-brand-text: #ffffff;
   --dark-vp-button-brand-hover-bg: color-mix(
@@ -94,10 +90,21 @@
     var(--dark-vp-c-brand-3) 50%
   );
   --dark-vp-button-brand-active-bg: var(--dark-vp-c-brand-2);
+
+  /* Color Overrides */
+
+  --vp-button-alt-bg: var(--vp-c-bg-soft);
+  --vp-button-alt-text: var(--vp-c-text-1);
+  --vp-button-alt-hover-bg: color-mix(in srgb, var(--vp-c-border), var(--vp-c-bg-soft) 50%);
+  --vp-button-alt-active-bg: var(--vp-c-border);
+
+  --vp-button-sponsor-bg: var(--vp-c-bg-soft);
+  --vp-button-sponsor-text: var(--vp-c-text-1);
+  --vp-button-sponsor-hover-bg: color-mix(in srgb, var(--vp-c-border), var(--vp-c-bg-soft) 50%);
+  --vp-button-sponsor-active-bg: var(--vp-c-border);
 }
 
 .dark {
-  /* Dark Theme */
   --vp-c-bg: var(--dark-vp-c-bg);
   --vp-c-bg-alt: var(--dark-vp-c-bg-alt);
   --vp-c-bg-elv: var(--dark-vp-c-bg-elv);
@@ -117,14 +124,16 @@
   --vp-c-brand-2: var(--dark-vp-c-brand-2);
   --vp-c-brand-3: var(--dark-vp-c-brand-3);
 
-  /* Different color usage for primary buttons in dark mode. */
+  --vp-nav-bg-color: var(--dark-vp-nav-bg-color);
+  --vp-local-nav-bg-color: var(--dark-vp-local-nav-bg-color);
+
   --vp-button-brand-bg: var(--dark-vp-button-brand-bg);
   --vp-button-brand-text: var(--dark-vp-button-brand-text);
   --vp-button-brand-hover-bg: var(--dark-vp-button-brand-hover-bg);
   --vp-button-brand-active-bg: var(--dark-vp-button-brand-active-bg);
 }
 
-/*************************************************** GLOBAL & BASE STYLES ***************************************************/
+/*************************************************** GLOBAL & BASE STYLES ****************************************************/
 
 ::selection {
   background-color: color-mix(in srgb, var(--vp-c-brand-2) 40%, transparent);
@@ -202,12 +211,9 @@ body .vp-doc > div > .api-item {
 
 /**************************************************** HEADER & NAVIGATION ****************************************************/
 
-.VPNavBar:not(.home.top) {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.VPNavBar:not(.home.top) .content-body {
+.VPNavBar:not(.home.top),
+.VPNavBar:not(.home.top) .content-body,
+.VPLocalNav {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -230,7 +236,7 @@ body .vp-doc > div > .api-item {
   height: 24px;
 }
 
-/************************************************* TYPOGRAPHY & INLINE CODE **************************************************/
+/************************************************** TYPOGRAPHY & INLINE CODE *************************************************/
 
 /* Custom Inline Code Colors */
 .vp-doc :not(pre, h1, h2, h3, h4, h5, h6, a) > code {
@@ -670,7 +676,7 @@ body .vp-doc > div > .api-item {
   border-top: 1px solid var(--vp-c-divider);
 }
 
-@media (min-width: 960px) {
+@media (min-width: 1028px) {
   .api-item {
     grid-template-rows: auto 1fr;
     /* Responsive columns: left tries for 420px, right tries for 48rem, both can shrink. */
@@ -684,7 +690,7 @@ body .vp-doc > div > .api-item {
   }
 
   .api-signature-col {
-    top: calc(var(--vp-nav-height, 64px) + 2rem);
+    top: calc(var(--vp-nav-height, 64px) + 3.625rem);
     grid-row: 1 / span 2;
     grid-column: 1;
     position: sticky;
@@ -693,6 +699,12 @@ body .vp-doc > div > .api-item {
   .api-docs-col {
     grid-row: 2;
     grid-column: 2;
+  }
+}
+
+@media (min-width: 1280px) {
+  .api-signature-col {
+    top: calc(var(--vp-nav-height, 64px) + 1.625rem);
   }
 }
 
