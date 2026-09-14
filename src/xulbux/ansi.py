@@ -11,16 +11,18 @@ First, let's take a look at a small example of what a highly styled output could
 ```python
 S(
     ("First normal & unstyled text. ", \
-(S.BOLD | S.UNDERLINE | S.BR.BLUE)("Bright blue, bold, and underlined text.")),
-    ((S.hex("#000") | S.BG.hex("#F67"))("Black text with a red background."), \
+(S.BOLD | S.UNDERLINE | S.BR.GREEN)("Bright green, bold, and underlined text.")),
+    ((S.hex("#000") | S.BG.hex("#A8F"))("Black text with a purple background."), \
 " And then ", S.ITALIC("(boring)"), " plain text again."),
     sep="\\n",
 ).print()
 ```
 
 <!-- DOCS: <TerminalOutput>
-First normal & unstyled text. <span class="b u br-blue">Bright blue, bold, and underlined text.</span>
-<span class="#000 bg-#F67">Black text with a red background.</span> And then (<span class="i">boring</span>) plain text again.
+First normal & unstyled text. \
+<span class="b u br-green">Bright green, bold, and underlined text.</span>
+<span class="#000 bg-#A8F">Black text with a purple background.</span> \
+And then (<span class="i">boring</span>) plain text again.
 </TerminalOutput> -->
 
 How all of this exactly works is explained in the sections below. 🠫
@@ -88,7 +90,7 @@ S(
 <span class="red">[ERROR] Something went wrong!</span> Back to normal.
 </TerminalOutput> -->
 
-Any style type supports bare usage: `S.RED` (`_Style`), `S.hex("#F67")` (`_ColorStyle`),
+Any style type supports bare usage: `S.RED` (`_Style`), `S.hex("#A8F")` (`_ColorStyle`),
 `S.link("url")` (`_Link`), and `S.BOLD | S.RED` (`_StyleGroup`).<br>
 Bare styles can also appear inside tuples and nested calls:
 
@@ -1023,10 +1025,10 @@ class _Style(_SBase):
 class _ColorStyle(_SBase):
     """A 24-bit true-color style – foreground or background.\n
     ----------------------------------------------------------------------------------------------------
-    >>> S.rgb(112, 118, 255)("text")             # Custom FG color
-    >>> S.BG.rgb(112, 118, 255)("text")          # Custom BG color
-    >>> S.hex("#7075FF")("text")                 # Hex FG color
-    >>> (S.BOLD | S.rgb(112, 118, 255))("text")  # Combined with style"""
+    >>> S.rgb(170, 136, 255)("text")       # Custom FG color
+    >>> S.BG.rgb(170, 136, 255)("text")    # Custom BG color
+    >>> S.hex("#A8F")("text")              # Hex FG color
+    >>> (S.BOLD | S.hex("#A8F"))("text")   # Combined with style"""
 
     __slots__: tuple[str, ...] = ("_bg", "_blue", "_close_seq", "_green", "_open_seq", "_red")
 
@@ -2016,7 +2018,7 @@ class _BgNS:
     @staticmethod
     def rgb(*args: Any) -> _BgColorStyle:
         """24-bit background color from RGB components or an `rgba` object.\n
-        `S.BG.rgb(112, 118, 255)("text")` or `S.BG.rgb(my_rgba)("text")`"""
+        `S.BG.rgb(170, 136, 255)("text")` or `S.BG.rgb(my_rgba)("text")`"""
 
         if len(args) == 3:
             return _BgColorStyle(args[0], args[1], args[2])
@@ -2026,7 +2028,7 @@ class _BgNS:
     @staticmethod
     def hex(color: str | int | hexa, /) -> _BgColorStyle:
         """24-bit background color from HEX string, HEX integer, or `hexa` object.\n
-        `S.BG.hex("#67F")("text")`, `S.BG.hex(0x7075FF)`, or `S.BG.hex(my_hexa)("text")`"""
+        `S.BG.hex("#A8F")("text")`, `S.BG.hex(0xAA88FF)`, or `S.BG.hex(my_hexa)("text")`"""
 
         return _BgColorStyle.from_hex(color, bg=True)
 
@@ -2230,7 +2232,7 @@ class S(_SBase):
     @staticmethod
     def rgb(*args: Any) -> _FgColorStyle:
         """24-bit foreground color from RGB components or an `rgba` object.\n
-        `S.rgb(112, 118, 255)("text")` or `S.rgb(my_rgba)("text")`"""
+        `S.rgb(170, 136, 255)("text")` or `S.rgb(my_rgba)("text")`"""
 
         if len(args) == 3:
             return _FgColorStyle(args[0], args[1], args[2])
@@ -2240,7 +2242,7 @@ class S(_SBase):
     @staticmethod
     def hex(color: str | int | hexa, /) -> _FgColorStyle:
         """24-bit foreground color from HEX string, HEX integer, or `hexa` object.\n
-        `S.hex("#67F")("text")`, `S.hex(0x7075FF)`, or `S.hex(my_hexa)("text")`"""
+        `S.hex("#A8F")("text")`, `S.hex(0xAA88FF)`, or `S.hex(my_hexa)("text")`"""
 
         return _FgColorStyle.from_hex(color)
 
@@ -2324,7 +2326,7 @@ class S(_SBase):
 
 
 type FgColorStyle = _FgStyle | _FgColorStyle | _FgColor256Style
-"""A single foreground color style code (e.g., `S.RED`, `S.BR.BLUE`, `S.hex("#67F")`, `S.color256(196)`).<br>
+"""A single foreground color style code (e.g., `S.RED`, `S.BR.BLUE`, `S.hex("#A8F")`, `S.color256(196)`).<br>
 Excludes background colors and non-color styles like `S.BOLD`."""
 
 
@@ -2342,7 +2344,7 @@ def is_fg_color_style(obj: object, /) -> TypeIs[FgColorStyle]:
 
 
 type BgColorStyle = _BgStyle | _BgColorStyle | _BgColor256Style
-"""A single background color style code (e.g., `S.BG.RED`, `S.BG.hex("#67F")`, `S.BG.color256(196)`).<br>
+"""A single background color style code (e.g., `S.BG.RED`, `S.BG.hex("#A8F")`, `S.BG.color256(196)`).<br>
 Excludes foreground colors and non-color styles like `S.BOLD`."""
 
 
@@ -2360,7 +2362,7 @@ def is_bg_color_style(obj: object, /) -> TypeIs[BgColorStyle]:
 
 
 type ColorStyle = FgColorStyle | BgColorStyle
-"""Any single foreground or background color style code (e.g., `S.RED`, `S.BG.BLUE`, `S.hex("#67F")`).<br>
+"""Any single foreground or background color style code (e.g., `S.RED`, `S.BG.BLUE`, `S.hex("#A8F")`).<br>
 Excludes non-color styles like `S.BOLD`."""
 
 

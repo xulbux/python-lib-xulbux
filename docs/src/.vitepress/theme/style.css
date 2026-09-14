@@ -47,6 +47,9 @@
   --vp-c-brand-2: color-mix(in srgb, var(--base-brand), white 20%);
   --vp-c-brand-3: color-mix(in srgb, var(--base-brand), white 40%);
 
+  /* Nav Bar Translucent Glass */
+  --vp-nav-bg-color: color-mix(in srgb, var(--vp-c-bg) 75%, transparent);
+
   /* Button Overrides */
   --vp-button-brand-bg: var(--vp-c-brand-1);
   --vp-button-brand-text: #ffffff;
@@ -121,18 +124,38 @@
   --vp-button-brand-active-bg: var(--dark-vp-button-brand-active-bg);
 }
 
-/************************************************* TYPOGRAPHY & GLOBAL STYLES ************************************************/
+/*************************************************** GLOBAL & BASE STYLES ***************************************************/
 
 ::selection {
   background-color: color-mix(in srgb, var(--vp-c-brand-2) 40%, transparent);
 }
 
-/* Custom Inline Code Colors */
-.vp-doc :not(pre, h1, h2, h3, h4, h5, h6, a) > code {
-  color: color-mix(in srgb, var(--vp-c-text-2), var(--vp-c-text-1) 50%) !important;
+/* Custom Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--vp-c-text-1) 24%, transparent) transparent;
 }
-.vp-doc :is(h1, h2, h3, h4, h5, h6) > code {
-  color: var(--vp-c-brand-1) !important;
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--vp-c-text-1) 24%, transparent);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--vp-c-text-1) 32%, transparent);
+}
+
+::-webkit-scrollbar-button {
+  display: none;
 }
 
 /* Font Ligatures for Code Blocks */
@@ -148,8 +171,6 @@ pre,
     'liga' 1 !important;
   font-variant-ligatures: normal !important;
 }
-
-/******************************************************* GLOBAL LAYOUT *******************************************************/
 
 /* Wide Docs Layout for API Columns */
 body .VPDoc,
@@ -179,108 +200,47 @@ body .vp-doc > div > .api-item {
   margin-right: auto !important;
 }
 
-/****************************************************** API GRID SYSTEM ******************************************************/
+/**************************************************** HEADER & NAVIGATION ****************************************************/
 
-/* API Item Two-Column Layout */
-.api-item {
-  gap: 2rem;
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  grid-template-columns: 1fr;
-  display: grid;
-  align-items: start;
-  justify-content: center;
-  border-top: 1px solid var(--vp-c-divider);
+.VPNavBar:not(.home.top) {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-@media (min-width: 960px) {
-  .api-item {
-    grid-template-rows: auto 1fr;
-    /* Responsive columns: left tries for 420px, right tries for 48rem, both can shrink. */
-    grid-template-columns: minmax(300px, 420px) minmax(400px, 48rem);
-  }
-  .api-item > h3,
-  .api-item > h4 {
-    grid-row: 1;
-    grid-column: 2;
-    margin-top: 0 !important;
-  }
-
-  .api-signature-col {
-    top: calc(var(--vp-nav-height, 64px) + 2rem);
-    grid-row: 1 / span 2;
-    grid-column: 1;
-    position: sticky;
-  }
-
-  .api-docs-col {
-    grid-row: 2;
-    grid-column: 2;
-  }
+.VPNavBar:not(.home.top) .content-body {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-.api-signature-col,
-.api-docs-col {
-  min-width: 0; /* Prevent long code blocks from forcing the grid to blow out. */
+/******************************************************* HOME FEATURES *******************************************************/
+
+.VPFeature .icon {
+  margin-bottom: 1.25rem;
+  width: fit-content;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--vp-c-brand-1);
+  background-color: transparent !important;
 }
 
-.api-signature-col > div[class*='language-'] {
-  margin: 0 !important;
+.VPFeature .icon svg {
+  width: 24px;
+  height: 24px;
 }
 
-/********************************************************* SCROLLBARS ********************************************************/
+/************************************************* TYPOGRAPHY & INLINE CODE **************************************************/
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--vp-c-text-1) 24%, transparent) transparent;
+/* Custom Inline Code Colors */
+.vp-doc :not(pre, h1, h2, h3, h4, h5, h6, a) > code {
+  color: color-mix(in srgb, var(--vp-c-text-2), var(--vp-c-text-1) 50%) !important;
 }
-
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.vp-doc :is(h1, h2, h3, h4, h5, h6) > code {
+  color: var(--vp-c-brand-1) !important;
 }
 
-::-webkit-scrollbar-track,
-::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--vp-c-text-1) 24%, transparent);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--vp-c-text-1) 32%, transparent);
-}
-
-::-webkit-scrollbar-button {
-  display: none;
-}
-
-/************************************************** API CLASS NAMES & LINKS **************************************************/
-
-.api-item h4 code a.class-prefix::before {
-  content: attr(data-class-prefix);
-}
-.api-item h4 code a.class-prefix {
-  z-index: 0;
-  opacity: 0.64;
-  font-weight: 500;
-  position: relative;
-  text-decoration: none;
-  border-bottom: 0.1rem dashed color-mix(in srgb, currentColor 64%, transparent);
-  transition:
-    opacity 200ms,
-    color 200ms,
-    border-color 200ms;
-}
-.api-item h4 code a.class-prefix:hover,
-.api-item h4 code a.class-prefix:active {
-  opacity: 1;
-  color: inherit !important;
-  border-bottom: 0.1rem solid currentColor;
-}
-
+/* API Cross-Reference Links */
 .vp-doc .api-link {
   text-decoration: none;
   color: inherit;
@@ -292,31 +252,6 @@ body .vp-doc > div > .api-item {
 .vp-doc .api-link:hover {
   color: inherit !important;
   border-bottom: 0.1rem solid currentColor;
-}
-
-@keyframes target-flash {
-  0%,
-  20% {
-    color: var(--vp-button-brand-text) !important;
-    background-color: var(--vp-button-brand-hover-bg) !important;
-  }
-  100% {
-    background-color: transparent;
-  }
-}
-
-.vp-doc :is(h1, h2, h3, h4, h5, h6).target-highlight > code,
-.vp-doc :is(h1, h2, h3, h4, h5, h6).target-highlight > code * {
-  color: var(--vp-button-brand-text) !important;
-  background-color: var(--vp-button-brand-hover-bg) !important;
-  transition:
-    background-color 200ms,
-    color 200ms;
-}
-
-.vp-doc :is(h1, h2, h3, h4, h5, h6):target > code,
-.vp-doc :is(h1, h2, h3, h4, h5, h6):target > code * {
-  animation: target-flash 1.5s ease-out;
 }
 
 /*************************************************** CODE BLOCKS & VIGNETTE **************************************************/
@@ -701,8 +636,8 @@ body .vp-doc > div > .api-item {
     --term-fg: var(--term-base-fg);
     color: var(--term-fg) !important;
   }
-  .bg-\#F67 {
-    --term-bg: #f67;
+  .bg-\#A8F {
+    --term-bg: #a8f;
     background-color: var(--term-bg) !important;
   }
 
@@ -719,4 +654,102 @@ body .vp-doc > div > .api-item {
     --term-fg: color-mix(in srgb, var(--term-base-fg) 50%, var(--dark-vp-c-bg-elv));
     color: var(--term-fg) !important;
   }
+}
+
+/****************************************************** API GRID SYSTEM ******************************************************/
+
+/* API Item Two-Column Layout */
+.api-item {
+  gap: 2rem;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  grid-template-columns: 1fr;
+  display: grid;
+  align-items: start;
+  justify-content: center;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+@media (min-width: 960px) {
+  .api-item {
+    grid-template-rows: auto 1fr;
+    /* Responsive columns: left tries for 420px, right tries for 48rem, both can shrink. */
+    grid-template-columns: minmax(300px, 420px) minmax(400px, 48rem);
+  }
+  .api-item > h3,
+  .api-item > h4 {
+    grid-row: 1;
+    grid-column: 2;
+    margin-top: 0 !important;
+  }
+
+  .api-signature-col {
+    top: calc(var(--vp-nav-height, 64px) + 2rem);
+    grid-row: 1 / span 2;
+    grid-column: 1;
+    position: sticky;
+  }
+
+  .api-docs-col {
+    grid-row: 2;
+    grid-column: 2;
+  }
+}
+
+.api-signature-col,
+.api-docs-col {
+  min-width: 0; /* Prevent long code blocks from forcing the grid to blow out. */
+}
+
+.api-signature-col > div[class*='language-'] {
+  margin: 0 !important;
+}
+
+/* API Class Prefix Badges */
+.api-item h4 code a.class-prefix::before {
+  content: attr(data-class-prefix);
+}
+.api-item h4 code a.class-prefix {
+  z-index: 0;
+  opacity: 0.64;
+  font-weight: 500;
+  position: relative;
+  text-decoration: none;
+  border-bottom: 0.1rem dashed color-mix(in srgb, currentColor 64%, transparent);
+  transition:
+    opacity 200ms,
+    color 200ms,
+    border-color 200ms;
+}
+.api-item h4 code a.class-prefix:hover,
+.api-item h4 code a.class-prefix:active {
+  opacity: 1;
+  color: inherit !important;
+  border-bottom: 0.1rem solid currentColor;
+}
+
+/* Heading Target Highlight & Flash Animation */
+@keyframes target-flash {
+  0%,
+  20% {
+    color: var(--vp-button-brand-text) !important;
+    background-color: var(--vp-button-brand-hover-bg) !important;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.vp-doc :is(h1, h2, h3, h4, h5, h6).target-highlight > code,
+.vp-doc :is(h1, h2, h3, h4, h5, h6).target-highlight > code * {
+  color: var(--vp-button-brand-text) !important;
+  background-color: var(--vp-button-brand-hover-bg) !important;
+  transition:
+    background-color 200ms,
+    color 200ms;
+}
+
+.vp-doc :is(h1, h2, h3, h4, h5, h6):target > code,
+.vp-doc :is(h1, h2, h3, h4, h5, h6):target > code * {
+  animation: target-flash 1.5s ease-out;
 }

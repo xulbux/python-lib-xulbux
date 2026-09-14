@@ -6,7 +6,7 @@
   "embeddedLanguageFormatting": "auto",
   "endOfLine": "lf",
   "htmlWhitespaceSensitivity": "css",
-  "ignorePatterns": ["src/docs/*"],
+  "ignorePatterns": ["*.md"],
   "objectWrap": "collapse",
   "proseWrap": "preserve",
   "quoteProps": "as-needed",

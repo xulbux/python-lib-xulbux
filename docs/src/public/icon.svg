@@ -1,35 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="logo-python-lib-xulbux" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512">
-  <metadata>
-    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-             xmlns:dc="http://purl.org/dc/elements/1.1/"
-             xmlns:cc="http://creativecommons.org/ns#">
-      <cc:Work rdf:about="">
-        <dc:title>Python Lib XulbuX Logo</dc:title>
-        <dc:description>Official color logo for the Python library XulbuX.</dc:description>
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>XulbuX</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <dc:date>10/09/2026</dc:date>
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-        <dc:rights>
-          <cc:Agent>
-            <dc:title>Copyright (c) 2026 XulbuX. All rights reserved.</dc:title>
-          </cc:Agent>
-        </dc:rights>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
+<svg id="logo-python-lib-xulbux" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="g1" x1="48.96" y1="-10.63" x2="262.82" y2="286.88" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#999FFF"/>
-      <stop offset=".72" stop-color="#7E52FF"/>
+      <stop offset="0" stop-color="#99A0FF"/>
+      <stop offset=".72" stop-color="#6352FF"/>
     </linearGradient>
     <linearGradient id="g2" x1="249.51" y1="217.84" x2="463.83" y2="531.41" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FF7AA0"/>
+      <stop offset="0" stop-color="#FF80A1"/>
       <stop offset=".57" stop-color="#FF3D5D"/>
     </linearGradient>
   </defs>

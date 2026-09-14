@@ -50,7 +50,7 @@ def test_styled_text_alignment_ljust_rjust_center() -> None:
 
     # Bare style / custom color alignment:
     assert S.RED.ljust(4, "-").raw == "----"
-    assert S.hex("#F67").rjust(4, "-").raw == "----"
+    assert S.hex("#A8F").rjust(4, "-").raw == "----"
     assert S.link("url").center(4, "-").raw == "----"
 
 

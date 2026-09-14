@@ -16,6 +16,8 @@ To upgrade to the latest available version:
 pip install --upgrade xulbux
 ```
 
+<br>
+
 ## Usage
 
 The library's modules can be accessed by importing the `xulbux` package. It is highly recommended to alias the package (e.g., as `xx`) to prevent naming conflicts with common variable names like `data` or `file`:
@@ -41,60 +43,68 @@ from xulbux.base.consts import CHARS
 from xulbux.base.types import PathsList
 ```
 
+<br>
+
 ## Example Usage
 
-This is what it could look like using this library for a simple but ultra good-looking color converter:
+This example demonstrates building an interactive CLI color converter, with its styled terminal output shown below the code:
 
 ```python
 import xulbux as xx
 from xulbux import S, hexa
-from xulbux.base.consts import CHARS
+
+
+def hex_validator(input_str: str) -> str | None:
+    """User input validator for hex color strings."""
+
+    if xx.color.is_valid_hexa(input_str):
+        if xx.color.has_alpha(input_str):
+            return "The input color cannot contain an alpha channel."
+        return None  # Return `None` if the input is valid.
+    return f"{input_str!r} is not a valid hex color."
 
 
 def main() -> None:
 
-    # Let the user enter a hexa color in any format:
-    input_clr = xx.console.input(
-        (S.BOLD("Enter a HEXA color in any format"), " > "),
+    # User input with realtime validation:
+    input_hexa_str = xx.console.input(
+        (S.BOLD("Enter a hex color in any format"), S.DIM(" > ")),
         start="\n",
-        placeholder="#7075FF",
-        max_len=7,
-        allowed_chars=CHARS.HEX_DIGITS,
+        end="\n",
+        placeholder="#FF3D5D",
+        validator=hex_validator,
     )
 
-    # Announce indexing the input color:
-    xx.console.log("INDEX", "Indexing the input HEXA color...", start="\n", title_bg_color=S.BG.BR.BLUE)
-
-    try:
-        # Try to initialize the input string as a `hexa()` object:
-        hexa_color = hexa(input_clr)
-
-    except ValueError:
-        # Announce the invalid input color and exit the program:
-        xx.console.fail("The input HEXA color is invalid.", end="\n\n", exit_code=1)
-
-    # Announce starting the conversion:
-    xx.console.log("CONVERT", "Converting the HEXA color into different types...", title_bg_color=S.BG.BR.MAGENTA)
-
-    # Convert the hexa color into the two other color styles:
-    rgba_color = hexa_color.as_rgba()
-    hsla_color = hexa_color.as_hsla()
-
-    # Announce the successful conversion:
-    xx.console.done("Successfully converted color into different types.", end="\n\n")
+    # Initialize the already validated hex color string as a `hexa()` object:
+    hexa_color = hexa(input_hexa_str)
 
     # Pretty print the color in different formats:
     xx.console.box(
-        (S.BOLD("HEXA: "), (S.ITALIC | S.BR.WHITE)(str(hexa_color))),
-        (S.BOLD("RGBA: "), (S.ITALIC | S.BR.WHITE)(str(rgba_color))),
-        (S.BOLD("HSLA: "), (S.ITALIC | S.BR.WHITE)(str(hsla_color))),
+        (S.BOLD | S.BG.hex(hexa_color).with_text_fg())("           Preview           "),
         "{hr}",
-        S.BG.hex(hexa_color).with_text_fg()(" ... .... . -. .- -. .. --. .- -. ... "),
+        (S.BOLD("HEXA: "), S.ITALIC(str(hexa_color))),
+        (S.BOLD("RGBA: "), S.ITALIC(str(hexa_color.as_rgba()))),
+        (S.BOLD("HSLA: "), S.ITALIC(str(hexa_color.as_hsla()))),
         border_style=S.DIM,
         end="\n\n",
     )
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print()
 ```
+
+<TerminalOutput>
+<span class="b">Enter a hex color in any format</span><span class="dim"> > </span>a8f
+
+<span class="dim">╭───────────────────────────────╮</span>
+<span class="dim">│</span> <span class="#000 bg-#A8F">           Preview           </span> <span class="dim">│</span>
+<span class="dim">├───────────────────────────────┤</span>
+<span class="dim">│</span> <span class="b">HEXA: </span><span class="i">#AA88FF</span>                 <span class="dim">│</span>
+<span class="dim">│</span> <span class="b">RGBA: </span><span class="i">rgba(170, 136, 255)</span>     <span class="dim">│</span>
+<span class="dim">│</span> <span class="b">HSLA: </span><span class="i">hsla(257°, 100%, 77%)</span>   <span class="dim">│</span>
+<span class="dim">╰───────────────────────────────╯</span>
+</TerminalOutput>

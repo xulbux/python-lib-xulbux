@@ -1776,7 +1776,7 @@ def _resolve_box_border(
     else:
         raise ValueError(
             "The 'border_style' parameter must be a valid non-background style "
-            f"(e.g., 'S.DIM | S.BR.BLUE', 'S.hex(\"#67F\")'), got {border_style!r}"
+            f"(e.g., 'S.DIM | S.BR.BLUE', 'S.hex(\"#A8F\")'), got {border_style!r}"
         )
 
     borders = {"standard": "┌─┐│┘─└│├─┤", "rounded": "╭─╮│╯─╰│├─┤", "strong": "┏━┓┃┛━┗┃┣━┫", "double": "╔═╗║╝═╚║╠═╣"}
@@ -2602,7 +2602,7 @@ def _read_single_key() -> None:
 def _resolve_title_colors(title_bg_color: object, /) -> tuple[BgColorStyle, FgColorStyle]:
     """Resolves the log title's background style and its matching foreground style.\n
     ----------------------------------------------------------------------------------------------------
-    *   `title_bg_color` – An `S` background color style (e.g., `S.BG.BLUE`, `S.BG.hex("#67F")`)."""
+    *   `title_bg_color` – An `S` background color style (e.g., `S.BG.BLUE`, `S.BG.hex("#A8F")`)."""
 
     if (cached := _TITLE_COLORS_CACHE.get(title_bg_color)) is not None:
         return cached
@@ -2637,7 +2637,7 @@ def _as_bg_color_style(color: object, /, *, param_name: str = "box_bg_color") ->
 
     raise ValueError(
         f"The {param_name!r} parameter must be a valid background color style "
-        f"(e.g., 'S.BG.BLUE', 'S.BG.hex(\"#67F\")'), got {color!r}"
+        f"(e.g., 'S.BG.BLUE', 'S.BG.hex(\"#A8F\")'), got {color!r}"
     )
 
 
@@ -2649,7 +2649,7 @@ def _as_fg_color_style(color: object, /, *, param_name: str = "color") -> FgColo
 
     raise ValueError(
         f"The {param_name!r} parameter must be a valid foreground color style "
-        f"(e.g., 'S.RED', 'S.hex(\"#67F\")'), got {color!r}"
+        f"(e.g., 'S.RED', 'S.hex(\"#A8F\")'), got {color!r}"
     )
 
 

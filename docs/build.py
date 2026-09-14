@@ -14,25 +14,38 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Any, cast
 
-# Ensure we can import xulbux:
-ROOT_DIR = Path(__file__).parent.parent.resolve()
-SRC_DIR = ROOT_DIR / "src"
-XUL_DIR = SRC_DIR / "xulbux"
+DIR_ROOT = Path(__file__).parent.parent.resolve()  # Ensure we can import xulbux.
 
-DOCS_DIR = ROOT_DIR / "docs"
-DOCS_SRC_DIR = DOCS_DIR / "src"
-DOCS_BUILD_DIR = DOCS_DIR / ".build"
+DIR_SRC = DIR_ROOT / "src"
+DIR_SRC_XULBUX = DIR_SRC / "xulbux"
 
-SIDEBAR_REL_PATH = Path(".vitepress") / "sidebar.json"
+DIR_DOCS = DIR_ROOT / "docs"
+DIR_DOCS_SRC = DIR_DOCS / "src"
+DIR_DOCS_BUILD = DIR_DOCS / ".build"
 
-API_LINKS_PATH = DOCS_BUILD_DIR / ".vitepress" / "api-links.json"
-API_OUT_DIR = DOCS_BUILD_DIR / "docs" / "api"
+DIR_API_OUT = DIR_DOCS_BUILD / "docs" / "api"
+PATH_SIDEBAR = DIR_DOCS_BUILD / ".vitepress" / "sidebar.json"
+PATH_API_LINKS = DIR_DOCS_BUILD / ".vitepress" / "api-links.json"
 API_LINKS: dict[str, str] = {}
 
-_DEPRECATED_ANNOTATED_RE = re.compile(r"(\[?)\s*Annotated\[\s*([\s\S]*?)\s*,\s*deprecated\([\s\S]*?\)\s*,?\s*\]\s*(\]?)")
+RE_DEPRECATED_ANNOTATED = re.compile(
+    r"(\[?)\s*Annotated\[\s*([\s\S]*?)\s*,\s*deprecated\([\s\S]*?\)\s*,?\s*\]\s*(\]?)",
+)
 """Pattern to strip `Annotated[…, deprecated(…)]` wrappers if they exist."""
+RE_ATTACHED_CODE = re.compile(
+    r"<!--\s*DOCS:\s*<AttachedCode>(?:-->)?(.*?)(?:<!--\s*DOCS:\s*)?</AttachedCode>\s*-->|"
+    r"<AttachedCode>(.*?)</AttachedCode>",
+    re.DOTALL,
+)
+"""Pattern to match both commented and uncommented `<AttachedCode>` blocks."""
+RE_TERMINAL_OUTPUT = re.compile(
+    r"<!--\s*DOCS:\s*<TerminalOutput>(?:-->)?(.*?)(?:<!--\s*DOCS:\s*)?</TerminalOutput>\s*-->|"
+    r"<TerminalOutput>(.*?)</TerminalOutput>",
+    re.DOTALL,
+)
+"""Pattern to match both commented and uncommented `<TerminalOutput>` blocks."""
 
-sys.path.insert(0, str(SRC_DIR))
+sys.path.insert(0, str(DIR_SRC))
 
 
 class PyOnlyFinder:
@@ -48,8 +61,8 @@ class PyOnlyFinder:
         parts = fullname.split(".")
 
         if (
-            not (py_path := SRC_DIR.joinpath(*parts).with_suffix(".py")).exists()
-            and not (py_path := SRC_DIR.joinpath(*parts, "__init__.py")).exists()
+            not (py_path := DIR_SRC.joinpath(*parts).with_suffix(".py")).exists()
+            and not (py_path := DIR_SRC.joinpath(*parts, "__init__.py")).exists()
         ):
             return None
 
@@ -123,7 +136,7 @@ def _extract_ast_vars(body: list[ast.stmt], source_code: str) -> dict[str, dict[
                         rep = ast.unparse(stmt)
 
                     vars_info[var_name] = {
-                        "sig": _DEPRECATED_ANNOTATED_RE.sub(r"\1\2\3", rep),
+                        "sig": RE_DEPRECATED_ANNOTATED.sub(r"\1\2\3", rep),
                         "doc": "",
                         "dep": "deprecated" in ast.unparse(stmt),
                         "line": getattr(stmt, "lineno", 0),
@@ -137,7 +150,7 @@ def _extract_ast_vars(body: list[ast.stmt], source_code: str) -> dict[str, dict[
             seg = ast.get_source_segment(source_code, stmt)
             rep = _dedent_source_segment(seg, stmt) if seg else ast.unparse(stmt)
             vars_info[var_name] = {
-                "sig": _DEPRECATED_ANNOTATED_RE.sub(r"\1\2\3", rep),
+                "sig": RE_DEPRECATED_ANNOTATED.sub(r"\1\2\3", rep),
                 "doc": "",
                 "dep": False,
                 "line": getattr(stmt, "lineno", 0),
@@ -178,6 +191,31 @@ def _generate_markdown_for_var(
     return _build_api_markdown_block(title, badge, var_info["sig"], doc_parts, def_name=name)
 
 
+def transform_special_docs_components(text: str) -> str:
+    """Transforms special docs components (`<AttachedCode>` and `<TerminalOutput>`) into HTML."""
+
+    def attached_code_replacer(match: re.Match[str]) -> str:
+        # Wrap code block in a custom `<AttachedCode>` component for proper rendering in the docs:
+        content_str = (match.group(1) if match.group(1) is not None else match.group(2) or "").strip()
+        if len(parts := content_str.split("```", 1)) == 2:
+            return f'<AttachedCode title="{parts[0].strip().strip(":")}">\n\n{"```" + parts[1].rstrip()}\n\n</AttachedCode>'
+        return match.group(0)
+
+    text = RE_ATTACHED_CODE.sub(attached_code_replacer, text)
+
+    def terminal_output_replacer(match: re.Match[str]) -> str:
+        # Wrap each line in a `<span class="line">` and replace newlines with `<br>` for proper formatting in the docs:
+        content_str = (match.group(1) if match.group(1) is not None else match.group(2) or "").strip("\r\n")
+        if content_str.lstrip().startswith("<pre") and "</pre>" in content_str:
+            return match.group(0)
+
+        wrapped_lines = [f'<span class="line">{line.rstrip()}</span>' for line in content_str.split("\n")]
+        content = f'<pre class="shiki vp-code" tabindex="0"><code class="term">{"<br>".join(wrapped_lines)}</code></pre>'
+        return f"<TerminalOutput>{content}</TerminalOutput>"
+
+    return RE_TERMINAL_OUTPUT.sub(terminal_output_replacer, text)
+
+
 def process_docstring(doc: str | None) -> str:
     """Cleans up docstring indentation and converts `>>> ` doc-tests into Python code blocks."""
 
@@ -203,35 +241,7 @@ def process_docstring(doc: str | None) -> str:
     if in_code:
         out.append("```")
 
-    processed = "\n".join(out)
-
-    def attached_code_replacer(match: re.Match[str]) -> str:
-        # Wrap code block in a custom `<AttachedCode>` component for proper rendering in the docs:
-        if len(parts := match.group(1).strip().split("```", 1)) == 2:
-            return f'<AttachedCode title="{parts[0].strip().strip(":")}">\n\n{"```" + parts[1]}\n\n</AttachedCode>\n'
-        return match.group(0)
-
-    processed = re.sub(
-        r"<!--\s*DOCS:\s*<AttachedCode>\s*-->(.*?)<!--\s*DOCS:\s*</AttachedCode>\s*-->",
-        attached_code_replacer,
-        processed,
-        flags=re.DOTALL,
-    )
-
-    def terminal_output_replacer(match: re.Match[str]) -> str:
-        # Wrap each line in a `<span class="line">` and replace newlines with `<br>` for proper formatting in the docs:
-        wrapped_lines = [f'<span class="line">{line.rstrip()}</span>' for line in match.group(1).strip("\n\r").split("\n")]
-        content = f'<pre class="shiki vp-code" tabindex="0"><code class="term">{"<br>".join(wrapped_lines)}</code></pre>'
-        return f"<TerminalOutput>{content}</TerminalOutput>\n"
-
-    processed = re.sub(
-        r"<!--\s*DOCS:\s*<TerminalOutput>\s*\n(.*?)\n</TerminalOutput>\s*-->",
-        terminal_output_replacer,
-        processed,
-        flags=re.DOTALL,
-    )
-
-    return processed
+    return transform_special_docs_components("\n".join(out))
 
 
 def generate_md_for_api(api_path: str) -> str:  # ruff:ignore[complex-structure]
@@ -499,7 +509,7 @@ def get_base_sidebar(docs_src_dir: Path) -> list[Any]:
     """Returns the base sidebar structure from the `.vitepress/sidebar.json` file in<br>
     the `docs/src` directory, or an empty list if the file doesn't exist or is invalid."""
 
-    if (src_sidebar_file := docs_src_dir / SIDEBAR_REL_PATH).exists() and (
+    if (src_sidebar_file := docs_src_dir / PATH_SIDEBAR).exists() and (
         src_content := src_sidebar_file.read_text(encoding="utf-8").strip()
     ):
         with suppress(json.JSONDecodeError):
@@ -514,27 +524,30 @@ def _process_single_file(file_path: Path) -> None:
     """Processes a single changed file (Python source or Markdown docs) and updates the build."""
 
     # Handle python source file:
-    if (file_path := file_path.resolve()).suffix == ".py" and XUL_DIR in file_path.parents:
-        if API_LINKS_PATH.exists():
+    if (file_path := file_path.resolve()).suffix == ".py" and DIR_SRC_XULBUX in file_path.parents:
+        if PATH_API_LINKS.exists():
             with suppress(json.JSONDecodeError):
-                API_LINKS.update(json.loads(API_LINKS_PATH.read_text("utf-8")))
+                API_LINKS.update(json.loads(PATH_API_LINKS.read_text("utf-8")))
 
-        flat_module_path = str(file_path.relative_to(XUL_DIR).with_suffix("")).replace("\\", "/").replace("/", ".")
+        flat_module_path = str(file_path.relative_to(DIR_SRC_XULBUX).with_suffix("")).replace("\\", "/").replace("/", ".")
         api_path = f"xulbux.{flat_module_path}"
 
-        md_file_path = API_OUT_DIR / f"{flat_module_path}.md"
+        md_file_path = DIR_API_OUT / f"{flat_module_path}.md"
         md_file_path.parent.mkdir(parents=True, exist_ok=True)
 
         md_file_path.write_text(generate_md_for_api(api_path), encoding="utf-8")
-        API_LINKS_PATH.write_text(json.dumps(API_LINKS, indent=2), encoding="utf-8")
+        PATH_API_LINKS.write_text(json.dumps(API_LINKS, indent=2), encoding="utf-8")
 
         print(f"  generated {md_file_path.name} ({api_path})")
 
     # Handle manual docs source file:
-    elif DOCS_SRC_DIR in file_path.parents:
-        dest_path = DOCS_BUILD_DIR / file_path.relative_to(DOCS_SRC_DIR)
+    elif DIR_DOCS_SRC in file_path.parents:
+        dest_path = DIR_DOCS_BUILD / file_path.relative_to(DIR_DOCS_SRC)
         dest_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(file_path, dest_path)
+        if file_path.suffix == ".md":
+            dest_path.write_text(transform_special_docs_components(file_path.read_text("utf-8")), encoding="utf-8")
+        else:
+            shutil.copy2(file_path, dest_path)
 
         print(f"  copied {dest_path.name}")
 
@@ -543,28 +556,33 @@ def _build_all_api_docs() -> None:
     """Discovers all Python modules, generates Markdown docs, and builds the sidebar structure."""
 
     # [1] Clean and recreate the build directory to ensure a fresh slate:
-    if DOCS_BUILD_DIR.exists():
-        shutil.rmtree(DOCS_BUILD_DIR)
+    if DIR_DOCS_BUILD.exists():
+        shutil.rmtree(DIR_DOCS_BUILD)
 
-    shutil.copytree(DOCS_SRC_DIR, DOCS_BUILD_DIR)
-    print(f"\nCopied {DOCS_SRC_DIR.name} to {DOCS_BUILD_DIR.name}\n")
+    shutil.copytree(DIR_DOCS_SRC, DIR_DOCS_BUILD)
+    print(f"\nCopied {DIR_DOCS_SRC.name} to {DIR_DOCS_BUILD.name}\n")
+
+    for md_file_path in DIR_DOCS_BUILD.rglob("*.md"):
+        content = md_file_path.read_text(encoding="utf-8")
+        if (transformed := transform_special_docs_components(content)) != content:
+            md_file_path.write_text(transformed, encoding="utf-8")
 
     # [2] Auto-discover all Python modules and generate markdown files for them:
     sidebar_root_items: list[dict[str, Any]] = []
     sidebar_groups: dict[str, list[dict[str, str]]] = {}
     sidebar_items: list[dict[str, Any]] = []
 
-    for py_file in sorted(XUL_DIR.rglob("*.py")):
+    for py_file in sorted(DIR_SRC_XULBUX.rglob("*.py")):
         if py_file.name.startswith("_"):
             continue
 
-        rel_path = py_file.relative_to(XUL_DIR).with_suffix("")
+        rel_path = py_file.relative_to(DIR_SRC_XULBUX).with_suffix("")
         flat_module_path = str(rel_path).replace("\\", "/").replace("/", ".")
 
         api_path = f"xulbux.{flat_module_path}"
         page_title = py_file.stem.replace("_", " ").title()
 
-        md_file_path = API_OUT_DIR / f"{flat_module_path}.md"
+        md_file_path = DIR_API_OUT / f"{flat_module_path}.md"
         link_path = f"/docs/api/{flat_module_path}"
 
         final_md = generate_md_for_api(api_path)
@@ -587,17 +605,17 @@ def _build_all_api_docs() -> None:
     sidebar_items.extend(sidebar_root_items)
 
     # Write `sidebar.json`:
-    sidebar_data = get_base_sidebar(DOCS_SRC_DIR)
+    sidebar_data = get_base_sidebar(DIR_DOCS_SRC)
     sidebar_data.append({"text": "API Reference", "items": sidebar_items})
 
-    sidebar_file = DOCS_BUILD_DIR / SIDEBAR_REL_PATH
+    sidebar_file = DIR_DOCS_BUILD / PATH_SIDEBAR
     sidebar_file.parent.mkdir(parents=True, exist_ok=True)
     sidebar_file.write_text(json.dumps(sidebar_data, indent=2), encoding="utf-8")
     print(f"\nGenerated sidebar.json with {len(sidebar_root_items) + sum(len(i) for i in sidebar_groups.values())} items\n")
 
     # Write `api-links.json`:
-    API_LINKS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    API_LINKS_PATH.write_text(json.dumps(API_LINKS, indent=2), encoding="utf-8")
+    PATH_API_LINKS.parent.mkdir(parents=True, exist_ok=True)
+    PATH_API_LINKS.write_text(json.dumps(API_LINKS, indent=2), encoding="utf-8")
 
 
 def main() -> None:
@@ -620,7 +638,7 @@ def main() -> None:
     print(f"\nRunning VitePress {'dev' if args.dev else 'build'}...\n")
 
     try:
-        subprocess.run([pnpm_exe, "exec", "vitepress", "dev" if args.dev else "build", ".build"], cwd=DOCS_DIR, check=True)
+        subprocess.run([pnpm_exe, "exec", "vitepress", "dev" if args.dev else "build", ".build"], cwd=DIR_DOCS, check=True)
     except subprocess.CalledProcessError as exc:
         print(f"VitePress failed with exit code {exc.returncode}\n")
         raise SystemExit(exc.returncode) from exc

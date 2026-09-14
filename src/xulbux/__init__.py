@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 __package_name__: Final[str] = "xulbux"
 __version__: Final[str] = "2.0.0"
-__description__: Final[str] = "A Python library to simplify common programming tasks."
+__description__: Final[str] = "A modern, high-performance Python library to simplify common tasks."
 __status__: Final[str] = "Production/Stable"
 
 __url__: Final[str] = "https://xulbux.github.io/python-lib-xulbux"

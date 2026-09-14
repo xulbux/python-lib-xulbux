@@ -11,7 +11,7 @@ const sidebar = JSON.parse(fs.readFileSync(path.resolve(dirname, 'sidebar.json')
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   cleanUrls: true,
-  description: 'A Python library to simplify common programming tasks.',
+  description: 'A modern, high-performance Python library to simplify common tasks.',
   head: [['link', { href: '/icon.svg', rel: 'icon' }]],
   markdown: {
     codeTransformers: [apiLinkTransformer(dirname)],
