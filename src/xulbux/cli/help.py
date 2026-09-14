@@ -79,11 +79,11 @@ def show_help() -> None:
 
     # Styles used in the help message:
     cmd_st = S.BR.RED
-    heading_st = S.BOLD | S.BR.WHITE
-    module_st = S.BR.MAGENTA
+    hdg_st = S.BOLD | S.BR.WHITE
+    mod_st = S.BR.MAGENTA
     src_st = S.BR.BLUE
     txt_st = S.WHITE
-    version_st = S.hex("#EAEBEE")
+    ver_st = S.hex("#EEE")
 
     def _box(*args: TextRenderable) -> S:
         """Helper function to create a help screen box with the given content."""
@@ -94,21 +94,21 @@ def show_help() -> None:
 
     # The local version of the library:
     version_msg: tuple[TextRenderable, TextRenderable, TextRenderable] = (
-        version_st("▄" * (len(__version__) + (7 if is_latest_ver else 5))),
-        (S.hex("#000") | version_st.as_bg())(f"  {'✓ ' if is_latest_ver else ''}v", S.BOLD(__version__), "  "),
-        version_st("▀" * (len(__version__) + (7 if is_latest_ver else 5))),
+        ver_st("▄" * (len(__version__) + (7 if is_latest_ver else 5))),
+        (S.hex("#000") | ver_st.as_bg())(f"  {'✓ ' if is_latest_ver else ''}v", S.BOLD(__version__), "  "),
+        ver_st("▀" * (len(__version__) + (7 if is_latest_ver else 5))),
     )
 
     # fmt:off
     # Attach a notice if the installed version is not the latest one available on PyPI:
     if not is_latest_ver and latest_ver:
         version_msg = (
-            (version_msg[0], (S.DIM | version_st)("─" * (len(latest_ver) + 15), "╮")),
-            (version_msg[1], (version_st(" ↑ ", S.link("https://pypi.org/pypi/xulbux")("v", S.BOLD(latest_ver)), " available "), (S.DIM | version_st)("│"))),  # ruff:ignore[line-too-long]
-            (version_msg[2], (S.DIM | version_st)("─" * (len(latest_ver) + 15), "╯")),
+            (version_msg[0], (S.DIM | ver_st)("─" * (len(latest_ver) + 15), "╮")),
+            (version_msg[1], (ver_st(" ↑ ", S.link("https://pypi.org/pypi/xulbux")("v", S.BOLD(latest_ver)), " available "), (S.DIM | ver_st)("│"))),  # ruff:ignore[line-too-long]
+            (version_msg[2], (S.DIM | ver_st)("─" * (len(latest_ver) + 15), "╯")),
         )
 
-    logo_lines = S.gradient("#6652FF", "#999FFF", "#FF7AA0", "#FF3D5D", angle=24, space="oklab")(_LOGO_LINES).ansi.split("\n")
+    logo_lines = S.gradient("#6352FF", "#99A0FF", "#FF80A1", "#FF3D5D", angle=24, space="oklab")(_LOGO_LINES).ansi.split("\n")
 
     S(
         S.RESET,
@@ -122,26 +122,26 @@ def show_help() -> None:
             "  ", logo_lines[5],
         ),
         "\n",
-        ("  ", heading_st("Commands:")),
+        ("  ", hdg_st("Commands:")),
         _box(
             (cmd_st("xulbux-lib        "), txt_st("Show library info and usage.")),
             (cmd_st("xulbux-lib ", S.BOLD("ansi   ")), txt_st("Preview all possible ANSI styles.")),
             (cmd_st("xulbux-lib ", S.BOLD("c256   ")), txt_st("Show a map of all 256 colors.")),
             (cmd_st("xulbux-lib ", S.BOLD("tc     ")), txt_st("Show a true-color gradient map.")),
         ),
-        ("  ", heading_st("Modules:")),
+        ("  ", hdg_st("Modules:")),
         _box(
-            (module_st("ansi       "), txt_st("Rich ANSI terminal styling & Term.")),
-            (module_st("color      "), txt_st("RGBA, HSLA & HEXA color models.")),
-            (module_st("console    "), txt_st("Loggers, boxes, inputs, progress bars.")),
-            (module_st("data       "), txt_st("Deep merge, render, path IDs, cleanup.")),
-            (module_st("fs         "), txt_st("Path resolution & file operations.")),
-            (module_st("json       "), txt_st("Comment-aware JSON read/write/update.")),
-            (module_st("regex      "), txt_st("Dynamic regex generators & LazyRegex.")),
-            (module_st("string     "), txt_st("Casing, indentation, JS detection.")),
-            (module_st("system     "), txt_st("Elevation, env paths, dependencies.")),
+            (mod_st("ansi       "), txt_st("Rich ANSI terminal styling & Term.")),
+            (mod_st("color      "), txt_st("RGBA, HSLA & HEXA color models.")),
+            (mod_st("console    "), txt_st("Loggers, boxes, inputs, progress bars.")),
+            (mod_st("data       "), txt_st("Deep merge, render, path IDs, cleanup.")),
+            (mod_st("fs         "), txt_st("Path resolution & file operations.")),
+            (mod_st("json       "), txt_st("Comment-aware JSON read/write/update.")),
+            (mod_st("regex      "), txt_st("Dynamic regex generators & LazyRegex.")),
+            (mod_st("string     "), txt_st("Casing, indentation, JS detection.")),
+            (mod_st("system     "), txt_st("Elevation, env paths, dependencies.")),
         ),
-        ("  ", heading_st("Resources:")),
+        ("  ", hdg_st("Resources:")),
         _box(
             (src_st("Docs       "), (txt_st | S.link("https://xulbux.github.io/python-lib-xulbux/docs"))("xulbux.github.io/python-lib-xulbux/docs")),
             (src_st("GitHub     "), (txt_st | S.link("https://github.com/xulbux/python-lib-xulbux"))("github.com/xulbux/python-lib-xulbux")),
