@@ -1,71 +1,56 @@
-# **xulbux**<a href="#xulbux"><img align="right" height="33" src="https://github.com/xulbux/python-lib-xulbux/blob/main/assets/logo.svg?raw=true"></a>
+<span id="top" />
 
-[![](https://img.shields.io/pypi/v/xulbux?style=flat&labelColor=404560&color=7075FF)](https://pypi.org/project/xulbux) [![](https://img.shields.io/pepy/dt/xulbux?style=flat&labelColor=404560&color=7075FF)](https://clickpy.clickhouse.com/dashboard/xulbux) [![](https://img.shields.io/github/license/xulbux/python-lib-xulbux?style=flat&labelColor=405555&color=70FFEE)](https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE) [![](https://img.shields.io/github/last-commit/xulbux/python-lib-xulbux?style=flat&labelColor=554045&color=FF6065)](https://github.com/xulbux/python-lib-xulbux/commits) [![](https://img.shields.io/github/issues/xulbux/python-lib-xulbux?style=flat&labelColor=554045&color=FF6065)](https://github.com/xulbux/python-lib-xulbux/issues) [![](https://img.shields.io/github/stars/xulbux/python-lib-xulbux?label=★&style=flat&labelColor=604A40&color=FF9673)](https://github.com/xulbux/python-lib-xulbux/stargazers)
+<div align="center">
+<br><br>
+<h1>
+<a href="https://xulbux.github.io/python-lib-xulbux"><img height="64" src="https://github.com/xulbux/python-lib-xulbux/blob/main/assets/icon.svg?raw=true"></a>
+<br>
+Python library <code>xulbux</code>
+<br><br>
+<a href="https://pypi.org/project/xulbux"><img src="https://img.shields.io/pypi/v/xulbux?style=flat&labelColor=404060&color=7075FF"/></a> <a href="https://clickpy.clickhouse.com/dashboard/xulbux"><img src="https://img.shields.io/pepy/dt/xulbux?style=flat&labelColor=404060&color=7075FF"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE"><img src="https://img.shields.io/github/license/xulbux/python-lib-xulbux?style=flat&labelColor=404060&color=A6A8FF"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/commits"><img src="https://img.shields.io/github/last-commit/xulbux/python-lib-xulbux?style=flat&labelColor=554046&color=FF6680"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/issues"><img src="https://img.shields.io/github/issues/xulbux/python-lib-xulbux?style=flat&labelColor=554046&color=FF6680"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/stargazers"><img src="https://img.shields.io/github/stars/xulbux/python-lib-xulbux?label=★&style=flat&labelColor=554046&color=FF8FA2"/></a>
+</h1>
+<h3>A modern, high-performance Python library to simplify common tasks.</h3>
+<br><br>
+</div>
 
 **`xulbux`** is a library that contains many useful classes, types, and functions,
-ranging from console logging and working with colors to file management and system operations.
+ranging from terminal logging and working with colors to file management and system operations.
 The library is designed to simplify common programming tasks and improve code readability through its collection of tools.
 
-For precise information about the library, see the library's [**documentation**](https://github.com/xulbux/python-lib-xulbux/wiki).<br>
-For the libraries latest changes and updates, see the [**change log**](https://github.com/xulbux/python-lib-xulbux/blob/main/CHANGELOG.md).
+For precise information about the library, see the library's [**documentation**](https://xulbux.github.io/python-lib-xulbux/docs).<br>
+For the library's latest changes and updates, see the [**change log**](https://github.com/xulbux/python-lib-xulbux/blob/main/CHANGELOG.md).
 
-### The best modules, you have to check out:
-
-[![format_codes](https://img.shields.io/badge/format__codes-B272FC?style=for-the-badge)](https://github.com/xulbux/python-lib-xulbux/wiki/format_codes) [![console](https://img.shields.io/badge/console-B272FC?style=for-the-badge)](https://github.com/xulbux/python-lib-xulbux/wiki/console) [![color](https://img.shields.io/badge/color-B272FC?style=for-the-badge)](https://github.com/xulbux/python-lib-xulbux/wiki/color)
+> <br>
+> ⚡ To see what this library can do, check out the <a href="#modules"><b>modules overview</b></a> or explore the <a href="#example-usage"><b>live example</b></a>.
+> <br>
+> <br>
 
 <br>
+<br>
 
-## Installation
+<span id="installation" />
 
-Run the following commands in a console with administrator privileges, so the actions take effect for all users.
+## Installation 📦
 
-Install the library and all its dependencies with the command:
+It is recommended to install the library within a [virtual environment](https://docs.python.org/3/tutorial/venv.html) to align with modern Python standards and prevent `externally-managed-environment` errors on newer operating systems.
 
-```console
+To install the library, run:
+
+```bash
 pip install xulbux
 ```
 
-Upgrade the library and all its dependencies to their latest available version with the command:
+To upgrade to the latest available version:
 
-```console
+```bash
 pip install --upgrade xulbux
 ```
 
 <br>
 
-## CLI Commands
+<span id="modules" />
 
-When the library is installed, the following commands are available in the console:
-
-| Command           | Description                                                      |
-| :---------------- | :--------------------------------------------------------------- |
-| `xulbux-lib`      | Show some information about the library.                         |
-| `xulbux-lib fc`   | Parse and render a string's format codes as ANSI console output. |
-
-<br>
-
-## Usage
-
-Import the full library under the alias `xx`, so its modules and main classes are accessible with `xx.module.Class`, `xx.MainClass.method()`:
-
-```python
-import xulbux as xx
-```
-
-So you don't have to import the full library under an alias, you can also import only certain parts of the library's contents:
-
-```python
-# LIBRARY SUB MODULES
-from xulbux.base.consts import COLOR, CHARS, ANSI
-# MODULE MAIN CLASSES
-from xulbux import Code, Color, Console, ...
-# MODULE SPECIFIC IMPORTS
-from xulbux.color import rgba, hsla, hexa
-```
-
-<br>
-
-## Modules
+## Modules ⚡
 
 <table>
   <thead>
@@ -76,7 +61,7 @@ from xulbux.color import rgba, hsla, hexa
   </thead>
   <tbody>
     <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/base"><img src="https://img.shields.io/badge/base-B272FC?style=for-the-badge" alt="base"></a></td>
+      <td align="center"><b><code>base</code></b></td>
       <td>
         <table>
           <thead>
@@ -87,15 +72,19 @@ from xulbux.color import rgba, hsla, hexa
           </thead>
           <tbody>
             <tr>
-              <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/base#consts"><img src="https://img.shields.io/badge/consts-B272FC?style=for-the-badge" alt="consts"></a></td>
-              <td>Constant values used throughout the library.</td>
+              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/base.consts">consts</a></code></b></td>
+              <td>Character set constants and terminal key sequences used throughout the library.</td>
             </tr>
             <tr>
-              <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/base#exceptions"><img src="https://img.shields.io/badge/exceptions-B272FC?style=for-the-badge" alt="exceptions"></a></td>
+              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/base.decorators">decorators</a></code></b></td>
+              <td>Utility decorators used throughout the library.</td>
+            </tr>
+            <tr>
+              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/base.exceptions">exceptions</a></code></b></td>
               <td>Custom exception classes used throughout the library.</td>
             </tr>
             <tr>
-              <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/base#types"><img src="https://img.shields.io/badge/types-B272FC?style=for-the-badge" alt="types"></a></td>
+              <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/base.types">types</a></code></b></td>
               <td>Custom type definitions used throughout the library.</td>
             </tr>
           </tbody>
@@ -103,136 +92,178 @@ from xulbux.color import rgba, hsla, hexa
       </td>
     </tr>
     <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/code"><img src="https://img.shields.io/badge/code-B272FC?style=for-the-badge" alt="code"></a></td>
-      <td><code>Code</code> class, which includes methods to work with code strings.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/ansi">ansi</a></code></b></td>
+      <td><code>S</code> and <code>Term</code> classes for building richly formatted terminal output via a typed, operator-based syntax and emitting cursor- and screen-control sequences.</td>
     </tr>
     <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/color"><img src="https://img.shields.io/badge/color-B272FC?style=for-the-badge" alt="color"></a></td>
-      <td><code>rgba</code> <code>hsla</code> <code>hexa</code> <code>Color</code> classes, which include methods to work with<br>
-        colors in various formats.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/color">color</a></code></b></td>
+      <td><code>rgba</code>, <code>hsla</code>, and <code>hexa</code> classes for manipulating, converting, blending, and interpolating colors across different color spaces.</td>
     </tr>
     <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/console"><img src="https://img.shields.io/badge/console-B272FC?style=for-the-badge" alt="console"></a></td>
-      <td><code>Console</code> <code>ProgressBar</code> classes, which include methods for logging<br>
-        and other actions within the console.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/console">console</a></code></b></td>
+      <td><code>ArgumentParser</code>, <code>ProgressBar</code>, and <code>Throbber</code> classes, along with utilities for styled logging, interactive prompts, and terminal control.</td>
     </tr>
     <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/data"><img src="https://img.shields.io/badge/data-B272FC?style=for-the-badge" alt="data"></a></td>
-      <td><code>Data</code> class, which includes methods to work with nested data structures.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/data">data</a></code></b></td>
+      <td>Utilities for processing and managing complex data structures, including deep merging, nested key access, recursive sorting, and syntax-highlighted rendering.</td>
     </tr>
     <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/env_path"><img src="https://img.shields.io/badge/env__path-B272FC?style=for-the-badge" alt="env_path"></a></td>
-      <td><code>EnvPath</code> class, which includes methods to work with the PATH environment variable.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/fs">fs</a></code></b></td>
+      <td>File system utilities including fuzzy path resolution, enhanced JSON file handling, safe directory creation, and common system path lookups.</td>
     </tr>
     <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/path"><img src="https://img.shields.io/badge/file__sys-B272FC?style=for-the-badge" alt="path"></a></td>
-      <td><code>FileSys</code> class, which includes methods to work with the file system and directories.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/regex">regex</a></code></b></td>
+      <td><code>LazyRegex</code> pattern container and builders to dynamically generate regular expression patterns for common use cases.</td>
     </tr>
     <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/file"><img src="https://img.shields.io/badge/file-B272FC?style=for-the-badge" alt="file"></a></td>
-      <td><code>File</code> class, which includes methods to work with files and file paths.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/string">string</a></code></b></td>
+      <td>Utility functions for advanced string manipulation, casing conversion, whitespace stripping, diffing, and safe type casting.</td>
     </tr>
     <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/format_codes"><img src="https://img.shields.io/badge/format__codes-B272FC?style=for-the-badge" alt="format_codes"></a></td>
-      <td><code>FormatCodes</code> class, which includes methods to print and work with strings that contain<br>
-        special formatting codes, which are then converted to ANSI codes for pretty console output.</td>
-    </tr>
-    <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/json"><img src="https://img.shields.io/badge/json-B272FC?style=for-the-badge" alt="json"></a></td>
-      <td><code>Json</code> class, which includes methods to read, create and update JSON files,<br>
-        with support for comments inside the JSON data.</td>
-    </tr>
-    <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/regex"><img src="https://img.shields.io/badge/regex-B272FC?style=for-the-badge" alt="regex"></a></td>
-      <td><code>Regex</code> class, which includes methods to dynamically generate complex regex patterns<br>
-        for common use cases.</td>
-    </tr>
-    <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/string"><img src="https://img.shields.io/badge/string-B272FC?style=for-the-badge" alt="string"></a></td>
-      <td><code>String</code> class, which includes various utility methods for string manipulation and conversion.</td>
-    </tr>
-    <tr>
-      <td><a href="https://github.com/xulbux/python-lib-xulbux/wiki/system"><img src="https://img.shields.io/badge/system-B272FC?style=for-the-badge" alt="system"></a></td>
-      <td><code>System</code> class, which includes methods to interact with the underlying operating system.</td>
+      <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/system">system</a></code></b></td>
+      <td>OS-level automation helpers including clipboard access, file launching, command execution, privilege checks, and dependency installation.</td>
     </tr>
   </tbody>
 </table>
 
 <br>
 
-## Example Usage
+<span id="usage" />
 
-This is what it could look like using this library for a simple but ultra good-looking color converter:
+## Usage ⚙️
+
+The library's modules can be accessed by importing the `xulbux` package. It is highly recommended to alias the package (e.g., as `xx`) to prevent naming conflicts with common variable names like `data` or `file`:
 
 ```python
-from xulbux.base.consts import COLOR, CHARS
-from xulbux.color import hexa
-from xulbux import Console
+import xulbux as xx
+
+xx.console.log("Hello, World!")
+xx.data.render({"key": "value"})
+```
+
+The library's classes can be imported directly from the `xulbux` package:
+
+```python
+from xulbux import ArgumentParser, S
+```
+
+Certain things aren't exposed under the `xulbux` package directly.<br>
+They can be imported from their respective submodules, for example:
+
+```python
+from xulbux.base.consts import CHARS
+from xulbux.base.types import PathsList
+```
+
+<br>
+
+<span id="cli-commands" />
+
+## CLI Commands 🔧
+
+When the library is installed, the following commands are available in the terminal:
+
+<table>
+  <thead>
+    <tr>
+      <th align="left">Command</th>
+      <th align="left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>xulbux-lib</code></td>
+      <td>Show some information about the library.</td>
+    </tr>
+    <tr>
+      <td><code>xulbux-lib <b>ansi</b></code></td>
+      <td>Preview all possible ANSI styles in the terminal.</td>
+    </tr>
+    <tr>
+      <td><code>xulbux-lib <b>c256</b></code></td>
+      <td>Show a map of all 256-colors in the terminal.</td>
+    </tr>
+    <tr>
+      <td><code>xulbux-lib <b>tc</b></code></td>
+      <td>Show a true-color gradient map in the terminal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<br>
+
+<span id="example-usage" />
+
+## Example Usage ✨
+
+This is what a simple but very good-looking color converter looks like in action:
+
+<a href="https://github.com/xulbux/python-lib-xulbux/blob/main/assets/example.png"><img width="520" src="https://github.com/xulbux/python-lib-xulbux/blob/main/assets/example.png?raw=true" alt="Example color converter terminal output"></a>
+
+<br>
+
+### Code
+
+```python
+import xulbux as xx
+from xulbux import S, hexa
+
+
+def hex_validator(input_str: str) -> str | None:
+    """User input validator for hex color strings."""
+
+    if xx.color.is_valid_hexa(input_str):
+        if xx.color.has_alpha(input_str):
+            return "The input color cannot contain an alpha channel."
+        return None  # Return `None` if the input is valid.
+    return f"{input_str!r} is not a valid hex color."
 
 
 def main() -> None:
 
-    # LET THE USER ENTER A HEXA COLOR IN ANY HEXA FORMAT
-    input_clr = Console.input(
-        "[b](Enter a HEXA color in any format) > ",
+    # User input with realtime validation:
+    input_hexa_str = xx.console.input(
+        (S.BOLD("Enter a hex color in any format"), S.DIM(" > ")),
         start="\n",
-        placeholder="#7075FF",
-        max_len=7,
-        allowed_chars=CHARS.HEX_DIGITS,
+        end="\n",
+        placeholder="#FF3D5D",
+        validator=hex_validator,
     )
 
-    # ANNOUNCE INDEXING THE INPUT COLOR
-    Console.log(
-        "INDEX",
-        "Indexing the input HEXA color...",
-        start="\n",
-        title_bg_color=COLOR.BLUE,
-    )
+    # Initialize the already validated hex color string as a `hexa()` object:
+    hexa_color = hexa(input_hexa_str)
 
-    try:
-        # TRY TO CONVERT THE INPUT STRING INTO A hexa() OBJECT
-        hexa_color = hexa(input_clr)
-
-    except ValueError:
-        # ANNOUNCE THE INVALID INPUT COLOR AND EXIT THE PROGRAM
-        Console.fail(
-            "The input HEXA color is invalid.",
-            end="\n\n",
-            exit=True,
-        )
-
-    # ANNOUNCE STARTING THE CONVERSION
-    Console.log(
-        "CONVERT",
-        "Converting the HEXA color into different types...",
-        title_bg_color=COLOR.TANGERINE,
-    )
-
-    # CONVERT THE HEXA COLOR INTO THE TWO OTHER COLOR FORMATS
-    rgba_color = hexa_color.to_rgba()
-    hsla_color = hexa_color.to_hsla()
-
-    # ANNOUNCE THE SUCCESSFUL CONVERSION
-    Console.done(
-        "Successfully converted color into different types.",
+    # Pretty print the color in different formats:
+    xx.console.box(
+        (S.BOLD | S.BG.hex(hexa_color).with_text_fg())("           Preview           "),
+        "{hr}",
+        (S.BOLD("HEXA: "), S.ITALIC(str(hexa_color))),
+        (S.BOLD("RGBA: "), S.ITALIC(str(hexa_color.as_rgba()))),
+        (S.BOLD("HSLA: "), S.ITALIC(str(hexa_color.as_hsla()))),
+        border_style=S.DIM,
         end="\n\n",
-    )
-
-    # PRETTY PRINT THE COLOR IN DIFFERENT FORMATS
-    Console.log_box_bordered(
-        f"[b](HEXA:) [i|white]({hexa_color})",
-        f"[b](RGBA:) [i|white]({rgba_color})",
-        f"[b](HSLA:) [i|white]({hsla_color})",
     )
 
 
 if __name__ == "__main__":
-    main()
-
+    try:
+        main()
+    except KeyboardInterrupt:
+        print()
 ```
 
 <br>
 <br>
+<br>
 
------------------------------------------------------------------
-[View this library on **PyPI**](https://pypi.org/project/xulbux)
+## Enjoying this library? Have suggestions?
+
+Please consider giving a ⭐ on [**GitHub**](https://github.com/xulbux/python-lib-xulbux) or suggesting improvements in the [**Discussions**](https://github.com/xulbux/python-lib-xulbux/discussions).
+
+<br>
+<br>
+<br>
+
+---
+
+✨ Always creating more cool stuff for you! ✨ —⠀[**XulbuX**](https://xulbux.com)
