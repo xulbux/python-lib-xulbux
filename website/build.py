@@ -19,15 +19,15 @@ DIR_ROOT = Path(__file__).parent.parent.resolve()  # Ensure we can import xulbux
 DIR_SRC = DIR_ROOT / "src"
 DIR_SRC_XULBUX = DIR_SRC / "xulbux"
 
-DIR_DOCS = DIR_ROOT / "docs"
-DIR_DOCS_SRC = DIR_DOCS / "src"
-DIR_DOCS_BUILD = DIR_DOCS / ".build"
+DIR_WEBSITE = DIR_ROOT / "website"
+DIR_WEBSITE_SRC = DIR_WEBSITE / "src"
+DIR_WEBSITE_BUILD = DIR_WEBSITE / ".build"
 
-DIR_API_OUT = DIR_DOCS_BUILD / "docs" / "api"
+DIR_API_OUT = DIR_WEBSITE_BUILD / "docs" / "api"
 PATH_CHANGELOG = DIR_ROOT / "CHANGELOG.md"
-PATH_DOCS_CHANGELOG = DIR_DOCS_BUILD / "changelog.md"
-PATH_SIDEBAR = DIR_DOCS_BUILD / ".vitepress" / "sidebar.json"
-PATH_API_LINKS = DIR_DOCS_BUILD / ".vitepress" / "api-links.json"
+PATH_WEBSITE_CHANGELOG = DIR_WEBSITE_BUILD / "changelog.md"
+PATH_SIDEBAR = DIR_WEBSITE_BUILD / ".vitepress" / "sidebar.json"
+PATH_API_LINKS = DIR_WEBSITE_BUILD / ".vitepress" / "api-links.json"
 API_LINKS: dict[str, str] = {}
 
 RE_DEPRECATED_ANNOTATED = re.compile(
@@ -525,11 +525,11 @@ def _generate_markdown_for_obj(  # ruff:ignore[complex-structure]
     return "\n".join(lines)
 
 
-def get_base_sidebar(docs_src_dir: Path) -> list[Any]:
+def get_base_sidebar(website_src_dir: Path) -> list[Any]:
     """Returns the base sidebar structure from the `.vitepress/sidebar.json` file in<br>
-    the `docs/src` directory, or an empty list if the file doesn't exist or is invalid."""
+    the `website/src` directory, or an empty list if the file doesn't exist or is invalid."""
 
-    if (src_sidebar_file := docs_src_dir / PATH_SIDEBAR).exists() and (
+    if (src_sidebar_file := website_src_dir / PATH_SIDEBAR).exists() and (
         src_content := src_sidebar_file.read_text(encoding="utf-8").strip()
     ):
         with suppress(json.JSONDecodeError):
@@ -545,13 +545,13 @@ def _process_single_file(file_path: Path) -> None:
 
     # Handle root change log:
     if (resolved := file_path.resolve()) == PATH_CHANGELOG.resolve():
-        PATH_DOCS_CHANGELOG.parent.mkdir(parents=True, exist_ok=True)
+        PATH_WEBSITE_CHANGELOG.parent.mkdir(parents=True, exist_ok=True)
         if not (content := PATH_CHANGELOG.read_text(encoding="utf-8")).startswith("---"):
             content = "---\ntitle: Changelog\nsidebar: false\noutline: [2, 3]\npageClass: changelog-page\n---\n\n" + content
-        PATH_DOCS_CHANGELOG.write_text(
+        PATH_WEBSITE_CHANGELOG.write_text(
             transform_special_docs_components(insert_minor_version_headers(content)), encoding="utf-8"
         )
-        print(f"  generated {PATH_DOCS_CHANGELOG.name}")
+        print(f"  generated {PATH_WEBSITE_CHANGELOG.name}")
 
     # Handle Python source file:
     elif resolved.suffix == ".py" and DIR_SRC_XULBUX in resolved.parents:
@@ -571,8 +571,8 @@ def _process_single_file(file_path: Path) -> None:
         print(f"  generated {md_file_path.name} ({api_path})")
 
     # Handle manual docs source file:
-    elif DIR_DOCS_SRC in file_path.parents:
-        dest_path = DIR_DOCS_BUILD / file_path.relative_to(DIR_DOCS_SRC)
+    elif DIR_WEBSITE_SRC in file_path.parents:
+        dest_path = DIR_WEBSITE_BUILD / file_path.relative_to(DIR_WEBSITE_SRC)
         dest_path.parent.mkdir(parents=True, exist_ok=True)
         if file_path.suffix == ".md":
             dest_path.write_text(transform_special_docs_components(file_path.read_text("utf-8")), encoding="utf-8")
@@ -586,24 +586,24 @@ def _build_all_api_docs() -> None:
     """Discovers all Python modules, generates Markdown docs, and builds the sidebar structure."""
 
     # [1] Clean and recreate the build directory to ensure a fresh slate:
-    if DIR_DOCS_BUILD.exists():
-        shutil.rmtree(DIR_DOCS_BUILD)
+    if DIR_WEBSITE_BUILD.exists():
+        shutil.rmtree(DIR_WEBSITE_BUILD)
 
-    shutil.copytree(DIR_DOCS_SRC, DIR_DOCS_BUILD)
-    print(f"\nCopied {DIR_DOCS_SRC.name} to {DIR_DOCS_BUILD.name}\n")
+    shutil.copytree(DIR_WEBSITE_SRC, DIR_WEBSITE_BUILD)
+    print(f"\nCopied {DIR_WEBSITE_SRC.name} to {DIR_WEBSITE_BUILD.name}\n")
 
-    for md_file_path in DIR_DOCS_BUILD.rglob("*.md"):
+    for md_file_path in DIR_WEBSITE_BUILD.rglob("*.md"):
         if (transformed := transform_special_docs_components(content := md_file_path.read_text(encoding="utf-8"))) != content:
             md_file_path.write_text(transformed, encoding="utf-8")
 
     if PATH_CHANGELOG.exists():
-        PATH_DOCS_CHANGELOG.parent.mkdir(parents=True, exist_ok=True)
+        PATH_WEBSITE_CHANGELOG.parent.mkdir(parents=True, exist_ok=True)
         if not (content := PATH_CHANGELOG.read_text(encoding="utf-8")).startswith("---"):
             content = "---\ntitle: Changelog\nsidebar: false\noutline: [2, 3]\npageClass: changelog-page\n---\n\n" + content
-        PATH_DOCS_CHANGELOG.write_text(
+        PATH_WEBSITE_CHANGELOG.write_text(
             transform_special_docs_components(insert_minor_version_headers(content)), encoding="utf-8"
         )
-        print(f"  generated {PATH_DOCS_CHANGELOG.name}")
+        print(f"  generated {PATH_WEBSITE_CHANGELOG.name}")
 
     # [2] Auto-discover all Python modules and generate markdown files for them:
     sidebar_root_items: list[dict[str, Any]] = []
@@ -643,10 +643,10 @@ def _build_all_api_docs() -> None:
     sidebar_items.extend(sidebar_root_items)
 
     # Write `sidebar.json`:
-    sidebar_data = get_base_sidebar(DIR_DOCS_SRC)
+    sidebar_data = get_base_sidebar(DIR_WEBSITE_SRC)
     sidebar_data.append({"text": "API Reference", "items": sidebar_items})
 
-    sidebar_file = DIR_DOCS_BUILD / PATH_SIDEBAR
+    sidebar_file = DIR_WEBSITE_BUILD / PATH_SIDEBAR
     sidebar_file.parent.mkdir(parents=True, exist_ok=True)
     sidebar_file.write_text(json.dumps(sidebar_data, indent=2), encoding="utf-8")
     print(f"\nGenerated sidebar.json with {len(sidebar_root_items) + sum(len(i) for i in sidebar_groups.values())} items\n")
@@ -657,7 +657,7 @@ def _build_all_api_docs() -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build xulbux documentation.")
+    parser = argparse.ArgumentParser(description="Build xulbux website.")
     parser.add_argument("--dev", action="store_true", help="Run VitePress in dev mode")
     parser.add_argument("--process-file", help="Process a single changed file")
     args = parser.parse_args()
@@ -676,7 +676,7 @@ def main() -> None:
     print(f"\nRunning VitePress {'dev' if args.dev else 'build'}...\n")
 
     try:
-        subprocess.run([pnpm_exe, "exec", "vitepress", "dev" if args.dev else "build", ".build"], cwd=DIR_DOCS, check=True)
+        subprocess.run([pnpm_exe, "exec", "vitepress", "dev" if args.dev else "build", ".build"], cwd=DIR_WEBSITE, check=True)
     except subprocess.CalledProcessError as exc:
         print(f"VitePress failed with exit code {exc.returncode}\n")
         raise SystemExit(exc.returncode) from exc

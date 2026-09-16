@@ -146,7 +146,7 @@ Used to display the output of a terminal-outputting code example. Note that this
 **Result on website:**
 ![Terminal Output Example](img/terminal-output.png)
 
-*Note on Terminal Output Colors:* Classes for all default terminal styles/colors are predefined. Custom terminal styles are available in `docs/src/.vitepress/theme/style.css` under `/* Terminal Output Styles */`. If a needed color isn't there, define a new one.
+*Note on Terminal Output Colors:* Classes for all default terminal styles/colors are predefined. Custom terminal styles are available in `website/src/.vitepress/theme/style.css` under `/* Terminal Output Styles */`. If a needed color isn't there, define a new one.
 
 ## 3. Comments
 

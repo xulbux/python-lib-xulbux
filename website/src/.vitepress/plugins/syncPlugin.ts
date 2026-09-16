@@ -61,13 +61,13 @@ export function syncPlugin(dirname: string) {
         );
       }
 
-      function handleDocsSrc(eventName: string, filePath: string) {
+      function handleWebsiteSrc(eventName: string, filePath: string) {
         const dest = filePath.replace(srcDir, path.resolve(dirname, '../'));
         if (eventName === 'add' || eventName === 'change') {
           fs.mkdirSync(path.dirname(dest), { recursive: true });
           if (filePath.endsWith('.md')) {
             runPythonCommand(
-              ['docs/build.py', '--process-file', `"${filePath}"`],
+              ['website/build.py', '--process-file', `"${filePath}"`],
               'Processed MD',
               filePath
             );
@@ -75,8 +75,8 @@ export function syncPlugin(dirname: string) {
             fs.copyFileSync(filePath, dest);
             if (filePath.endsWith('sidebar.json')) {
               runPythonCommand(
-                ['docs/build.py'],
-                'Rebuilt docs due to sidebar.json change',
+                ['website/build.py'],
+                'Rebuilt website due to sidebar.json change',
                 filePath,
                 true
               );
@@ -88,13 +88,18 @@ export function syncPlugin(dirname: string) {
           }
           if (filePath.endsWith('sidebar.json')) {
             runPythonCommand(
-              ['docs/build.py'],
-              'Rebuilt docs due to sidebar.json unlink',
+              ['website/build.py'],
+              'Rebuilt website due to sidebar.json unlink',
               filePath,
               true
             );
           } else if (filePath.endsWith('.md')) {
-            runPythonCommand(['docs/build.py'], 'Rebuilt docs due to MD unlink', filePath, true);
+            runPythonCommand(
+              ['website/build.py'],
+              'Rebuilt website due to MD unlink',
+              filePath,
+              true
+            );
           }
         }
       }
@@ -109,14 +114,14 @@ export function syncPlugin(dirname: string) {
         ) {
           if (eventName === 'change') {
             runPythonCommand(
-              ['docs/build.py', '--process-file', `"${filePath}"`],
+              ['website/build.py', '--process-file', `"${filePath}"`],
               'Processed Python API',
               filePath
             );
           } else if (eventName === 'add' || eventName === 'unlink') {
             runPythonCommand(
-              ['docs/build.py'],
-              `Rebuilt docs due to Python source ${eventName}`,
+              ['website/build.py'],
+              `Rebuilt website due to Python source ${eventName}`,
               filePath,
               true
             );
@@ -128,18 +133,18 @@ export function syncPlugin(dirname: string) {
         if (filePath === changelogPath) {
           if (eventName === 'change' || eventName === 'add') {
             runPythonCommand(
-              ['docs/build.py', '--process-file', `"${filePath}"`],
+              ['website/build.py', '--process-file', `"${filePath}"`],
               'Processed Changelog',
               filePath
             );
           }
         } else if (filePath.startsWith(srcDir)) {
-          handleDocsSrc(eventName, filePath);
+          handleWebsiteSrc(eventName, filePath);
         } else if (filePath.startsWith(pySrcDir) && filePath.endsWith('.py')) {
           handlePySrc(eventName, filePath);
         }
       });
     },
-    name: 'sync-docs-src',
+    name: 'sync-website-src',
   };
 }

@@ -8,11 +8,11 @@ __pypackages__/
 /.venv/
 /build/
 /dist/
-/docs/.build/
-/docs/node_modules/
-/docs/src/.vitepress/cache/
-/docs/src/.vitepress/dist/
 /mutants/
+/website/.build/
+/website/node_modules/
+/website/src/.vitepress/cache/
+/website/src/.vitepress/dist/
 
 .coverage
 *.py[cdio]

@@ -245,6 +245,27 @@ body:has(.release-card) .vp-doc > div > h2,
   -webkit-backdrop-filter: blur(16px);
 }
 
+/********************************************************* HOME HERO *********************************************************/
+
+.VPHomeHero .VPImage {
+  user-select: none;
+}
+
+.VPHomeHero .image-bg {
+  opacity: 0.06;
+  border-radius: 0;
+  user-select: none;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url('/icon.svg');
+  filter: blur(12px) brightness(0);
+}
+.dark .VPHomeHero .image-bg {
+  opacity: 0.32;
+  filter: blur(80px);
+}
+
 /******************************************************* HOME FEATURES *******************************************************/
 
 .VPFeature {
@@ -256,6 +277,7 @@ body:has(.release-card) .vp-doc > div > h2,
   width: fit-content;
   height: auto;
   display: inline-flex;
+  user-select: none;
   align-items: center;
   justify-content: flex-start;
   color: var(--vp-c-brand-1);

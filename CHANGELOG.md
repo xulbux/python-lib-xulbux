@@ -844,25 +844,25 @@ All notable changes and releases to this project are documented on this page.
 </Release>
 <Release version="1.1.0" date="16.10.2024">
 
-*   Made it possible to also auto-reset the color and not only the predefined formats, using the [auto-reset-format](#auto-reset-format) (`[format](Automatically resetting)`).
+*   Made it possible to also auto-reset the color and not only the predefined formats, using the [auto-reset format](#auto-reset-format) (`[format](Automatically resetting)`).
 
 </Release>
 <Release version="1.0.9" date="16.10.2024">
 
 *   Added a library description, which gets shown if the library base import is run directly.
-*   Made it possible to escape an <span id="auto-reset-format">auto-reset-format</span> (`[format](Automatically resetting)`) with a slash, so you can still have `()` brackets behind a `[format]`:
+*   Made it possible to escape an <span id="auto-reset-format">auto-reset format</span> (`[format](Automatically resetting)`) with a slash, so you can still have `()` brackets behind a `[format]`:
 
     ```python
     FormatCodes.print("[u](Automatically resetting) following text")
     ```
 
-    prints: <code><u>Automatically resetting</u> following text</code>
+    Prints: <code><u>Automatically resetting</u> following text</code>
 
     ```python
     FormatCodes.print("[u]/(Automatically resetting) following text")
     ```
 
-    prints: <code><u>(Automatically resetting) following text</u></code>
+    Prints: <code><u>(Automatically resetting) following text</u></code>
 
 </Release>
 <Release version="1.0.7 - 1.0.8" date="16.10.2024">
@@ -873,7 +873,7 @@ All notable changes and releases to this project are documented on this page.
 </Release>
 <Release version="1.0.6" date="15.10.2024">
 
-*   <span id="improved-lib-importing">Improved **$\color{#8085FF}\textsf{XulbuX}$** library importing:</span><br>
+*   <span id="improved-lib-importing">Improved XulbuX library importing:</span><br>
     Checks for missing required libraries and gives you the option to directly install them, if there are any.
 *   Fixed issue where configuration file wasn't created and loaded correctly.
 
