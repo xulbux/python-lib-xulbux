@@ -46,7 +46,7 @@ def test_argument_parser_help_generation_full_options() -> None:
     assert "--output=FILE?" in raw_help
     assert "Ctrl" in raw_help
     assert "Quit" in raw_help
-    assert "https://example.com" in raw_help
+    assert "For more info" in raw_help
 
 
 def test_argument_parser_help_minimal_and_no_opts() -> None:
