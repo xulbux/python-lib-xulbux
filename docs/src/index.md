@@ -22,7 +22,7 @@ features:
     details: Fully compiled to C via MyPyC with strict static typing for maximum execution speed.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="15" cy="9" r="7"/><circle cx="9" cy="15" r="7"/></svg>'
     title: Color Engineering
-    details: Manipulate, blend, and convert across HEXA, RGBA, and HSLA spaces with rich formatting and interpolation.
+    details: Manipulate, blend, and convert across RGBA, HSLA, and hex spaces with rich formatting and interpolation.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 11 2-2-2-2"/><path d="M11 13h4"/><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></svg>'
     title: Terminal & Console UI
     details: Expressive ANSI styling via operator syntax, styled loggers, interactive prompts, and progress bars.

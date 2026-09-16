@@ -106,9 +106,9 @@ def test_custom_color_builders() -> None:
     assert _ColorStyle.from_hex(0xFF0000, bg=False)._bg is False
 
     # Out-of-range integer validation:
-    with pytest.raises(ValueError, match="24-bit HEX integer"):
+    with pytest.raises(ValueError, match="24-bit hex integer"):
         _ColorStyle.from_hex(-1)
-    with pytest.raises(ValueError, match="24-bit HEX integer"):
+    with pytest.raises(ValueError, match="24-bit hex integer"):
         _ColorStyle.from_hex(0x1000000)
 
     # Background custom colors:

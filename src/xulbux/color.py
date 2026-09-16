@@ -1,5 +1,5 @@
 """
-Provides robust handling for RGBA, HSLA, and HEXA color spaces.
+Provides robust handling for RGBA, HSLA, and hex color spaces.
 
 Includes dedicated classes for each color model and utility methods
 for interpolating, lightening, darkening, and blending colors.
@@ -598,13 +598,13 @@ class hsla(_ColorBase):
 
 
 class hexa(_ColorBase):
-    """A HEXA color object that includes a bunch of methods to manipulate the color.\n
+    """A hex color object that includes a bunch of methods to manipulate the color.\n
     ----------------------------------------------------------------------------------------------------
-    *   `color` – The HEXA color string (prefix optional) or HEX integer, that can be in formats:
+    *   `color` – The hex color string (prefix optional) or hex integer, that can be in formats:
         -   `RGB` short format without alpha (only for strings)
         -   `RGBA` short format with alpha (only for strings)
-        -   `RRGGBB` long format without alpha (for strings and HEX integers)
-        -   `RRGGBBAA` long format with alpha (for strings and HEX integers)\n
+        -   `RRGGBB` long format without alpha (for strings and hex integers)
+        -   `RRGGBBAA` long format with alpha (for strings and hex integers)\n
     ----------------------------------------------------------------------------------------------------
     #### Example Usage
 
@@ -685,7 +685,7 @@ class hexa(_ColorBase):
                     int(color[6:8], 16) / 255.0,
                 )
             else:
-                raise ValueError(f"Invalid HEXA color string {color!r}\nMust be in formats RGB, RGBA, RRGGBB or RRGGBBAA")
+                raise ValueError(f"Invalid hex color string {color!r}\nMust be in formats RGB, RGBA, RRGGBB or RRGGBBAA")
 
         elif isinstance(color, int):
             self.red, self.green, self.blue, self.alpha = hex_int_to_rgba(color).as_tuple()
@@ -700,8 +700,8 @@ class hexa(_ColorBase):
 
         else:
             raise ValueError(
-                f"Could initialize hexa() color object from {color!r}\n"
-                "Must be a HEXA string, HEX integer, or an object with 'red', 'green', 'blue', and optionally 'alpha' attrs"
+                f"Could not initialize hexa() color object from {color!r}\n"
+                "Must be a hex string, hex integer, or an object with 'red', 'green', 'blue', and optionally 'alpha' attrs"
             )
 
     def __iter__(self) -> Iterator[str]:
@@ -847,7 +847,7 @@ class hexa(_ColorBase):
         """Blends the current color with another color
         using the specified ratio in range [0.0, 1.0] inclusive.\n
         ----------------------------------------------------------------------------------------------------
-        *   `other` – The other HEXA color to blend with.
+        *   `other` – The other hex color to blend with.
         *   `ratio` – The blend ratio between the two colors:
             -   If `ratio` is `0.0` it means 100% of the current color
                 and 0% of the `other` color (2:0 mixture).
@@ -857,7 +857,7 @@ class hexa(_ColorBase):
         *   `additive_alpha` – Whether to blend the alpha channels additively or not."""
 
         if not is_valid_hexa(other):
-            raise TypeError(f"The 'other' parameter must be a valid HEXA color, got {other!r}")
+            raise TypeError(f"The 'other' parameter must be a valid hex color, got {other!r}")
         elif not (0.0 <= ratio <= 1.0):
             raise ValueError(f"The 'ratio' parameter must be in range [0.0, 1.0] inclusive, got {ratio!r}")
 
@@ -1080,7 +1080,7 @@ def is_valid_hexa(
 def is_valid_hexa(
     color: object, /, *, allow_alpha: bool = True, get_prefix: bool = False
 ) -> TypeGuard[Hexa] | tuple[bool, Literal["#", "0x"] | None]:
-    """Check if the given color is a valid HEXA color.\n
+    """Check if the given color is a valid hex color.\n
     ----------------------------------------------------------------------------------------------------
     *   `color` – The color to check (can be in any supported format).
     *   `allow_alpha` – Whether to allow alpha channel in the color.
@@ -1107,7 +1107,7 @@ def is_valid_hexa(
 
 
 def is_valid(color: object, /, *, allow_alpha: bool = True) -> TypeGuard[Rgba | Hsla | Hexa]:
-    """Check if the given color is a valid RGBA, HSLA or HEXA color.\n
+    """Check if the given color is a valid RGBA, HSLA or hex color.\n
     ----------------------------------------------------------------------------------------------------
     *   `color` – The color to check (can be in any supported format).
     *   `allow_alpha` – Whether to allow alpha channel in the color."""
@@ -1135,7 +1135,7 @@ def has_alpha(color: Rgba | Hsla | Hexa, /) -> bool:
                 color = color[2:]
             return len(color) == 4 or len(color) == 8
 
-        # It must be an int if it's a valid hexa and not a string (hexa object handled above).
+        # It must be an int if it's a valid hex and not a string (`hexa` object handled above).
         # Integers <= 0xFFFFFF represent 24-bit RGB (no alpha); integers > 0xFFFFFF represent 32-bit RGBA:
         return cast("int", color) > 0xFFFFFF
 
@@ -1165,7 +1165,7 @@ def to_rgba(color: Rgba | Hsla | Hexa, /) -> rgba:
     elif is_valid_hexa(color):
         return hexa(color).as_rgba()
 
-    raise ValueError(f"Could not convert color {color!r} to RGBA\nMust be a valid RGBA, HSLA, or HEXA color")
+    raise ValueError(f"Could not convert color {color!r} to RGBA\nMust be a valid RGBA, HSLA, or hex color")
 
 
 def to_hsla(color: Rgba | Hsla | Hexa, /) -> hsla:
@@ -1182,11 +1182,11 @@ def to_hsla(color: Rgba | Hsla | Hexa, /) -> hsla:
     elif is_valid_hexa(color):
         return hexa(color).as_hsla()
 
-    raise ValueError(f"Could not convert color {color!r} to HSLA\nMust be a valid RGBA, HSLA, or HEXA color")
+    raise ValueError(f"Could not convert color {color!r} to HSLA\nMust be a valid RGBA, HSLA, or hex color")
 
 
 def to_hexa(color: Rgba | Hsla | Hexa, /) -> hexa:
-    """Will try to convert any color type to a color of type HEXA.\n
+    """Will try to convert any color type to a color of type hex.\n
     ----------------------------------------------------------------------------------------------------
     *   `color` – The color to convert (can be in any supported format)."""
 
@@ -1199,7 +1199,7 @@ def to_hexa(color: Rgba | Hsla | Hexa, /) -> hexa:
     elif is_valid_hsla(color):
         return _parse_hsla(color).as_hexa()
 
-    raise ValueError(f"Could not convert color {color!r} to HEXA\nMust be a valid RGBA, HSLA, or HEXA color")
+    raise ValueError(f"Could not convert color {color!r} to hex\nMust be a valid RGBA, HSLA, or hex color")
 
 
 @overload
@@ -1353,14 +1353,14 @@ def _parse_hsla(color: Hsla | str, /) -> hsla:
 
 
 def rgba_to_hex_int(red: int, green: int, blue: int, alpha: float | None = None, /, *, preserve_original: bool = False) -> int:
-    """Convert RGBA channels to a HEXA integer (alpha is optional).\n
+    """Convert RGBA channels to a hex integer (alpha is optional).\n
     ----------------------------------------------------------------------------------------------------
     *   `red`, `green`, `blue` – The red, green, and blue channels in range [0, 255] inclusive.
     *   `alpha` – The alpha channel in range [0.0, 1.0] inclusive or `None` if not set.
     *   `preserve_original` – Whether to preserve the original color exactly (explained below).\n
     ----------------------------------------------------------------------------------------------------
     To preserve leading zeros, the function will add a `1` at the beginning,
-    if the HEX integer would start with a `0`.<br>
+    if the hex integer would start with a `0`.<br>
     This could affect the color a little bit, but will make sure, that it won't be interpreted
     as a completely different color, when initializing it as a `hexa()` color or changing it
     back to RGBA using `hex_int_to_rgba()`."""
@@ -1390,17 +1390,17 @@ def rgba_to_hex_int(red: int, green: int, blue: int, alpha: float | None = None,
 
 
 def hex_int_to_rgba(hex_int: int, /, *, preserve_original: bool = False) -> rgba:
-    """Convert a HEX integer to RGBA channels.\n
+    """Convert a hex integer to RGBA channels.\n
     ----------------------------------------------------------------------------------------------------
-    *   `hex_int` – The HEX integer to convert.
+    *   `hex_int` – The hex integer to convert.
     *   `preserve_original` – Whether to preserve the original color exactly (explained below).\n
     ----------------------------------------------------------------------------------------------------
     If the red channel is `1` after conversion, it will be set to `0`, because when converting
-    from RGBA to a HEX integer, the first `0` will be set to `1` to preserve leading zeros.<br>
+    from RGBA to a hex integer, the first `0` will be set to `1` to preserve leading zeros.<br>
     This is the correction, so the color doesn't even look slightly different."""
 
     if not (0 <= hex_int <= 0xFFFFFFFF):
-        raise ValueError(f"Expected HEX integer in range [0x000000, 0xFFFFFFFF] inclusive, got 0x{hex_int:X}")
+        raise ValueError(f"Expected hex integer in range [0x000000, 0xFFFFFFFF] inclusive, got 0x{hex_int:X}")
 
     elif len(hex_str := f"{hex_int:X}") <= 6:
         hex_str = hex_str.zfill(6)
@@ -1525,7 +1525,7 @@ def get_text_fg(text_bg_color: Rgba | Hexa, /) -> rgba | hexa | int: ...
 def get_text_fg(text_bg_color: Rgba | Hexa, /) -> rgba | hexa | int:
     """Returns either black or white text color for optimal contrast on the given background color.\n
     ----------------------------------------------------------------------------------------------------
-    *   `text_bg_color` – The background color (can be in RGBA or HEXA format)."""
+    *   `text_bg_color` – The background color (can be in RGBA or hex format)."""
 
     was_hexa, was_int = is_valid_hexa(text_bg_color), isinstance(text_bg_color, int)
 
@@ -1554,7 +1554,7 @@ def adjust_lightness(color: Rgba | Hexa, light_change: float, /) -> rgba | hexa:
 def adjust_lightness(color: Rgba | Hexa, light_change: float, /) -> rgba | hexa:
     """In- or decrease the lightness of the input color.\n
     ----------------------------------------------------------------------------------------------------
-    *   `color` – The color to adjust (can be in RGBA or HEXA format).
+    *   `color` – The color to adjust (can be in RGBA or hex format).
     *   `light_change` – The amount to change the lightness by,
         in range `-1.0` (darken by 100%) and `1.0` (lighten by 100%)."""
 
@@ -1590,7 +1590,7 @@ def adjust_saturation(color: Rgba | Hexa, sat_change: float, /) -> rgba | hexa: 
 def adjust_saturation(color: Rgba | Hexa, sat_change: float, /) -> rgba | hexa:
     """In- or decrease the saturation of the input color.\n
     ----------------------------------------------------------------------------------------------------
-    *   `color` – The color to adjust (can be in RGBA or HEXA format).
+    *   `color` – The color to adjust (can be in RGBA or hex format).
     *   `sat_change` – The amount to change the saturation by,
         in range `-1.0` (saturate by 100%) and `1.0` (desaturate by 100%)."""
 
@@ -1954,7 +1954,7 @@ def _extract_rgb_fast(color: _ColorBase | Rgba | Hsla | Hexa, /) -> tuple[int, i
 
     elif isinstance(color, int):
         if not (0x000000 <= color <= 0xFFFFFF):
-            raise ValueError(f"Expected 24-bit HEX integer in range [0x000000, 0xFFFFFF] inclusive, got 0x{color:X}")
+            raise ValueError(f"Expected 24-bit hex integer in range [0x000000, 0xFFFFFF] inclusive, got 0x{color:X}")
         return ((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF)
 
     elif isinstance(color, str):
@@ -2057,8 +2057,8 @@ def interpolate_color(
 ) -> rgba:
     """Linearly interpolates between two colors in the specified color space.\n
     ----------------------------------------------------------------------------------------------------
-    *   `color1` – The starting color (RGBA, HSLA, HEXA, hex string, or tuple).
-    *   `color2` – The ending color (RGBA, HSLA, HEXA, hex string, or tuple).
+    *   `color1` – The starting color (RGBA, HSLA, hex, or tuple).
+    *   `color2` – The ending color (RGBA, HSLA, hex, or tuple).
     *   `ratio` – The blend ratio between `0.0` (100% `color1`) and `1.0` (100% `color2`).
     *   `space` – The color space to interpolate in
         (`"rgb"`, `"hsl"`, `"hsl_long"`, `"linear_rgb"`, or `"oklab"`). Default is `"hsl"`.\n

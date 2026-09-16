@@ -68,7 +68,7 @@ def test_styled_text_wrap() -> None:
     assert len(S("Short").wrap(20)) == 1
     assert len(S("Text").wrap(0)) == 1
 
-    # Whitespace only line where textwrap returns empty in multi-line text:
+    # Whitespace only line where textwrap returns empty in multiline text:
     assert len(S("   \nvalid text").wrap(5)) >= 2
 
     # Chunk not found in paragraph offset fallback:

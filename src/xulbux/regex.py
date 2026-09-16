@@ -577,13 +577,13 @@ def hsla_str(fix_sep: str | None = ",", *, allow_alpha: bool = True) -> str:
 
 
 def hexa_str(*, allow_alpha: bool = True) -> str:
-    """Matches a HEXA color inside a string.\n
+    """Matches a hex color inside a string.\n
     ----------------------------------------------------------------------------------------------------
     *   `allow_alpha` – Whether to include the alpha channel in the match.\n
     ----------------------------------------------------------------------------------------------------
     #### Valid Formats
 
-    The HEXA color can be in the formats (prefix `#`, `0x` or no prefix):
+    The hex color can be in the formats (prefix `#`, `0x` or no prefix):
     *   `RGB`
     *   `RGBA` (if `allow_alpha=True`)
     *   `RRGGBB`

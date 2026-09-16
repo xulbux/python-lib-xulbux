@@ -1,9 +1,11 @@
+<span id="top" />
+
 <div align="center">
 <br><br>
 <h1>
 <a href="https://xulbux.github.io/python-lib-xulbux"><img height="64" src="https://github.com/xulbux/python-lib-xulbux/blob/main/assets/icon.svg?raw=true"></a>
 <br>
-Auto Generated Documentation
+Auto-Generated Documentation
 <br><br>
 </h1>
 <h3>Development Guide</h3>

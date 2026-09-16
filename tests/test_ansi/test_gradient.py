@@ -253,7 +253,7 @@ def test_gradient_color_resolution_and_styles() -> None:
     # Int hex and out-of-bounds error:
     grad_int_hex = S.gradient(0xFF0000, 0x0000FF)
     assert isinstance(grad_int_hex("A"), S)
-    with pytest.raises(ValueError, match="Expected 24-bit HEX integer"):
+    with pytest.raises(ValueError, match="Expected 24-bit hex integer"):
         S.gradient(-1, 0xFF0000)
 
     # String variations; 0x prefix, 3-digit hex, rgb() format:

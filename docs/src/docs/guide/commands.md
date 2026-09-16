@@ -17,4 +17,4 @@ Show a map of all 256 colors in the terminal.
 ### `xulbux-lib tc`
 
 Show a smooth true-color gradient map in the terminal.<br>
-Pass an optional color (HEX, RGB, or hue angle) to render a specific hue's gradient.
+Pass an optional color (RGB, hex, or hue angle) to render a specific hue's gradient.

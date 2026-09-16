@@ -142,7 +142,7 @@ class _HslaObj(Protocol):
 
 
 class _HexaObj(Protocol):
-    """Protocol for hexa-like color objects (structurally matches `hexa`)."""
+    """Protocol for hex-like color objects (structurally matches `hexa`)."""
 
     red: int
     green: int
@@ -177,7 +177,7 @@ class HslaDict(TypedDict):
 
 
 class HexaDict(TypedDict):
-    """Dictionary schema for HEXA color components."""
+    """Dictionary schema for hex color components."""
 
     red: str
     """The red channel in range [0, 255] inclusive."""
@@ -199,7 +199,7 @@ type Hsla = tuple[int, int, int] | tuple[int, int, int, float] | list[int] | lis
 
 type Hexa = str | int | _HexaObj
 """Hexadecimal color representations:<br>
-Hex `str` (with or without prefix), 24-bit hex `int`, or a HEXA protocol-compatible object."""
+Hex `str` (with or without prefix), 24-bit hex `int`, or a hex protocol-compatible object."""
 
 
 # **************************************************** SYSTEM & UTILITIES *****************************************************

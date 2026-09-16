@@ -278,10 +278,10 @@ def test_interpolation_edge_cases_and_branches() -> None:
         _color_module._extract_rgb_fast(cast("Any", (None, 0, 0)))
     # 2. Dict falling through to as_rgba:
     assert _color_module._extract_rgb_fast(cast("Any", {"red": 255, "green": 0, "blue": 0})) == (255, 0, 0)
-    # 3. Invalid int HEX:
-    with pytest.raises(ValueError, match="Expected 24-bit HEX integer"):
+    # 3. Invalid int hex:
+    with pytest.raises(ValueError, match="Expected 24-bit hex integer"):
         _color_module._extract_rgb_fast(-1)
-    with pytest.raises(ValueError, match="Expected 24-bit HEX integer"):
+    with pytest.raises(ValueError, match="Expected 24-bit hex integer"):
         _color_module._extract_rgb_fast(0x1000000)
 
     # _extract_alpha_fast edge cases:

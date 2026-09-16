@@ -10,12 +10,12 @@ from contextlib import suppress
 def _parse_color_arg(raw: str, /) -> hsla | None:
     """Internal helper to parse a color CLI argument as an `hsla` color.\n
     ----------------------------------------------------------------------------------------------------
-    Supports HEX (`#1E90FF`, `ff0055`), RGB (`rgb(255, 0, 128)`, `255,0,128`),
+    Supports hex (`#1E90FF`, `ff0055`), RGB (`rgb(255, 0, 128)`, `255,0,128`),
     and numeric hue values (`210`, `210deg`). Returns `None` if invalid."""
 
     clean_str = raw.strip()
 
-    # [1] Try parsing as HEX if explicit prefix or 6/8-digit hex:
+    # [1] Try parsing as hex if explicit prefix or 6/8-digit hex:
     is_hex = False
     if clean_str.startswith(("#", "0x", "0X")):
         is_hex = True
@@ -40,7 +40,7 @@ def _parse_color_arg(raw: str, /) -> hsla | None:
     with suppress(ValueError):
         return hsla(round(float(clean_str.rstrip("degDEG").strip())) % 360, 100, 50)
 
-    # [4] Fallback try parsing as shorthand 3-digit HEX:
+    # [4] Fallback try parsing as shorthand 3-digit hex:
     with suppress(ValueError, TypeError):
         return hexa(clean_str).as_hsla()
 

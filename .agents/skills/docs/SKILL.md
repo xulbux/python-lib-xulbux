@@ -13,8 +13,8 @@ When working in the `xulbux` repository, any AI agent or automated assistant MUS
 
 1.  **Mandatory Policy:** Follow `AGENTS.md` Section 6 for library-wide mandatory documentation requirements.
 2.  **Private Constants & Caches:** Document private constants and module-level variables (placed directly below imports per `AGENTS.md` Section 5) with a concise docstring.
-3.  **Parameters (`__init__` vs Classes):** For classes that take parameters, document the parameters in the **class's docstring**. Do NOT add a docstring to the `__init__` method itself. (This ensures params are displayed in the signature of the class in the docs).
-4.  **Parameters List:** Docstrings for signatures that have params MUST list those params in the exact same order as the signature, **without type-hints**, and quickly describe what each param is for.
+3.  **Parameters (`__init__` vs Classes):** For classes that take parameters, document the parameters in the **class's docstring**. Do NOT add a docstring to the `__init__` method itself. (This ensures parameters are displayed in the signature of the class in the docs).
+4.  **Parameters List:** Docstrings for signatures that have parameters MUST list those parameters in the same order as the signature, **without type-hints**, and quickly describe what each param is for.
 5.  **Returns & Yields:** Do **NOT** describe the return/yield value unless it is special, complex, or cannot be inferred from the type hinting.
 6.  **Exceptions:** If a function/method raises special exceptions for specific reasons, describe that in the docstring.
 7.  **Attributes & Properties:** Document public class/instance attributes or properties directly below their variable/property definitions, *not* in the class docstring (see `console.ArgumentParser` for an example).
@@ -156,7 +156,7 @@ Used to display the output of a terminal-outputting code example. Note that this
 2.  **Comment Length:** Prefer single-line comments. If a comment must span multiple lines, keep it to a maximum of **two lines** (max 2 lines).
 3.  **Block Comments:** If a comment is written on its own line to describe upcoming line(s) of code:
     *   For single-line comments, end with a colon `:`.
-    *   For multi-line comments (max 2 lines), preceding lines can end normally in a period `.`, and only the last line must end with a colon `:`.
+    *   For multiline comments (max 2 lines), preceding lines can end normally in a period `.`, and only the last line must end with a colon `:`.
 4.  **Inline Comments:** If a comment is written on the same line, behind code, always end it with a period `.`.
 5.  **Numbered Comments:** When writing numbered step comments (e.g., step-by-step logic), ALWAYS format numbers with square brackets like `[1]`, `[2]`, `[3]`, etc. (e.g., `# [1] Parse input:`, `# [2] Validate options:`), NEVER with trailing periods like `1.`, `2.`, etc.
 6.  **Type Ignore Pragmas:** Follow the strict typing and ignore rules in `AGENTS.md` Section 1.

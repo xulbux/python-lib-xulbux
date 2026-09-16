@@ -2666,7 +2666,7 @@ def _persist_style(ansi_text: str, style_open: str, /) -> str:
 def _render_log_title(text: str, style: AnyStyle, /) -> str:
     """Renders (and caches) the styled log title as an ANSI string.\n
     ----------------------------------------------------------------------------------------------------
-    Since consecutive log calls often reuse the exact same title and style,
+    Since consecutive log calls often reuse the same title and style,
     the rendered string is cached and reused instead of being rebuilt."""
 
     key = (text, repr(style))

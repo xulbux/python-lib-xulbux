@@ -63,13 +63,13 @@ Only the specific styles that were applied are reset; other styling in scope is 
 ```python
 S.CYAN(
     "This is cyan text, ", S.DIM("which is dimmed now."),
-    "\\nNow it's not dimmed any more but still cyan.",
+    "\\nNow it's not dimmed anymore but still cyan.",
 ).print()
 ```
 
 <!-- DOCS: <TerminalOutput>
 <span class="cyan">This is cyan text, <span class="dim">which is dimmed now.</span></span>
-<span class="cyan">Now it's not dimmed any more but still cyan.</span>
+<span class="cyan">Now it's not dimmed anymore but still cyan.</span>
 </TerminalOutput> -->
 
 
@@ -1049,11 +1049,11 @@ class _ColorStyle(_SBase):
 
     @classmethod
     def from_hex(cls: type[Self], color: str | int | hexa, /, *, bg: bool | None = None) -> Self:
-        """Create a color style from a HEX string, HEX integer, or `hexa` object."""
+        """Create a color style from a hex string, hex integer, or `hexa` object."""
 
         if isinstance(color, int):
             if not (0x000000 <= color <= 0xFFFFFF):
-                raise ValueError(f"Expected 24-bit HEX integer in range [0x000000, 0xFFFFFF] inclusive, got 0x{color:X}")
+                raise ValueError(f"Expected 24-bit hex integer in range [0x000000, 0xFFFFFF] inclusive, got 0x{color:X}")
 
             red, green, blue = (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF
             return cls(red, green, blue, bg=bg) if bg is not None else cls(red, green, blue)
@@ -2027,7 +2027,7 @@ class _BgNS:
 
     @staticmethod
     def hex(color: str | int | hexa, /) -> _BgColorStyle:
-        """24-bit background color from HEX string, HEX integer, or `hexa` object.\n
+        """24-bit background color from hex string, hex integer, or `hexa` object.\n
         `S.BG.hex("#A8F")("text")`, `S.BG.hex(0xAA88FF)`, or `S.BG.hex(my_hexa)("text")`"""
 
         return _BgColorStyle.from_hex(color, bg=True)
@@ -2241,7 +2241,7 @@ class S(_SBase):
 
     @staticmethod
     def hex(color: str | int | hexa, /) -> _FgColorStyle:
-        """24-bit foreground color from HEX string, HEX integer, or `hexa` object.\n
+        """24-bit foreground color from hex string, hex integer, or `hexa` object.\n
         `S.hex("#A8F")("text")`, `S.hex(0xAA88FF)`, or `S.hex(my_hexa)("text")`"""
 
         return _FgColorStyle.from_hex(color)

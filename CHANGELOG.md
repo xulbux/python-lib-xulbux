@@ -1,16 +1,4 @@
-<div id="top" style="width:45px; height:45px; right:10px; top:10px; position:absolute">
-    <a href="#release" title="scroll to bottom">
-        <div style="
-            font-size: 2em;
-            font-weight: bold;
-            background: #86878A45;
-            border-radius: 0.2em;
-            text-align: center;
-            justify-content: center;
-        "><span style="display:none">scroll to bottom </span>🠫</div>
-    </a>
-</div>
-
+<span id="top" />
 
 # <br><b>Changelog</b><br>
 
@@ -20,15 +8,15 @@
 ## … `v2.0` Major Release 💎
 
 *   **Quality & Consistency:**
-    -   Unified all error messages throughout the whole library, to always pass the given value if the error is caused by that value being invalid.
-    -   Reformatted all docstrings across the library to be consistent in style and structure, and to use proper sentences.
+    -   Unified all error messages throughout the whole library to always pass the given value if the error is caused by that value being invalid.
+    -   Reformatted all docstrings across the library to be consistent in style and structure and to use proper sentences.
     -   Corrected and refined static type hints across the entire library for strict MyPyC compatibility.
     -   Rewrote existing tests and added comprehensive new tests to achieve 100% test coverage with consistent structure.
 *   **Performance Optimizations:**
     -   Improved the performance of `console.log()` by restructuring formatting and output pipelines.
     -   Improved the performance of `string.normalize_spaces()` by using `str.translate()` instead of multiple `str.replace()` calls.
     -   Improved the performance of `data.remove_duplicates()` for lists and tuples:<br>
-        Hashable items now deduplicate in $O(n)$ using `dict.fromkeys()`, with an $O(n^2)$ equality-check fallback only for unhashable items (*lists, dicts, sets*).
+        Hashable items now deduplicate in $O(n)$ using `dict.fromkeys()`, with an $O(n^2)$ equality-check fallback only for unhashable items (lists, dicts, sets).
 *   **Feature Enhancements:**
     -   Added a `@deprecated` decorator to `xulbux.base.decorators` that conditionally imports from `warnings` on Python 3.13+ and `typing_extensions` on older versions.
     -   Added two new public constants `FRAMES_STANDARD` and `FRAMES_WINDMILL` to the `console` module, usable as `frames` presets for the `Throbber` class.
@@ -57,7 +45,7 @@
         -   Moved `file` functions into `fs` (`create_file()`, `rename_file_ext()`) and deleted the `file` module.
         -   Moved `json` functions into `fs` (`read_json()`, `create_json()`, `update_json()`) and deleted the `json` module.
 *   **New Operator-Based Styling Engine (`ansi` module):**
-    *   Removed the `format_codes` module and bracket syntax in favor of the new operator-based styling engine in the `ansi` module (*including the removal of legacy format-code constants from* `xulbux.base.consts`):
+    *   Removed the `format_codes` module and bracket syntax in favor of the new operator-based styling engine in the `ansi` module (including the removal of legacy format-code constants from `xulbux.base.consts`):
         -   The new `S` class exposes every ANSI style/color attribute and uses `|` to combine styles and `()` to apply them to text, e.g., `(S.BOLD | S.RED)("hi")` and `S.hex("#A8F")("hi")`.
         -   The `S(*segments, sep="")` class also directly builds the ANSI string on construction and exposes `.ansi`, `.raw`, `.code_positions`, `.raw_code_positions`, `.print()` and `.input()`.
         -   A companion `Term` class provides commonly used cursor- and screen-control sequences (`Term.HIDE_CURSOR`, `Term.up(n)`, `Term.move(row, col)`, `Term.title(text)`, …).
@@ -71,10 +59,10 @@
     -   `data.render(as_json=True)` now natively converts special Python objects into valid JSON strings without proprietary representations.
     -   Replaced the separator-based path ID format (e.g., `"1>011"`) in `data.get_path_id()` with a compact, separator-free uppercase hexadecimal encoding (e.g., `"1011"`, `"10C"`).
     -   Replaced runtime type tuples like `DataObjTT` with type guard functions like `is_data_obj()`.
-    -   Changed `IndexIterable` to `SeqOrSet[T]`, and added `is_seq_or_set()`.
-    -   Removed raw `str` and `list[float]` from `Rgba` and `Hsla` type aliases, reserving them strictly for structured color representations (*objects, tuples, lists of integers, and TypedDicts*).
-    -   Updated `RgbaDict`, `HslaDict`, and `HexaDict` schemas to disallow explicit `None` for the optional `alpha` key (`alpha: NotRequired[float]` *and* `NotRequired[str]`).
-    -   `rgba.blend()` and `hsla.blend()` no longer accept color strings directly (*raising* `TypeError`); color strings must be converted beforehand via `to_rgba()` or `to_hsla()`.
+    -   Changed `IndexIterable` to `SeqOrSet[T]` and added `is_seq_or_set()`.
+    -   Removed raw `str` and `list[float]` from `Rgba` and `Hsla` type aliases, reserving them strictly for structured color representations (objects, tuples, lists of integers, and typed dicts).
+    -   Updated `RgbaDict`, `HslaDict`, and `HexaDict` schemas to disallow explicit `None` for the optional `alpha` key (`alpha: NotRequired[float]` and `NotRequired[str]`).
+    -   `rgba.blend()` and `hsla.blend()` no longer accept color strings directly (raising `TypeError`); color strings must be converted beforehand via `to_rgba()` or `to_hsla()`.
     -   `is_valid_rgba()` and `is_valid_hsla()` now reject 4-element sequences with `None` as the fourth element and dictionaries with `alpha: None`.
 *   **Renamed Functions & Methods:**
     *   **`color`:**
@@ -104,7 +92,7 @@
 *   **Removals:**
     -   Removed `w_padding` parameter from `console.box()` in favor of automatic contextual padding.
     -   Removed `data.print()` (use `data.render(…).print()`).
-    -   Removed `serialize_bytes()` and `deserialize_bytes()` from `data` (bytes serialization is now handled natively).
+    -   Removed `serialize_bytes()` and `deserialize_bytes()` from `data` (byte serialization is now handled natively).
     -   Removed `console.get_user()` in favor of `system.get_username()`.
     -   Removed `reset_ansi` parameter almost everywhere (append `S.RESET` directly if needed).
     -   Removed `format_linebreaks` parameter from `console.log()`.
@@ -117,21 +105,21 @@
 ## 26.04.2026 `v1.9.7`
 
 *   Restructured CLI commands under a single `xulbux-lib` entry point:
-    -   `xulbux-lib` shows library info.
-    -   `xulbux-lib fc` (*new*) parses and renders a string's format codes as ANSI console output.
-*   Added `.get()` method to `ParsedArgData` for safe index access on parsed argument values.
+    -   `xulbux-lib` – Shows library info.
+    -   `xulbux-lib fc` (new) – Parses and renders a string's format codes as ANSI console output.
+*   Added a `.get()` method to `ParsedArgData` for safe index access on parsed argument values.
 *   Added missing `__init__.py` files to the `base` and `cli` subpackages.
 *   Fixed `ModuleNotFoundError` caused by `mypyc` compiling `__init__.py` files, which broke subpackage imports.
 *   Simplified CI workflows to use `pip`'s build isolation instead of manually specifying build dependencies.
 *   Fixed a small bug in `ProgressBar`, where it would only overwrite and not actually clear the previous line.
 *   Added a new constant `ANSI.COLOR_VARIANTS_MAP`, which contains all possible color variants that can be used in formatting.
-*   Made it possible to also pass console default colors to `title_bg_color` in `Console.log()`, instead of only custom RGBA or HEXA colors.
+*   Made it possible to also pass console default colors to `title_bg_color` in `Console.log()`, instead of only custom RGBA or hex colors.
 *   Added a new format key `link:…` to `FormatCodes`, which allows you to create hyperlinks in the console output with the syntax `[link:URL](display text)`.
 
 **BREAKING CHANGES:**
 
 *   The `ANSI.COLOR_MAP` constant is now a set for better lookup performance, as the color order doesn't matter there.
-*   All `Console` methods that allow console default colors as input for their color params, now actually validate the given color, raising an error if it's not valid.
+*   All `Console` methods that allow console default colors as input for their color parameters now actually validate the given color, raising an error if it's not valid.
 *   The default for `box_bg_color` in `Console.log_box_filled()` is now the console foreground color (`None`) instead of `br:green`.
 
 
@@ -139,50 +127,50 @@
 
 ## 13.04.2026 `v1.9.6`
 
-*   The compiled version of the library now includes the type stub files (`.pyi`), so type checkers can properly check types.
+*   The compiled version of the library now includes the type stub files (`.pyi`), so type checkers can thoroughly check types.
 *   Made all type hints in the whole library way more strict and accurate.
-*   Removed leftover unnecessary runtime type-checks in several methods throughout the whole library.
+*   Removed leftover unnecessary runtime type checks in several functions throughout the whole library.
 
 **BREAKING CHANGES:**
 
-*   All methods that should use positional-only and/or keyword-only params, now actually enforce that by using the `/` and `*` syntax in the method definitions.
+*   All signatures that should use positional-only and keyword-only parameters now actually enforce that by using the `/` and `*` syntax.
 *   Renamed the `Spinner` class from the `console` module to `Throbber`, since that name is closer to what it's actually used for.
 *   Changed the name of the TypeAlias `DataStructure` to `DataObj` because that name is shorter and more general.
-*   Changed both names `DataStructureTypes` and `IndexIterableTypes` to `DataObjTT` and `IndexIterableTT` respectively (`TT` *stands for type-tuple*).
-*   Made the return value of `String.single_char_repeats()` always be *`int`* and not <code>*int* | *bool*</code>.
+*   Changed both names `DataStructureTypes` and `IndexIterableTypes` to `DataObjTT` and `IndexIterableTT` respectively (`TT` = type tuple).
+*   Made the return value of `String.single_char_repeats()` always be *`int`* and not `int | bool`.
 
 
 <span id="v1-9-5" />
 
 ## 25.01.2026 `v1.9.5`
 
-*   Added a new class property `Console.encoding`, which returns the encoding used by the console (*e.g.,* `utf-8`*,* `cp1252`*, …*).
+*   Added a new class property `Console.encoding`, which returns the encoding used by the console (e.g., `utf-8`, `cp1252`, …).
 *   Added multiple new class properties to the `System` class:
-    -   `is_linux` Whether the current OS is Linux or not.
-    -   `is_mac` Whether the current OS is macOS or not.
-    -   `is_unix` Whether the current OS is a Unix-like OS (Linux, macOS, BSD, …) or not.
-    -   `hostname` The network hostname of the current machine.
-    -   `username` The current user's username.
-    -   `os_name` The name of the operating system (*e.g.,* `Windows`*,* `Linux`*, …*).
-    -   `os_version` The version of the operating system.
-    -   `architecture` The CPU architecture (*e.g.,* `x86_64`*,* `ARM`*, …*).
-    -   `cpu_count` The number of CPU cores available.
-    -   `python_version` The Python version string (*e.g.,* `3.10.4`).
-*   Created a two new TypeAliases:
-    -   `ArgParseConfig` Matches the command-line-parsing configuration of a single argument.
-    -   `ArgParseConfigs` Matches the command-line-parsing configurations of multiple arguments, packed in a dictionary.
+    -   `is_linux` – Whether the current OS is Linux or not.
+    -   `is_mac` – Whether the current OS is macOS or not.
+    -   `is_unix` – Whether the current OS is a Unix-like OS (Linux, macOS, BSD, …) or not.
+    -   `hostname` – The network hostname of the current machine.
+    -   `username` – The current user's username.
+    -   `os_name` – The name of the operating system (e.g., `Windows`, `Linux`, …).
+    -   `os_version` – The version of the operating system.
+    -   `architecture` – The CPU architecture (e.g., `x86_64`, `ARM`, …).
+    -   `cpu_count` – The number of CPU cores available.
+    -   `python_version` – The Python version string (e.g., `3.10.4`).
+*   Created two new type aliases:
+    -   `ArgParseConfig` – Matches the command-line-parsing configuration of a single argument.
+    -   `ArgParseConfigs` – Matches the command-line-parsing configurations of multiple arguments, packed in a dictionary.
 *   Added a new attribute `flag` to the `ArgData` TypedDict and the `ArgResult` class, which contains the specific flag that was found or `None` for positional args.
 
 **BREAKING CHANGES:**
 
-*   Rewrote `Console.get_args()` for a different parsing functionality:
-    -   Flagged values are now too saved to lists, so now only the `values` attribute is used for all argument types.
+*   Rewrote `Console.get_args()` for different parsing functionality:
+    -   Flagged values are now also saved to lists, so only the `values` attribute is used for all argument types.
     -   The results of parsed command-line arguments are also no longer differentiated between regular flagged arguments and positional `"before"`/`"after"` arguments.
-    -   The param `allow_spaces` was removed, and therefore a new param `flag_value_sep` was added, which specifies the character/s used to separate flags from their values.<br>
-        This means, flags can new **only** receive values when the separator is present (*e.g.,* `--flag=value` *or* `--flag = value`).
+    -   The parameter `allow_spaces` was removed, and therefore a new parameter `flag_value_sep` was added, which specifies the character(s) used to separate flags from their values.<br>
+        This means flags can now **only** receive values when the separator is present (e.g., `--flag=value` or `--flag = value`).
 *   Combined the custom TypedDict classes `ArgResultRegular` and `ArgResultPositional` into a single TypedDict class `ArgData`, which is now used for all parsed command-line arguments.
-*   Renamed the classes `Args` and `ArgResult` to `ParsedArgs` and `ParsedArgData`, to better describe their purpose.
-*   Renamed the attribute `is_positional` to `is_pos` everywhere, so its name isn't that long.
+*   Renamed the classes `Args` and `ArgResult` to `ParsedArgs` and `ParsedArgData` to better describe their purpose.
+*   Renamed the attribute `is_positional` to `is_pos` everywhere so its name isn't that long.
 
 
 <span id="v1-9-4" />
@@ -191,17 +179,17 @@
 
 *   Added a new base module `base.decorators` which contains custom decorators used throughout the library.
 *   Made `mypy_extensions` an optional dependency by wrapping all uses of `mypy_extensions.mypyc_attr` in a custom decorator that acts as a no-op if `mypy_extensions` is not installed.
-*   The methods from the `env_path` module that modify the PATH environment variable, no longer sort all paths alphabetically, but keep the original order, to not mess with the user's intended PATH order.
+*   The methods from the `env_path` module that modify the PATH environment variable no longer sort all paths alphabetically but keep the original order to not mess with the user's intended PATH order.
 *   Added a new TypeAlias `PathsList` to the `base.types` module, which matches a list of paths as strings or `pathlib.Path` objects.
 
 **BREAKING CHANGES:**
 
 *   Renamed the module `path` to `fs` and its main class `Path` to `FileSys`, so you can better use it alongside the built-in `pathlib.Path` class without always needing to import one of them under an alias.
 *   Renamed most `FileSys` methods to better describe their functionality:
-    -   `Path.extend()` is now `FileSys.extend_path()`
-    -   `Path.extend_or_make()` is now `FileSys.extend_or_make_path()`
-*   Renamed the param `use_closest_match` in `FileSys.extend_path()` and `FileSys.extend_or_make_path()` to `fuzzy_match`, since that name is more commonly used for that functionality.
-*   Updated all library methods that work with paths to accept `pathlib.Path` objects additionally to strings, as path inputs.
+    -   `Path.extend()` is now `FileSys.extend_path()`.
+    -   `Path.extend_or_make()` is now `FileSys.extend_or_make_path()`.
+*   Renamed the parameter `use_closest_match` in `FileSys.extend_path()` and `FileSys.extend_or_make_path()` to `fuzzy_match`, since that name is more commonly used for that functionality.
+*   Updated all library methods that work with paths to accept `pathlib.Path` objects in addition to strings as path inputs.
 *   Also, all library methods that return paths now return `pathlib.Path` objects instead of strings.
 
 
@@ -215,20 +203,20 @@
 *   Changed the default syntax highlighting for `Data.to_str()` and therefore also `Data.print()` to use console default colors.
 *   Added the missing but needed dunder methods to the `Args` and `ArgResult` classes and the `rgba`, `hsla` and `hexa` color objects for better usability and type checking.
 *   Added three new methods to `Args`:
-    -   `get()` returns the argument result for a given alias, or a default value if not found
-    -   `existing()` yields only the existing arguments as tuples of `(alias, ArgResult)`
-    -   `missing()` yields only the missing arguments as tuples of `(alias, ArgResult)`
+    -   `get()` – Returns the argument result for a given alias or a default value if not found.
+    -   `existing()` – Yields only the existing arguments as tuples of `(alias, ArgResult)`.
+    -   `missing()` – Yields only the missing arguments as tuples of `(alias, ArgResult)`.
 *   Added a new attribute `is_positional` to `ArgResult`, which indicates whether the argument is a positional argument or not.
 *   The `ArgResult` class now also has a `dict()` method, which returns the argument result as a dictionary.
-*   Added new properties `is_tty` and `supports_color` to the `Console` class, `home` to the `Path` class and `is_win` to the `System` class.
+*   Added new properties `is_tty` and `supports_color` to the `Console` class, `home` to the `Path` class, and `is_win` to the `System` class.
 *   Added the option to add format specifiers to the `{current}`, `{total}` and `{percentage}` placeholders in the `bar_format` and `limited_bar_format` of `ProgressBar`.
-*   Finally fixed the `C901 'Console.get_args' is too complex (39)` linting error by refactoring the method into its own helper class.
-*   Changed the string-   and repr-representations of the `rgba` and `hsla` color objects and newly implemented it for the `Args` and `ArgResult` classes.
-*   Made internal, global constants, which's values never change, into `Final` constants for better type checking.
+*   Finally fixed the `C901 'Console.get_args' is too complex (39)` linting error by refactoring the method into its helper class.
+*   Changed the string- and repr-representations of the `rgba` and `hsla` color objects and newly implemented it for the `Args` and `ArgResult` classes.
+*   Made internal, global constants, whose values never change, into `Final` constants for better type checking.
 *   The names of all internal classes and methods are all no longer prefixed with a double underscore (`__`), but a single underscore (`_`) instead.
-*   Changed all methods defined as `@staticmethod` to `@classmethod` where applicable, to improve inheritance capabilities.
-*   Adjusted the whole library's type hints to be way more strict and accurate, using `mypy` as static type checker.
-*   Change the class-property definitions to be defined via `metaclass` and using `@property` decorators, to make them compatible with `mypyc`.
+*   Changed all methods defined as `@staticmethod` to `@classmethod` where applicable to improve inheritance capabilities.
+*   Adjusted the whole library's type hints to be way more strict and accurate, using `mypy` as a static type checker.
+*   Changed the class-property definitions to be defined via `metaclass` and use `@property` decorators to make them compatible with `mypyc`.
 *   Unnest all the nested methods in the whole library for compatibility with `mypyc`.
 *   The library is now compiled using `mypyc` when installing, which makes it run significantly faster. Benchmarking results:
     -   Simple methods like data and color operations had a speed improvement of around 50%.
@@ -236,10 +224,10 @@
 
 **BREAKING CHANGES:**
 
-*   Renamed `Data.to_str()` to `Data.render()`, since that describes its functionality better (*especially with the syntax highlighting option*).
+*   Renamed `Data.to_str()` to `Data.render()`, since that describes its functionality better (especially with the syntax highlighting option).
 *   Renamed the constant `ANSI.ESCAPED_CHAR` to `ANSI.CHAR_ESCAPED` for better consistency with the other constant names.
-*   Removed the general `Pattern` and `Match` type aliases from the `base.types` module (*they are pointless since you should always use a specific type and not "type1 OR typeB"*).
-*   Removed the `_` prefix from the param `_syntax_highlighting` in `Data.render()`, since it's no longer just for internal use.
+*   Removed the general `Pattern` and `Match` type aliases from the `base.types` module (they are pointless since you should always use a specific type and not “type1 OR typeB”).
+*   Removed the `_` prefix from the parameter `_syntax_highlighting` in `Data.render()`, since it's no longer just for internal use.
 
 
 <span id="v1-9-2" />
@@ -248,9 +236,9 @@
 
 *   Added a new class `LazyRegex` to the `regex` module, which is used to define regex patterns that are only compiled when they are used for the first time.
 *   Removed unnecessary character escaping in the precompiled regex patterns in the `console` module.
-*   Removed all the runtime type-checks that can also be checked using static type-checking tools, since you're supposed to use type checkers in modern python anyway, and to improve performance.
-*   Renamed the internal class method `FormatCodes.__config_console()` to `FormatCodes._config_console()` to make it callable, but still indicate that it's internal.
-*   Fixed a small bug where `Console.log_box_…()` would crash, when calling it without providing any `*values` (*content for inside the box*).
+*   Removed all the runtime type checks that can also be checked using static type-checking tools, since you're supposed to use type checkers in modern Python anyway, and to improve performance.
+*   Renamed the internal class method `FormatCodes.__config_console()` to `FormatCodes._config_console()` to make it callable but still indicate that it's internal.
+*   Fixed a small bug where `Console.log_box_…()` would crash when calling it without providing any `*values` (content for inside the box).
 
 **BREAKING CHANGES:**
 
@@ -263,9 +251,9 @@
 
 *   Replaced the internal `_COMPILED` regex pattern dictionaries with `LazyRegex` objects so it won't compile all regex patterns on library import, but only when they are used for the first time, which improves the library's import time.
 *   Renamed the internal `_COMPILED` regex pattern dictionaries to `_PATTERNS` for better clarity.
-*   Removed the import of the `ProgressBar` class from the `__init__.py` file, since it's not an important main class that should be imported directly.
+*   Removed the import of the `ProgressBar` class from the `__init__.py` file since it's not an important main class that should be imported directly.
 *   Renamed the constant `CLR` to `CLI_COLORS` and the constant `HELP` to `CLI_HELP` in the `cli.help` module.
-*   Changed the default value of the `strip_spaces` param in `Regex.brackets()` from `True` to `False`, since this is more intuitive behavior.
+*   Changed the default value of the `strip_spaces` parameter in `Regex.brackets()` from `True` to `False`, since this is more intuitive behavior.
 
 
 <span id="v1-9-1" />
@@ -273,14 +261,14 @@
 ## 26.11.2025 `v1.9.1`
 
 *   Unified the module and class docstring styles throughout the whole library.
-*   Moved the Protocol `ProgressUpdater` from the `console` module to the `types` module.
+*   Moved the protocol `ProgressUpdater` from the `console` module to the `types` module.
 *   Added throttling to the `ProgressBar` update methods to impact the actual process' performance as little as possible.
 *   Added a new class `Spinner` to the `console` module, which is used to display a spinner animation in the console during an ongoing process.
 
 **BREAKING CHANGES:**
 
-*   Made the value input into the params `bar_format` and `limited_bar_format` of `ProgressBar` be a list/tuple of strings instead of a single string, so the user can define multiple formats for different console widths.
-*   Added a new param <code>sep: *str* = " "</code> to the `ProgressBar` class, which is used to join multiple bar-format strings.
+*   Made the value input into the parameters `bar_format` and `limited_bar_format` of `ProgressBar` be a list/tuple of strings instead of a single string so the user can define multiple formats for different console widths.
+*   Added a new parameter `sep: str = " "` to the `ProgressBar` class, which is used to join multiple bar-format strings.
 *   Renamed the class property `Console.wh` to `Console.size`, since it describes the property better.
 *   Renamed the class property `Console.usr` to `Console.user`, since it describes the property better.
 *   Added missing type checking to methods in the `path` module.
@@ -291,36 +279,36 @@
 
 *   Standardized the docstrings for all public methods in the whole library to use the same style and structure.
 *   Replaced left over single quotes with double quotes for consistency.
-*   Fixed a bug inside `Data.remove_empty_items()`, where types other than strings where passed to `String.is_empty()`, which caused an exception.
-*   Refactored/reformatted the code of the whole library, to introduce more clear code structure with more room to breathe.
-*   Made the really complex regex patterns in the `Regex` class all multi-line for better readability.
-*   Added a new internal method `Regex._clean()`, which is used to clean up the regex patterns, defined as multi-line strings.
-*   Moved custom exception classes to their own file `base/exceptions.py`, so the user can easily import them all from the same place.
-*   Moved custom types to their own file `base/types.py`, so the user can easily import them all from the same place.
+*   Fixed a bug inside `Data.remove_empty_items()`, where types apart from strings were passed to `String.is_empty()`, which caused an exception.
+*   Refactored/reformatted the code of the whole library to introduce clearer code structure with more room to breathe.
+*   Made the really complex regex patterns in the `Regex` class all multiline for better readability.
+*   Added a new internal method `Regex._clean()`, which is used to clean up the regex patterns defined as multiline strings.
+*   Moved custom exception classes to their file `base/exceptions.py` so the user can easily import them all from the same place.
+*   Moved custom types to their file `base/types.py` so the user can easily import them all from the same place.
 *   Removed unnecessary duplicate code in several methods throughout the library.
-*   Introduced some minor performance improvements in a few methods, that might be called very often in a short time span.
+*   Introduced some minor performance improvements in a few methods that might be called very frequently in a short time span.
 *   Added a small description to the docstrings of all modules and their main classes.
 
 **BREAKING CHANGES:**
 
-*   The `find_args` param from the method `Console.get_args()` now only accepts sets for the flags instead of lists/tuples, since the order of flags doesn't matter and sets have better performance for lookups.
-*   Added missing type checking to all public methods in the whole library, so now they will all throw errors if the params aren't of the expected type.
-*   Removed the second definitions of constants in with lowercase names in the `ANSI` class inside the `consts` module, so now you can only access them with their uppercase names (*e.g.,* `ANSI.CHAR` instead of `ANSI.char`).
+*   The `find_args` parameter from the method `Console.get_args()` now only accepts sets for the flags instead of lists/tuples since the order of flags doesn't matter and sets have better performance for lookups.
+*   Added missing type checking to all public methods in the whole library, so now they will all throw errors if the parameters aren't of the expected type.
+*   Removed the second definitions of constants in with lowercase names in the `ANSI` class inside the `consts` module, so now you can only access them with their uppercase names (e.g., `ANSI.CHAR` instead of `ANSI.char`).
 
 
 <span id="v1-8-5" />
 
 ## 14.11.2025 `v1.8.5`
 
-*   Made the help command `xulbux-help` new primarily use console default colors so it fits the user's console theme.
+*   Made the help command `xulbux-help` use console default colors so it fits the user's console theme.
 *   Changed the default `box_bg_color` in `Console.log_box_filled()` from `green` to `br:green`.
-*   Fixed a bug in all methods of `FormatCodes`, where as soon as you used more than a single modifier format code (*e.g.,* `[ll]` *or* `[++]`), it was treated as invalid and ignored.
+*   Fixed a bug in all methods of `FormatCodes`, where as soon as you used more than a single modifier format code (e.g., `[ll]` or `[++]`), it was treated as invalid and ignored.
 *   Added a new method `FormatCodes.escape()` which will escape all valid formatting codes in a string.
-*   Again refactored the whole `CHANGELOG.md` to use actual sentences and add a `BREAKING CHANGES` section to more clearly highlight breaking changes.
+*   Again refactored the whole `CHANGELOG.md` to use actual sentences and added a `BREAKING CHANGES` section to more clearly highlight breaking changes.
 
 **BREAKING CHANGES:**
 
-*   Removed the `*c` and `*color` formatting codes, since the user should just use the code `default` to achieve the exact same instead.
+*   Removed the `*c` and `*color` formatting codes, since the user should just use the code `default` to achieve the same instead.
 *   Renamed the method `FormatCodes.remove_formatting()` to `FormatCodes.remove()`.
 
 
@@ -331,15 +319,15 @@
 **𝓢𝓲𝓷𝓰𝓵𝓮𝓼 𝓓𝓪𝔂 🥇😉**
 
 *   Adjusted `Regex.hsla_str()` to not include optional degree (`°`) and percent (`%`) symbols in the captured groups.
-*   Fixed that `Regex.hexa_str()` couldn't match HEXA colors anywhere inside a string, but only if the whole string was just the HEXA color.
+*   Fixed that `Regex.hexa_str()` couldn't match hex colors anywhere inside a string, but only if the whole string was just the hex color.
 *   Added `_ArgResultRegular` and `_ArgResultPositional` TypedDict classes for better type hints in `Args.dict()` and `Args.items()` methods.
 
 **BREAKING CHANGES:**
 
-*   The method `Console.get_args()` no longer tries to convert found arg values to their respective types, since that caused too many unwanted, wrong type conversions.
+*   The method `Console.get_args()` no longer tries to convert found arg values to their respective types since that caused too many unwanted wrong type conversions.
 *   `ArgResult` now has separate properties for different argument types to improve type safety and eliminate the need for type casting when accessing argument values:
-    -   <code>value: Optional[*str*]</code> for regular flagged arguments
-    -   <code>values: list[*str*]</code> for positional `"before"`/`"after"` arguments
+    -   `value: Optional[str]` – For regular flagged arguments.
+    -   `values: list[str]` – For positional `"before"`/`"after"` arguments.
 
 
 <span id="v1-8-3" />
@@ -347,76 +335,78 @@
 ## 08.10.2025 `v1.8.3`
 
 *   Adjusted the look of the prompts and inputs of the `System.check_libs()` method.
-*   Added a new param to `System.check_libs()`:<br>
-    <code>missing_libs_msgs: tuple[str, str] = (…)</code> two messages: The first one is displayed when missing libraries are found. The second one is the confirmation message before installing missing libraries.
+*   Added a new parameter to `System.check_libs()`:<br>
+    `missing_libs_msgs: tuple[str, str] = (…)` – Two messages:<br>
+    The first one is displayed when missing libraries are found.<br>
+    The second one is the confirmation message before installing missing libraries.
 *   Adjusted error messages throughout the whole library to all be structured about the same.
-*   Fixed a small bug in `FormatCodes.__config_console()`, where it would cause an exception, because it tried to configure Windows specific console settings on non-Windows systems.
-*   The `Console.get_args()` method will now treat everything as values (*even if it starts with* `-` *or* `--`) unless it's specified in the `find_args` param.
-*   Added two new params to all the `Console.log()` presets:<br>
-    -   <code>exit_code: *int* = 0</code> the exit code to use if `exit` is true
-    -   <code>reset_ansi: *bool* = True</code> whether to reset all ANSI formatting after pausing/exiting or not
+*   Fixed a small bug in `FormatCodes.__config_console()`, where it would cause an exception because it tried to configure Windows-specific console settings on non-Windows systems.
+*   The `Console.get_args()` method will now treat everything as values (even if it starts with `-` or `--`) unless it's specified in the `find_args` parameter.
+*   Added two new parameters to all the `Console.log()` presets:<br>
+    -   `exit_code: int = 0` – The exit code to use if `exit` is true.
+    -   `reset_ansi: bool = True` – Whether to reset all ANSI formatting after pausing/exiting or not.
 *   Made the type hints and value checks for `Console.get_args()` more strict.
 *   You can now insert horizontal rules inside a `Console.log_box_bordered()` by putting `{hr}` in the text.
 *   Made it possible to also update the title within a `ProgressBar.progress_context()` using the returned callable with the new kwarg `label`.
 
 **BREAKING CHANGES:**
 
-*   Reordered the params of `Console.pause_exit()` to be more logical.
+*   Reordered the parameters of `Console.pause_exit()` to be more logical.
 
 
 <span id="v1-8-2" />
 
 ## 11.09.2025 `v1.8.2`
 
-*   The client command `xulbux-help` now tells you that there's a newer version of the library available, if you're not using the latest version.
-*   Added two new params to `Console.input()`:
-    -   <code>default_val: Optional[T] = None</code> the default value to return if the input is empty
-    -   <code>output_type: type[T] = *str*</code> the type (*class*) to convert the input to before returning it
-*   Added a new class to `ProgressBar` to the `console` module.
-*   Made small performance improvement in `FormatCodes.to_ansi()`.
+*   The client command `xulbux-help` now tells you that there's a newer version of the library available if you're not using the latest version.
+*   Added two new parameters to `Console.input()`:
+    -   `default_val: Optional[T] = None` – The default value to return if the input is empty.
+    -   `output_type: type[T] = str` – The type (class) to convert the input to before returning it.
+*   Added a new class `ProgressBar` to the `console` module.
+*   Made a small performance improvement in `FormatCodes.to_ansi()`.
 *   Added missing docstrings to several public class variables.
 *   Added the missing tests for methods in the `console` module.
-*   Added test for the last two modules that didn't have test until now: `regex` and `system`.
+*   Added a test for the last two modules that didn't have tests until now: `regex` and `system`.
 
 **BREAKING CHANGES:**
 
-*   Spaces between a format code and the auto-reset-brackets are no longer allowed, so `[red]␣(text)` will not be automatically reset and output as `␣(text)`.
+*   Spaces between a format code and the auto-reset brackets are no longer allowed, so `[red]␣(text)` will not be automatically reset and output as `␣(text)`.
 
 
 <span id="v1-8-1" />
 
 ## 20.08.2025 `v1.8.1`
 
-*   **<u>HOTFIX:</u> Fixed a critical bug which caused the package to not install properly and make the whole library not work.**
+*   **<u>HOTFIX:</u> Fixed a critical bug that caused the package to not install properly and make the whole library not work.**
 *   Fixed several small bugs regarding the tabs and text wrapping inside `Console.log()`.
-*   Added two new params to `Console.log()`:
-    -   <code>title_px: *int* = 1</code> the horizontal padding (*in chars*) to the title (*if* `title_bg_color` *is set*)
-    -   <code>title_mx: *int* = 2</code> the horizontal margin (*in chars*) to the title
+*   Added two new parameters to `Console.log()`:
+    -   `title_px: int = 1` – The horizontal padding (in chars) to the title (if `title_bg_color` is set).
+    -   `title_mx: int = 2` – The horizontal margin (in chars) to the title.
 
 **BREAKING CHANGES:**
 
-*   Renamed the param `_console_tabsize` form the method `Console.log()` to `tab_size`, and it will now just set the size for the log directly instead of specifying, what the console's tab size is.
+*   Renamed the parameter `_console_tabsize` from the method `Console.log()` to `tab_size`, and it will now just set the size for the log directly instead of specifying what the console's tab size is.
 
 
 <span id="v1-8-0" />
 
 ## 28.08.2025 `v1.8.0` **⚠️ This release is broken!**
 
-*   New options for the param `find_args` from the method `Console.get_args()`:<br>
-    Previously you could only input a dictionary with items like `"alias_name": ["-f", "--flag"]` that specify an arg's alias and the flags that correspond to it.<br>
+*   New options for the parameter `find_args` from the method `Console.get_args()`:<br>
+    Previously, you could only input a dictionary with items like `"alias_name": ["-f", "--flag"]` that specify an arg's alias and the flags that correspond to it.<br>
     New, instead of flags, you can also once use the literal `"before"` and once `"after"`, which corresponds to all non-flagged values before or after all flagged values.
 *   Changed the default `default_color` for all `Console` class input methods to `None`.
-*   Now `prompt` from `Console.pause_exit()` also supports custom formatting codes and the method new pauses per default (*without exiting*).
+*   Now `prompt` from `Console.pause_exit()` also supports custom formatting codes and the method new pauses per default (without exiting).
 
 **BREAKING CHANGES:**
 
 *   The method `Console.restricted_input()` now returns an empty string instead of `None` if the user didn't input anything.
 *   Completely rewrote `Console.restricted_input()`, so now it's actually usable, and renamed it to just `Console.input()`.
-*   Removed method `Console.pwd_input()`, since you can now simply use `Console.input(mask_char="*")` instead, which does the exact same thing.
+*   Removed method `Console.pwd_input()`, since you can now simply use `Console.input(mask_char="*")` instead, which does the same thing.
 *   Removed the CLI command `xx-help`, since it was redundant because there's already the CLI command `xulbux-help`.
 *   Renamed the previously internal module `_consts_` to `consts` and made it accessible via `from xulbux.base.consts import …`, since you should be able to use library constants without them being «internal».
-*   Removed the `xx_` from all the library modules since it's redundant, and without it the imports look more professional and cleaner.
-*   The constants form inside the `consts` module are now all uppercase (*except the class methods*), to make clear that they're constants.
+*   Removed the `xx_` from all the library modules since it's redundant, and without it, the imports look more professional and cleaner.
+*   The constants from inside the `consts` module are now all uppercase (except the class methods) to make clear that they're constants.
 *   Removed the wildcard imports from the `__init__.py` file, so now you can only access the main classes directly with `from xulbux import …` and for the rest you have to import the specific module first.
 
 
@@ -424,13 +414,13 @@
 
 ## 29.07.2025 `v1.7.3`
 
-*   Added a new param to the methods `Console.log_box_filled()` and `Console.log_box_bordered()`:<br>
-    <code>indent: *int* = 0</code> the indentation of the box (in chars)
-*   Fixed a bug in `Console.log_box_filled()` where the box background color would sometimes not stop at the box's edge, but would continue to the end of the console line.
+*   Added a new parameter to the methods `Console.log_box_filled()` and `Console.log_box_bordered()`:<br>
+    `indent: int = 0` – The indentation of the box (in chars).
+*   Fixed a bug in `Console.log_box_filled()` where the box background color would sometimes not stop at the box's edge but would continue to the end of the console line.
 
 **BREAKING CHANGES:**
 
-*   Removed the param `title_bg_color` from the `Console.log()` preset methods, since that is part of the preset and doesn't need to be changed by the user.
+*   Removed the parameter `title_bg_color` from the `Console.log()` preset methods since that is part of the preset and doesn't need to be changed by the user.
 
 
 <span id="v1-7-2" />
@@ -438,22 +428,22 @@
 ## 17.06.2025 `v1.7.2`
 
 *   The `Console.w`, `Console.h` and `Console.wh` class properties now return a default size if there is no console, instead of throwing an error.
-*   It wasn't actually possible to use default console-colors (*e.g.,* `"red"`, `"green"`, …) for the color params in `Console.log()` so that option was completely removed again.
+*   It wasn't actually possible to use default console colors (e.g., `"red"`, `"green"`, …) for the color parameters in `Console.log()` so that option was completely removed again.
 *   Upgraded the speed of `FormatCodes.to_ansi()` by adding the internal ability to skip the `default_color` validation.
 *   Fixed type hints for the whole library.
-*   Fixed a small bug in `Console.pause_exit()`, where the key, pressed to unpause wasn't suppressed, so it was written into the next console input after unpausing.
+*   Fixed a small bug in `Console.pause_exit()`, where the key pressed to unpause wasn't suppressed, so it was written into the next console input after unpausing.
 
 
 <span id="v1-7-1" />
 
 ## 11.06.2025 `v1.7.1`
 
-*   Fixed an issue with the `Color.is_valid_…()` and `Color.is_valid()` methods, where you were not able to input any color without a type mismatch.
+*   Resolved an issue with the `Color.is_valid_…()` and `Color.is_valid()` methods, where you were unable to input any color without a type mismatch.
 *   Added a new method `Console.log_box_bordered()`, which does the same as `Console.log_box_filled()`, but with a border instead of a background color.
-*   The module `xx_format_codes` now treats the `[*]` to-default-color-reset as a normal full-reset, when no `default_color` is set, instead of just counting it as an invalid format code.
-*   Fixed bug where entering a color as HEX integer in the color params of the methods `Console.log()`, `Console.log_box_filled()` and `Console.log_box_bordered()` would not work, because it was not properly converted to a format code.
-*   You can now use default console colors (*e.g.,* `"red"`, `"green"`, …) for the color params in `Console.log()`.
-*   The methods `Console.log_box_filled()` and `Console.log_box_bordered()` no longer right-strip spaces, so you can make multiple log boxes the same width, by adding spaces to the end of the text.
+*   The module `xx_format_codes` now treats the `[*]` to-default-color-reset as a normal full reset when no `default_color` is set instead of just counting it as an invalid format code.
+*   Fixed a bug where entering a color as a hex integer in the color parameters of the methods `Console.log()`, `Console.log_box_filled()` and `Console.log_box_bordered()` would not work, because it was not properly converted to a format code.
+*   You can now use default console colors (e.g., `"red"`, `"green"`, …) for the color parameters in `Console.log()`.
+*   The methods `Console.log_box_filled()` and `Console.log_box_bordered()` no longer right-strip spaces, so you can make multiple log boxes the same width by adding spaces to the end of the text.
 
 **BREAKING CHANGES:**
 
@@ -464,7 +454,7 @@
 
 ## 28.05.2025 `v1.7.0`
 
-*   Fixed a small bug in `Console.log()` where empty linebreaks where removed.
+*   Fixed a small bug in `Console.log()` where empty line breaks were removed.
 *   Corrected and added missing type hints for the whole library.
 *   Fixed possibly unbound variables for the whole library.
 *   Updated the client command `xulbux-help`.
@@ -474,22 +464,22 @@
 
 ## 30.04.2025 `v1.6.9`
 
-*   Added a new param to the methods `FormatCodes.remove_ansi()` and `FormatCodes.remove_formatting()`:<br>
-    <code>_ignore_linebreaks: *bool* = False</code> whether to include linebreaks in the removal positions or not
-*   Added a new param to method `Color.luminance()` and to the `.grayscale()` method of all color types:
-    <code>method: *str* = "wcag2"</code> the luminance calculation method to use
-*   Added a new param to the method `File.rename_extension()`:
-    <code>full_extension: *bool* = False</code> whether to treat everything behind the first `.` as the extension or everything behind the last `.`
-*   Fixed a small bug in `Console.log_box()` where the leading spaces where removed from the box content.
+*   Added a new parameter to the methods `FormatCodes.remove_ansi()` and `FormatCodes.remove_formatting()`:<br>
+    `_ignore_linebreaks: bool = False` – Whether to include line breaks in the removal positions or not.
+*   Added a new parameter to method `Color.luminance()` and to the `.grayscale()` method of all color types:
+    `method: str = "wcag2"` – The luminance calculation method to use.
+*   Added a new parameter to the method `File.rename_extension()`:
+    `full_extension: bool = False` – Whether to treat everything behind the first `.` as the extension or everything behind the last `.`.
+*   Fixed a small bug in `Console.log_box()` where the leading spaces were removed from the box content.
 *   You can now assign default values to args in `Console.get_args()`.
 
 **BREAKING CHANGES:**
 
-*   Changed the params in `Json.create()`:
-    -   <code>new_file: *str* = "config"</code> is now the first param and <code>content: *dict*</code> the second one
-    -   <code>new_file: *str* = "config"</code> is now called <code>json_file: *str*</code> with no default value
-*   The methods `Json.update()` and `Data.set_value_by_path_id()` now intake a dictionary as `update_values` param, instead of a list of strings.
-*   Renamed param `correct_path` in `Path.extend()` and param `correct_paths` in `File.extend_or_make_path()` to `use_closest_match`, since this name describes its functionality better.
+*   Changed the parameters in `Json.create()`:
+    -   `new_file: str = "config"` is now the first parameter and `content: dict` the second one.
+    -   `new_file: str = "config"` is now called `json_file: str` with no default value.
+*   The methods `Json.update()` and `Data.set_value_by_path_id()` now take a dictionary as the `update_values` parameter instead of a list of strings.
+*   Renamed parameter `correct_path` in `Path.extend()` and parameter `correct_paths` in `File.extend_or_make_path()` to `use_closest_match`, since this name describes its functionality better.
 *   Moved the method `extend_or_make_path()` from the `xx_file` module to the `xx_path` module and renamed it to `extend_or_make()`.
 
 
@@ -497,26 +487,26 @@
 
 ## 18.03.2025 `v1.6.8`
 
-*   Made it possible to escape formatting codes by putting a slash (`/` *or* `\\`) at the beginning inside the brackets (*e.g.,* `[/red]`).
-*   New methods for `Args` (*the returned object from* `Console.get_args()`):
-    -   The `len()` function can now be used on `Args` (*the returned object from* `Console.get_args()`).
-    -   The `Args` object now also has the dict like methods `.keys()`, `.values()` and `.items()`.
+*   Made it possible to escape formatting codes by putting a slash (`/` or `\\`) at the beginning inside the brackets (e.g., `[/red]`).
+*   New methods for `Args` (the returned object from `Console.get_args()`):
+    -   The `len()` function can now be used on `Args` (the returned object from `Console.get_args()`).
+    -   The `Args` object now also has the dictionary-like methods `.keys()`, `.values()` and `.items()`.
     -   You can also get the args as a dict with the `.dict()` method.
     -   You can now use the `in` operator on `Args`.
-*   New methods for `ArgResult` (*a single arg-object from inside `Args`):
+*   New methods for `ArgResult` (a single arg-object from inside `Args`):
     -   You can now use the `bool()` function on `ArgResult` to directly see if the arg exists.
-*   The methods `FormatCodes.remove_ansi()` and `FormatCodes.remove_formatting()` now have a second param <code>get_removals: *bool* = False</code>:<br>
-    If this param is true additionally to the cleaned string, a list of tuples will be returned, where tuple contains the position of the removed formatting/ansi code and the removed code.
+*   The methods `FormatCodes.remove_ansi()` and `FormatCodes.remove_formatting()` now have a second parameter `get_removals: bool = False`:<br>
+    If this parameter is true, in addition to the cleaned string, a list of tuples will be returned, where a tuple contains the position of the removed formatting/ANSI code and the removed code.
 *   Fixed a bug in the line wrapping in all logging methods from the `xx_console` module.
-*   Added a new param to the method `Console.get_args()`:<br>
-    <code>allow_spaces: *bool* = False</code> whether to take spaces as separator of arg values or as part of an arg value
+*   Added a new parameter to the method `Console.get_args()`:<br>
+    `allow_spaces: bool = False` – Whether to take spaces as separators of arg values or as part of an arg value.
 
 
 <span id="v1-6-7" />
 
 ## 26.02.2025 `v1.6.7`
 
-*   Made the staticmethod `System.is_elevated()` into a class property, which now can be accessed as `System.is_elevated`.
+*   Made the static method `System.is_elevated()` into a class property, which now can be accessed as `System.is_elevated`.
 *   The method `File.create()` now throws a custom `SameContentFileExistsError` exception if a file with the same name and content already exists.
 *   Added a bunch more docstrings to class properties and library constants.
 
@@ -525,7 +515,7 @@
 *   Restructured the object returned from `Console.get_args()`:<br>
     Before, you accessed an arg's result with `args["<arg_alias>"]["value"]` and `args["<arg_alias>"]["exists"]`.<br>
     Now, you can directly access the result with `args.<arg_alias>.value` and `args.<arg_alias>.exists`.
-*   Made the method <code>Path.get(*cwd*=True)</code> or <code>Path.get(*base_dir*=True)</code> into two class properties, which now can be accessed as `Path.cwd` and `Path.script_dir`.
+*   Made the method `Path.get(cwd=True)` or `Path.get(base_dir=True)` into two class properties, which now can be accessed as `Path.cwd` and `Path.script_dir`.
 
 
 <span id="v1-6-6" />
@@ -533,42 +523,42 @@
 ## 17.02.2025 `v1.6.6`
 
 *   Added a new method `Console.multiline_input()`.
-*   Added two new params to the method `Console.log_box()`:<br>
-    -   <code>w_padding: *int* = 2</code> the horizontal padding (*in chars*) to the box content<br>
-    -   <code>w_full: *bool* = False</code> whether to make the box be the full console width or not
-*   Fixed a small bug in `Data.print()` where two params passed to `Data.to_str()` where swapped, which caused an error.
+*   Added two new parameters to the method `Console.log_box()`:<br>
+    -   `w_padding: int = 2` – The horizontal padding (in chars) to the box content.<br>
+    -   `w_full: bool = False` – Whether to make the box be the full console width or not.
+*   Fixed a small bug in `Data.print()` where two parameters passed to `Data.to_str()` were swapped, which caused an error.
 *   The method `Data.print()` now per default syntax highlights the console output:<br>
-    The syntax highlighting colors and styles can now be customized via the new param <code>syntax_highlighting: dict[*str*, *str*] = {…}</code>.
-*   Added two new methods `Data.serialize_bytes()` and `Data.deserialize_bytes()`.
-*   Made the method `String.to_type()` be able to also interpret and convert large complex structures.
-*   Added the new parameter <code>strip_spaces: *bool* = True</code> to the method `Regex.brackets()` which makes it possible to not ignore spaces around the content inside the brackets.
-*   Adjusted the `Console.log_box()` method, so the box background can't be reset to nothing any more.
-*   Added a new param to `Console.log()` (*and therefore also to every* `Console.log()` *preset*):<br>
-    <code>format_linebreaks: *bool* = True</code> when true, indents the text after every linebreak to the level of the previous text
+    The syntax highlighting colors and styles can now be customized via the new parameter `syntax_highlighting: dict[str, str] = {…}`.
+*   Added two new methods, `Data.serialize_bytes()` and `Data.deserialize_bytes()`.
+*   Made the method `String.to_type()` be able to also interpret and convert large, complex structures.
+*   Added the new parameter `strip_spaces: bool = True` to the method `Regex.brackets()` which makes it possible to not ignore spaces around the content inside the brackets.
+*   Adjusted the `Console.log_box()` method so the box background can't be reset to nothing anymore.
+*   Added a new parameter to `Console.log()` (and therefore also to every `Console.log()` preset):<br>
+    `format_linebreaks: bool = True` – When true, indents the text after every line break to the level of the previous text.
 
 **BREAKING CHANGES:**
 
-*   Restructured the `_consts_` library constants to use `@dataclass` classes (*and simpler structured classes*) as much as possible.
-*   Renamed the `DEFAULT` class from the `_consts_` to `COLOR`, whose colors are now directly accessible as variables (*e.g.,* `COLOR.red`) and not through dictionary keys.
+*   Restructured the `_consts_` library constants to use `@dataclass` classes (and simpler structured classes) as much as possible.
+*   Renamed the `DEFAULT` class from the `_consts_` to `COLOR`, whose colors are now directly accessible as variables (e.g., `COLOR.red`) and not through dictionary keys.
 *   Changed the methods `Console.w()`, `Console.h()`, `Console.wh()` and `Console.user()` to modern class properties instead:<br>
-    `Console.w` current console columns (*in text characters*)<br>
-    `Console.h` current console lines<br>
-    `Console.wh` a tuple with the console size as (columns, lines)<br>
-    `Console.usr` the current username
+    -   `Console.w` – Current console columns (in text characters).<br>
+    -   `Console.h` – Current console lines.<br>
+    -   `Console.wh` – A tuple with the console size as (columns, lines).<br>
+    -   `Console.usr` – The current username.
 
 
 <span id="v1-6-5" />
 
 ## 29.01.2025 `v1.6.5`
 
-*   Now the method `FormatCodes.to_ansi()` automatically converts the param `string` to a *`str`* if it isn't one already.
+*   Now the method `FormatCodes.to_ansi()` automatically converts the parameter `string` to a *`str`* if it isn't one already.
 *   Added a new method `FormatCodes.remove_codes()`.
 *   Added a new method `FormatCodes.remove_ansi()`.
 *   Added a new method `Console.log_box()`.
-*   Changed the default values of two params in the `Console.log()` method and every log preset:<br>
-    -   <code>start: *str* = "\n"</code> changed to <code>start: *str* = ""</code><br>
-    -   <code>end: *str* = "\n\n"</code> changed to <code>end: *str* = "\n"</code>
-*   Added the params <code>start: *str* = ""</code>, <code>end: *str* = "\n"</code> and <code>default_color: *rgba* | *hexa* = DEFAULT.color["cyan"]</code> to `Console.restricted_input()` and `Console.pwd_input()`.
+*   Changed the default values of two parameters in the `Console.log()` method and every log preset:<br>
+    -   `start: str = "\n"` changed to `start: str = ""`<br>
+    -   `end: str = "\n\n"` changed to `end: str = "\n"`
+*   Added the parameters `start: str = ""`, `end: str = "\n"` and `default_color: rgba | hexa = DEFAULT.color["cyan"]` to `Console.restricted_input()` and `Console.pwd_input()`.
 
 
 <span id="v1-6-4" />
@@ -583,11 +573,11 @@
 ## 22.01.2025 `v1.6.3` **⚠️ This release is broken!**
 
 *   Fixed a small bug in `xx_format_codes`:<br>
-    Inside print-strings, if there was a `'` or `"` inside an auto-reset-formatting (*e.g.,* `[u](there's a quote)`), that caused it to not be recognized as valid, and therefore not be automatically reset.<br>
-    Now this is fixed and auto-reset-formatting works as expected.
-*   Added a new param <code>ignore_in_strings: *bool* = True</code> to `Regex.brackets()`:<br>
-    If this param is true and a bracket is inside a string (e.g., `'…'` or `"…"`), it will not be counted as the matching closing bracket.
-*   Removed `lru_cache` from the `xx_format_codes` module's internal methods, since it was unnecessary.
+    Inside print strings, if there was a `'` or `"` inside an auto-reset formatting (e.g., `[u](there's a quote)`), that caused it to not be recognized as valid and therefore not be automatically reset.<br>
+    Now this is fixed, and auto-reset formatting works as expected.
+*   Added a new parameter `ignore_in_strings: bool = True` to `Regex.brackets()`:<br>
+    If this parameter is true and a bracket is inside a string (e.g., `'…'` or `"…"`), it will not be counted as the matching closing bracket.
+*   Removed `lru_cache` from the `xx_format_codes` module's internal methods since it was unnecessary.
 *   Adjusted `FormatCodes.__config_console()` so it can only be called once per process.
 
 
@@ -597,11 +587,11 @@
 
 *   Added a new method `elevate()` to `xx_system`, which is used to request elevated privileges.
 *   Fixed a bug in `rgba()`, `hsla()` and `hexa()`:<br>
-    Previously, when initializing a color with the alpha channel set to `0.0` (*100% transparent*), it was saved correctly, but when converted to a different color type or when returned, the alpha channel got ignored, just like if it was `None` or `1.0` (*opaque*).<br>
-    Now when initializing a color with the alpha channel set to `0.0`, this doesn't happen and when converted or returned, the alpha channel is still `0.0`.
-*   Huge speed and efficiency improvements in `xx_color`, due to newly added option to initialize a color without validation, which saves time when initializing colors, when we know, that the values are valid.
-*   Added a new param <code>reset_ansi: *bool* = False</code> to `FormatCodes.input()`:<br>
-    If this param is true, all formatting will be reset after the user confirmed the input and the program continues.
+    Previously, when initializing a color with the alpha channel set to `0.0` (100% transparent), it was saved correctly, but when converted to a different color type or when returned, the alpha channel got ignored, just like if it was `None` or `1.0` (opaque).<br>
+    Now when initializing a color with the alpha channel set to `0.0`, this doesn't happen, and when converted or returned, the alpha channel is still `0.0`.
+*   Huge speed and efficiency improvements in `xx_color`, due to the newly added option to initialize a color without validation, which saves time when initializing colors when we know that the values are valid.
+*   Added a new parameter `reset_ansi: bool = False` to `FormatCodes.input()`:<br>
+    If this parameter is true, all formatting will be reset after the user confirms the input and the program continues.
 
 **BREAKING CHANGES:**
 
@@ -613,16 +603,16 @@
 
 ## 15.01.2025 `v1.6.1`
 
-*   Changed the params in `File.make_path()`:<br>
-    Previously there were the params <code>filename: *str*</code> and <code>filetype: *str* = ""</code> where `filename` didn't have to have the file extension included, as long as the `filetype` was set.<br>
-    Now these params have become one param <code>file: *str*</code> which is the file with file extension.
+*   Changed the parameters in `File.make_path()`:<br>
+    Previously there were the parameters `filename: str` and `filetype: str = ""` where `filename` didn't have to have the file extension included, as long as the `filetype` was set.<br>
+    Now these parameters have become one parameter `file: str` which is the file with the file extension.
 *   Removed all line breaks and other Markdown formatting from docstrings, since not all IDEs support them.
 
 **BREAKING CHANGES:**
 
-*   Changed the order the params in `File.create()`:<br>
-    Until now the param <code>content: *str* = ""</code> was the first param and <code>file: *str* = ""</code>.<br>
-    New the param <code>file: *str* = ""</code> is the first param and <code>content: *str* = ""</code> is the second.
+*   Changed the order of the parameters in `File.create()`:<br>
+    Until now the parameter `content: str = ""` was the first parameter and `file: str = ""`.<br>
+    Now the parameter `file: str = ""` is the first parameter and `content: str = ""` is the second.
 *   Renamed `File.make_path()` to a more descriptive name `File.extend_or_make_path()` and adjusted the usages of `File.create()` and `File.make_path()` inside `xx_json` accordingly.
 
 
@@ -640,12 +630,12 @@
 ## 21.12.2024 `v1.5.9`
 
 *   Fixed bugs in method `to_ansi()` in module `xx_format_codes`:<br>
-    1.  The method always returned an empty string, because the color validation was broken, and it would identify all colors as invalid.<br>
-        Now the validation `Color.is_valid_rgba()` and `Color.is_valid_hexa()` are fixed and now, if a color is identified as invalid, the method returns the original string instead of an empty string.
+    1.  The method always returned an empty string because the color validation was broken, and it would identify all colors as invalid.<br>
+        Now the validation `Color.is_valid_rgba()` and `Color.is_valid_hexa()` are fixed, and now, if a color is identified as invalid, the method returns the original string instead of an empty string.
     2.  Previously the method `to_ansi()` couldn't handle formats inside `[]` because everything inside the brackets was recognized as an invalid format.<br>
-        Now you are able to use formats inside `[]` (*e.g.,* `"[[red](Red text [b](inside) square brackets!)]"`).
+        Now you can use formats inside `[]` (e.g., `"[[red](Red text [b](inside) square brackets!)]"`).
 *   Introduced a new test for the `xx_format_codes` module.
-*   Fixed a small bug in the help client-command:<br>
+*   Fixed a small bug in the help client command:<br>
     Added back the default text color.
 
 
@@ -655,19 +645,19 @@
 
 *   Added method `String.is_empty()` to check if the string is empty.
 *   Added method `String.escape()` to escape special characters in a string.
-*   Introduced a new test for `xx_data` (*all methods*).
-*   Added doc-strings to all the methods in `xx_data`.
-*   Made all the methods from `xx_data` work wih all the types of data structures (*`list`, `tuple`, `set`, `frozenset`, `dict`*).
+*   Introduced a new test for `xx_data` (all methods).
+*   Added docstrings to all the methods in `xx_data`.
+*   Made all the methods from `xx_data` work with all the types of data structures (lists, tuples, sets, frozensets, and dicts).
 *   Added method `EnvPath.remove_path()`.
-*   Introduced a new test for `xx_env_vars` (*all methods*).
+*   Introduced a new test for `xx_env_vars` (all methods).
 *   Added a `hexa_str()` preset to the `xx_regex` module.
 *   Introduced a new test for the methods from the `Color` class in `xx_color`.
 
 **BREAKING CHANGES:**
 
 *   Renamed the library from `XulbuX` to `xulbux` for better naming conventions.
-*   Renamed the module `xx_cmd`, and it's class `Cmd` to `xx_console` and `Console`.
-*   Renamed the module `xx_env_vars`, and it's class `EnvVars` to `xx_env_path` and `EnvPath`.
+*   Renamed the module `xx_cmd` and its class `Cmd` to `xx_console` and `Console`.
+*   Renamed the module `xx_env_vars` and its class `EnvVars` to `xx_env_path` and `EnvPath`.
 
 
 <span id="v1-5-7" />
@@ -676,15 +666,15 @@
 
 *   Change the testing modules to be able to run together with the library `pytest`.
 *   Added formatting checks, using `black`, `isort` and `flake8`.
-*   Added the script (*command*) `xx-help` or `xulbux-help`.
-*   Structured `Cmd.restricted_input()` a bit nicer, so it appears less complex.
+*   Added the script (command) `xx-help` or `xulbux-help`.
+*   Structured `Cmd.restricted_input()` a bit nicer so it appears less complex.
 *   Corrected code after `Lint with flake8` formatting suggestions.
 *   Added additional tests for the custom color types.
 *   Updated the whole `xx_format_codes` module for more efficiency and speed.
 
 **BREAKING CHANGES:**
 
-*   Moved the `help()` function to the file `_cli_.py`, because that's where all the scripts are located (*It also was renamed to* `help_command()`).
+*   Moved the `help()` function to the file `_cli_.py`, because that's where all the scripts are located (and renamed it to `help_command()`).
 *   Moved the method `normalize_spaces()` to `xx_string`.
 
 
@@ -694,7 +684,7 @@
 
 **Again 𝓢𝓲𝓷𝓰𝓵𝓮𝓼 𝓓𝓪𝔂 🥇😉**
 
-*   Moved the whole library to its own repository: **[python-lib-xulbux](https://github.com/xulbux/python-lib-xulbux)**
+*   Moved the whole library to a separate repository: **[python-lib-xulbux](https://github.com/xulbux/python-lib-xulbux)**
 *   Updated all connections and links correspondingly.
 
 
@@ -704,17 +694,17 @@
 
 **𝓢𝓲𝓷𝓰𝓵𝓮𝓼 𝓓𝓪𝔂 🥇😉**
 
-*   Added methods to get the width and height of the console (*in characters and lines*):<br>
-    -   <code>Cmd.w() -> *int*</code> how many text characters the console is wide<br>
-    -   <code>Cmd.h() -> *int*</code> how many lines the console is high<br>
-    -   <code>Cmd.wh() -> tuple[*int*, *int*]</code> a tuple with width and height
-*   Added the method <code>split_count(*string*, *count*) -> list[*str*]</code> to `xx_string`.
-*   Added doc-strings to every method in `xx_string`.
+*   Added methods to get the width and height of the console (in characters and lines):<br>
+    -   `Cmd.w() -> int` – How many text characters the console is wide.<br>
+    -   `Cmd.h() -> int` – How many lines the console is high.<br>
+    -   `Cmd.wh() -> tuple[int, int]` – A tuple with width and height.
+*   Added the method `split_count(string, count) -> list[str]` to `xx_string`.
+*   Added docstrings to every method in `xx_string`.
 *   Updated the `Cmd.restricted_input()` method to be able to:
     -   paste text from the clipboard,
     -   select all text to delete everything at once,
     -   write and backspace over multiple lines and
-    -   added support for custom formatting codes in the prompt.
+    -   support custom formatting codes in the prompt.
 *   Added required non-standard libraries to the project file.
 *   Added more metadata to the project file.
 
@@ -723,37 +713,37 @@
 
 ## 06.11.2024 `v1.5.4`
 
-*   Added a new method <code>normalize_spaces(*code*) -> *str*</code> to `Code`.
-*   Added new doc-strings to `xx_code` and `xx_cmd`.
+*   Added a new method `normalize_spaces(code) -> str` to `Code`.
+*   Added new docstrings to `xx_code` and `xx_cmd`.
 *   Added a custom `input()` method to `Cmd`, which lets you specify the allowed text characters the user can type, as well as the minimum and maximum length of the input.
 *   Added the method `pwd_input()` to `Cmd`, which works just like the `Cmd.restricted_input()` but masks the input characters with `*`.
-*   Restructured the whole library's imports, so the custom types won't get displayed as `Any` when hovering over a method/function.
-*   Fixed bug when trying to get the base directory from a compiled script (*EXE*):<br>
+*   Restructured the whole library's imports so the custom types won't get displayed as `Any` when hovering over a method/function.
+*   Fixed a bug when trying to get the base directory from a compiled script (EXE):<br>
     Would previously get the path to the temporary extracted directory, which is created when running the EXE file.<br>
     Now it gets the actual base directory of the currently running file.
 
 **BREAKING CHANGES:**
 
-*   Made the `blend()` method from all the color types modify the *`self`* object as well as returning the result.
+*   Made the `blend()` method from all the color types modify the *`self`* object in addition to returning the result.
 
 
 <span id="v1-5-3" />
 
 ## 30.10.2024 `v1.5.3`
 
-*   Added the default text color to the `_consts_.py` so it's easier to change it (*and used it in the library*).
-*   Added a bunch of other default colors to the `_consts_.py` (*and used them in the library*).
+*   Added the default text color to the `_consts_.py` so it's easier to change it (and used it in the library).
+*   Added several other default colors to the `_consts_.py` (and used them in the library).
 *   Refactored the whole library's code after the **[PEPs](https://peps.python.org)** and **[The Zen of Python](https://peps.python.org/pep-0020/#the-zen-of-python)** 🫡:
     -   Changed the indent to 4 spaces.
     -   No more inline control statements.
 *   Added new methods to `Color`:<br>
-    -   <code>rgba_to_hex(*r*, *g*, *b*, *a*) -> *int*</code><br>
-    -   <code>hex_to_rgba(*hex_int*) -> *tuple*</code><br>
-    -   <code>luminance(*r*, *g*, *b*, *precision*, *round_to*) -> *float*|*int*</code>
+    -   `rgba_to_hex(r, g, b, a) -> int`<br>
+    -   `hex_to_rgba(hex_int) -> tuple`<br>
+    -   `luminance(r, g, b, precision, round_to) -> float | int`
 *   Fixed the `grayscale()` method of `rgba()`, `hsla()` and `hexa()`:<br>
-    The method would previously just return the color, fully desaturated (*not grayscale*).<br>
-    Now this is fixed, and the method uses the luminance formula, to get the actual grayscale value.
-*   All the methods in the `xx_color` module now support HEX integers (*e.g.,* `0x8085FF` *instead of only strings:* `"#8085FF"` `"0x8085FF"`).
+    The method would previously just return the color, fully desaturated (not grayscale).<br>
+    Now this is fixed, and the method uses the luminance formula to get the actual grayscale value.
+*   All the methods in the `xx_color` module now support hex integers (e.g., `0x8085FF` instead of only strings: `"#8085FF"` `"0x8085FF"`).
 
 **BREAKING CHANGES:**
 
@@ -764,13 +754,13 @@
 
 ## 28.10.2024 `v1.5.2`
 
-*   New parameter <code>correct_path:*bool*</code> in `Path.extend()`:
-    This makes sure, that typos in the path will only be corrected if this parameter is true.
-*   Fixed bug in `Path.extend()`, where an empty string was taken as a valid path for the current directory `./`.
+*   New parameter `correct_path: bool` in `Path.extend()`:
+    This makes sure that typos in the path will only be corrected if this parameter is true.
+*   Fixed a bug in `Path.extend()`, where an empty string was taken as a valid path for the current directory `./`.
 *   Fixed color validation bug:<br>
     `Color.is_valid_rgba()` and `Color.is_valid_hsla()` would not accept an alpha channel of `None`.<br>
     `Color.is_valid_rgba()` was still checking for an alpha channel from `0` to `255` instead of `0` to `1`.
-*   Fixed bug for `Color.has_alpha()`:<br>
+*   Fixed a bug for `Color.has_alpha()`:<br>
     Previously, it would return `True` if the alpha channel was `None`.<br>
     Now in such cases it will return `False`.
 
@@ -779,9 +769,9 @@
 
 ## 28.10.2024 `v1.5.1`
 
-*   Now all methods in `xx_color` support both HEX prefixes (`#` *and* `0x`).
-*   Added the default HEX prefix to `_consts_.py`.
-*   Fixed bug when initializing a `hexa()` object:<br>
+*   Now all methods in `xx_color` support both hex prefixes (`#` and `0x`).
+*   Added the default hex prefix to `_consts_.py`.
+*   Fixed a bug when initializing a `hexa()` object:<br>
     Would throw an error, even if the color was valid.
 
 **BREAKING CHANGES:**
@@ -793,9 +783,9 @@
 
 ## 27.10.2024 `v1.5.0` Big Update 🚀
 
-*   Added a `__help__.py` file, which will show some information about the library and how to use it, when it's run as a script or when the `help()` function is called.
+*   Added a `__help__.py` file, which will show some information about the library and how to use it when it's run as a script or when the `help()` function is called.
 *   Added a lot more metadata to the library:<br>
-    `__version__` (*was already added in update [v1.4.2](#v1-4-2)*)<br>
+    `__version__` (was already added in update [v1.4.2](#v1-4-2))<br>
     `__author__`<br>
     `__email__`<br>
     `__license__`<br>
@@ -806,16 +796,16 @@
 
 **BREAKING CHANGES:**
 
-*   Split all classes into separate files, so users can download only parts of the library more easily.
+*   Split all classes into separate files so users can download only parts of the library more easily.
 
 
 <span id="v1-4-2" /><span id="v1-4-3" />
 
 ## 27.10.2024 `v1.4.2` `v1.4.3`
 
-*   <code>Path.extend(*rel_path*) -> *abs_path*</code> now also extends system variables like `%USERPROFILE%` and `%APPDATA%`.
+*   `Path.extend(rel_path) -> abs_path` now also extends system variables like `%USERPROFILE%` and `%APPDATA%`.
 *   Removed unnecessary parts when checking for missing required libraries.
-*   You can now get the libraries current version by accessing the attribute `XulbuX.__version__`.
+*   You can now get the library's current version by accessing the attribute `XulbuX.__version__`.
 
 
 <span id="v1-4-1" />
@@ -823,40 +813,40 @@
 ## 26.10.2024 `v1.4.1`
 
 *   Added methods to each color type:<br>
-    -   <code>is_grayscale() -> *self*</code><br>
-    -   <code>is_opaque() -> *self*</code>
+    -   `is_grayscale() -> self`<br>
+    -   `is_opaque() -> self`
 *   Added additional error checking to the color types.
 *   Made error messages for the color types clearer.
-*   Updated the <code>blend(*other*, *ratio*)</code> method of all color types to use additive blending except for the alpha-channel.
-*   Fixed problem with method-chaining for all color types.
+*   Updated the `blend(other, ratio)` method of all color types to use additive blending except for the alpha channel.
+*   Fixed problem with method chaining for all color types.
 
 
 <span id="v1-4-0" />
 
 ## 25.10.2024 `v1.4.0` Big Update 🚀
 
-*   Huge update to the custom color types:
-    -   Now all type-methods support chaining.
+*   Massive update to the custom color types:
+    -   Now all type methods support chaining.
     -   Added new methods to each type:<br>
-        <code>lighten(*amount*) -> *self*</code><br>
-        <code>darken(*amount*) -> *self*</code><br>
-        <code>saturate(*amount*) -> *self*</code><br>
-        <code>desaturate(*amount*) -> *self*</code><br>
-        <code>rotate(*hue*) -> *self*</code><br>
-        <code>invert() -> *self*</code><br>
-        <code>grayscale() -> *self*</code><br>
-        <code>blend(*other*, *ratio*) -> *self*</code><br>
-        <code>is_dark() -> *bool*</code><br>
-        <code>is_light() -> *bool*</code><br>
-        <code>with_alpha(*alpha*) -> *self*</code><br>
-        <code>complementary() -> *self*</code>
+        `lighten(amount) -> self`<br>
+        `darken(amount) -> self`<br>
+        `saturate(amount) -> self`<br>
+        `desaturate(amount) -> self`<br>
+        `rotate(hue) -> self`<br>
+        `invert() -> self`<br>
+        `grayscale() -> self`<br>
+        `blend(other, ratio) -> self`<br>
+        `is_dark() -> bool`<br>
+        `is_light() -> bool`<br>
+        `with_alpha(alpha) -> self`<br>
+        `complementary() -> self`
 
 
 <span id="v1-3-1" />
 
 ## 23.10.2024 `v1.3.1`
 
-*   Now the alpha channel will be rounded to maximal 2 decimals, if converting from `hexa()` to `rgba()` or `hsla()`.
+*   Now the alpha channel will be rounded to a maximum of 2 decimals if converting from `hexa()` to `rgba()` or `hsla()`.
 
 
 <span id="v1-3-0" />
@@ -875,7 +865,7 @@
     `Color.to_rgba()`<br>
     `Color.to_hsla()`<br>
     `Color.to_hexa()`
-*   Set default value for param <code>allow_alpha: *bool*</code> to `True` for methods:<br>
+*   Set default value for parameter `allow_alpha: bool` to `True` for methods:<br>
     `Color.is_valid_rgba()`<br>
     `Color.is_valid_hsla()`<br>
     `Color.is_valid_hexa()`<br>
@@ -891,8 +881,8 @@
 
 **BREAKING CHANGES:**
 
-*   Renamed the class `rgb()` to `rgba()` to communicate, more clearly, that it supports an alpha channel.
-*   Renamed the class `hsl()` to `hsla()` to communicate, more clearly, that it supports an alpha channel.
+*   Renamed the class `rgb()` to `rgba()` to communicate more clearly that it supports an alpha channel.
+*   Renamed the class `hsl()` to `hsla()` to communicate more clearly that it supports an alpha channel.
 
 
 <span id="v1-2-3" />
@@ -908,9 +898,9 @@
 
 ## 18.10.2024 `v1.2.1` `v1.2.2`
 
-*   Fixed bug in method <code>Path.get(*base_dir*=True)</code>:<br>
+*   Fixed a bug in the method `Path.get(base_dir=True)`:<br>
     Previously, setting `base_dir` to `True` would not return the actual base directory or even cause an error.<br>
-    Setting `base_dir` to `True` now will return the actual base directory of the current program (*except if not running from a file*).
+    Setting `base_dir` to `True` now will return the actual base directory of the current program (except if not running from a file).
 
 
 <span id="v1-2-0" />
@@ -956,7 +946,7 @@
 
 ## 17.10.2024 `v1.1.3`
 
-*   Changed the default value of the param <code>compactness: *int*</code> in the method `Data.print()` to `1` instead of `0`.
+*   Changed the default value of the parameter `compactness: int` in the method `Data.print()` to `1` instead of `0`.
 
 
 <span id="v1-1-1" /><span id="v1-1-2" />
@@ -977,7 +967,7 @@
 
 ## 16.10.2024 `v1.0.9`
 
-*   Added a library description, which gets shown if the library base-import is run directly.
+*   Added a library description, which gets shown if the library base import is run directly.
 *   Made it possible to escape an <span id="auto-reset-format">auto-reset-format</span> (`[format](Automatically resetting)`) with a slash, so you can still have `()` brackets behind a `[format]`:
 
     ```python
@@ -997,8 +987,8 @@
 
 ## 16.10.2024 `v1.0.7` `v1.0.8`
 
-*   Added `input()` method to the `FormatCodes` class, so you can make pretty looking input prompts.
-*   Added warning for no network connection when trying to [install missing libraries](#improved-lib-importing).
+*   Added an `input()` method to the `FormatCodes` class so you can make pretty-looking input prompts.
+*   Added a warning for no network connection when trying to [install missing libraries](#improved-lib-importing).
 
 
 <span id="v1-0-6" />
@@ -1019,7 +1009,7 @@
 ## 15.10.2024 `v1.0.1` `v1.0.2` `v1.0.3` `v1.0.4` `v1.0.5`
 
 *   Fixed `f-string` issues for Python 3.10:
-    1.  Not making use of same quotes inside f-strings any more.
+    1.  Not making use of the same quotes inside f-strings anymore.
     2.  No backslash escaping in f-strings.
 
 
@@ -1030,10 +1020,10 @@
 **At initial release**, the library **$\color{#8085FF}\textsf{XulbuX}$** looks like this:
 
 ```python
-# GENERAL LIBRARY
+# General library:
 import XulbuX as xx
 
-# CUSTOM TYPES
+# Custom types:
 from XulbuX import rgb, hsl, hexa
 ```
 
@@ -1048,9 +1038,9 @@ from XulbuX import rgb, hsl, hexa
         <tr>
             <td>Custom Types:</td>
             <td>
-                <code>rgb(<i>int</i>, <i>int</i>, <i>int</i>, <i>float</i>)</code><br>
-                <code>hsl(<i>int</i>, <i>int</i>, <i>int</i>, <i>float</i>)</code><br>
-                <code>hexa(<i>str</i>)</code>
+                <code>rgb(int, int, int, float)</code><br>
+                <code>hsl(int, int, int, float)</code><br>
+                <code>hexa(str)</code>
             </td>
         </tr><tr>
             <td>Directory Operations</td>
@@ -1091,18 +1081,3 @@ from XulbuX import rgb, hsl, hexa
         </tr>
     </tbody>
 </table>
-
-<br>
-
-<div id="bottom" style="width:45px; height:45px; right:10px; position:absolute">
-    <a href="#top" title="scroll to top">
-        <div style="
-            font-size: 2em;
-            font-weight: bold;
-            background: #86878A45;
-            border-radius: 0.2em;
-            text-align: center;
-            justify-content: center;
-        "><span style="display:none">scroll to top </span>🠩</div>
-    </a>
-</div>

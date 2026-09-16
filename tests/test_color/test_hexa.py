@@ -32,9 +32,9 @@ def test_hexa_init() -> None:
     assert color_from_obj.red == 255
     assert color_from_obj.alpha is not None and math.isclose(color_from_obj.alpha, 0.5)
 
-    with pytest.raises(ValueError, match="Invalid HEXA color string"):
+    with pytest.raises(ValueError, match="Invalid hex color string"):
         hexa("FF000")
-    with pytest.raises(ValueError, match="Could initialize hexa"):
+    with pytest.raises(ValueError, match="Could not initialize hexa"):
         hexa(None)
 
     color_kwargs = hexa(_red=255, _green=0, _blue=0, _alpha=0.5)

@@ -38,7 +38,7 @@ While scanning the codebase, specifically evaluate the following areas by cross-
 -   Evaluate all rules listed in **`AGENTS.md` Section 5**.
 -   Ensure logical grouping, correct private constant placement, and appropriate use of the walrus operator.
 -   Check for any redundant, duplicated, or highly convoluted code, abstracting it into reusable helpers or moving duplicate magic methods (e.g. `__or__`, `__add__`) up into common base classes.
--   Check for redundant API options or syntaxes that give the user multiple ways to do the exact same thing (e.g., alias operators or duplicate methods). **IMPORTANT:** If you find these, you MUST ask the user for their preference before removing or altering anything; do not blindly remove them, as the user may want to keep a specific variation or alter the underlying logic instead.
+-   Check for redundant API options or syntaxes that give the user multiple ways to do the same thing (e.g., alias operators or duplicate methods). **IMPORTANT:** If you find these, you MUST ask the user for their preference before removing or altering anything; do not blindly remove them, as the user may want to keep a specific variation or alter the underlying logic instead.
 -   Ensure all single-use variables are inlined.
 -   Check that descriptive, multi-letter variable names are used. Single-letter variables like `x` or `c` are strictly banned (except loop indices `i`/`j` and mathematical `n`).
 -   Hunt for potential runtime bugs or logical edge cases.

@@ -213,7 +213,7 @@ def test_box_fixed_width_dimensions() -> None:
         for line in res_auto.raw.split("\n"):
             assert len(line) <= 35
 
-    # Multi-line wrapping with fixed width:
+    # Multiline wrapping with fixed width:
     long_text = "This is a long sentence that should be wrapped onto multiple lines cleanly."
     res_wrapped = box(long_text, width=30, print=False)
     lines = res_wrapped.raw.split("\n")

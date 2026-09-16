@@ -132,7 +132,7 @@ def show_help() -> None:
         ("  ", hdg_st("Modules:")),
         _box(
             (mod_st("ansi       "), txt_st("Rich ANSI terminal styling & Term.")),
-            (mod_st("color      "), txt_st("RGBA, HSLA & HEXA color models.")),
+            (mod_st("color      "), txt_st("RGBA, HSLA & hex color models.")),
             (mod_st("console    "), txt_st("Loggers, boxes, inputs, progress bars.")),
             (mod_st("data       "), txt_st("Deep merge, render, path IDs, cleanup.")),
             (mod_st("fs         "), txt_st("Path resolution & file operations.")),

@@ -263,11 +263,10 @@ def check_libs(
     missing_libs_msgs: MissingLibsMsgs | None = None,
     confirm_install: bool = True,
 ) -> list[str] | None:
-    """Checks if the given list of libraries are installed and optionally installs missing libraries.\n
+    """Checks if the given list of libraries are installed and optionally installs the missing ones.\n
     ----------------------------------------------------------------------------------------------------
     *   `lib_names` – A list of library names to check.
-    *   `install_missing` – Whether to directly missing libraries
-        will be installed automatically using pip.
+    *   `install_missing` – Whether to directly install missing libraries using pip.
     *   `missing_libs_msgs` – Two messages:
         -   The first one is displayed when missing libraries are found.
         -   The second one is the confirmation message before installing missing libraries.

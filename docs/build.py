@@ -523,7 +523,7 @@ def get_base_sidebar(docs_src_dir: Path) -> list[Any]:
 def _process_single_file(file_path: Path) -> None:
     """Processes a single changed file (Python source or Markdown docs) and updates the build."""
 
-    # Handle python source file:
+    # Handle Python source file:
     if (file_path := file_path.resolve()).suffix == ".py" and DIR_SRC_XULBUX in file_path.parents:
         if PATH_API_LINKS.exists():
             with suppress(json.JSONDecodeError):
