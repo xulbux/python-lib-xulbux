@@ -15,6 +15,7 @@ export default defineConfig({
   head: [['link', { href: '/icon.svg', rel: 'icon' }]],
   markdown: {
     codeTransformers: [apiLinkTransformer(dirname)],
+    math: true,
     theme: { dark: 'github-dark', light: 'github-light' },
   },
   sitemap: { hostname: 'https://xulbux.github.io/python-lib-xulbux/' },
@@ -24,6 +25,7 @@ export default defineConfig({
     nav: [
       { link: '/', text: 'Home' },
       { link: sidebar[0]?.items[0]?.link || '/', text: 'Docs' },
+      { link: '/changelog', text: 'Changelog' },
     ],
     outline: [2, 4],
     search: { provider: 'local' },

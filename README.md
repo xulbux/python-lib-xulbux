@@ -18,7 +18,7 @@ ranging from terminal logging and working with colors to file management and sys
 The library is designed to simplify common programming tasks and improve code readability through its collection of tools.
 
 For precise information about the library, see the library's [**documentation**](https://xulbux.github.io/python-lib-xulbux/docs).<br>
-For the library's latest changes and updates, see the [**change log**](https://github.com/xulbux/python-lib-xulbux/blob/main/CHANGELOG.md).
+For the library's latest changes and updates, see the [**change log**](https://xulbux.github.io/python-lib-xulbux/changelog).
 
 > <br>
 > ⚡ To see what this library can do, check out the <a href="#modules"><b>modules overview</b></a> or explore the <a href="#example-usage"><b>live example</b></a>.

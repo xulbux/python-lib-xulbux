@@ -33,13 +33,13 @@
 
   --vp-c-bg: #ffffff;
   --vp-c-bg-alt: #fafafa;
-  --vp-c-bg-elv: #ffffff;
-  --vp-c-bg-soft: #f0f0f0;
+  --vp-c-bg-elv: #f0f0f0;
+  --vp-c-bg-soft: #fafafa;
   --vp-c-border: #ededed;
   --vp-c-divider: #ededed;
   --vp-c-gutter: #ededed;
-  --vp-code-bg: #f0f0f0;
-  --vp-code-block-bg: #fafafa;
+  --vp-code-bg: var(--vp-c-bg-elv);
+  --vp-code-block-bg: var(--vp-c-bg-alt);
   --vp-code-block-selection: color-mix(in srgb, var(--vp-c-text-1) 10%, transparent);
 
   --vp-c-text-1: rgba(0 0 0 / 0.88);
@@ -49,6 +49,9 @@
   --vp-c-brand-1: var(--base-brand);
   --vp-c-brand-2: color-mix(in srgb, var(--base-brand), white 20%);
   --vp-c-brand-3: color-mix(in srgb, var(--base-brand), white 40%);
+
+  --vp-c-indigo-1: #4645cc;
+  --vp-c-orange-1: #cf4200;
 
   --vp-nav-bg-color: color-mix(in srgb, var(--vp-c-bg) 75%, transparent);
   --vp-local-nav-bg-color: var(--vp-nav-bg-color);
@@ -60,77 +63,78 @@
 
   /* Dark Theme */
 
-  --dark-vp-c-bg: #101010;
-  --dark-vp-c-bg-alt: #000000;
-  --dark-vp-c-bg-elv: #1a1a1a;
-  --dark-vp-c-bg-soft: #1a1a1a;
-  --dark-vp-c-border: #262626;
-  --dark-vp-c-divider: #262626;
-  --dark-vp-c-gutter: #262626;
-  --dark-vp-code-bg: #262626;
-  --dark-vp-code-block-bg: #000000;
-  --dark-vp-code-block-selection: color-mix(in srgb, var(--dark-vp-c-text-1) 18%, transparent);
+  --dvp-c-bg: #101010;
+  --dvp-c-bg-alt: #000000;
+  --dvp-c-bg-elv: #1a1a1a;
+  --dvp-c-bg-soft: #000000;
+  --dvp-c-border: #262626;
+  --dvp-c-divider: #262626;
+  --dvp-c-gutter: #262626;
+  --dvp-code-bg: var(--dvp-c-border);
+  --dvp-code-block-bg: var(--dvp-c-bg-alt);
+  --dvp-code-block-selection: color-mix(in srgb, var(--dvp-c-text-1) 18%, transparent);
 
-  --dark-vp-c-text-1: rgba(255 255 255 / 0.9);
-  --dark-vp-c-text-2: rgba(255 255 255 / 0.6);
-  --dark-vp-c-text-3: rgba(255 255 255 / 0.38);
+  --dvp-c-text-1: rgba(255 255 255 / 0.9);
+  --dvp-c-text-2: rgba(255 255 255 / 0.6);
+  --dvp-c-text-3: rgba(255 255 255 / 0.38);
 
-  --dark-vp-c-brand-1: color-mix(in srgb, var(--base-brand), white 40%);
-  --dark-vp-c-brand-2: color-mix(in srgb, var(--base-brand), white 20%);
-  --dark-vp-c-brand-3: var(--base-brand);
+  --dvp-c-brand-1: color-mix(in srgb, var(--base-brand), white 40%);
+  --dvp-c-brand-2: color-mix(in srgb, var(--base-brand), white 20%);
+  --dvp-c-brand-3: var(--base-brand);
 
-  --dark-vp-nav-bg-color: color-mix(in srgb, var(--dark-vp-c-bg) 64%, transparent);
-  --dark-vp-local-nav-bg-color: var(--dark-vp-nav-bg-color);
+  --dvp-c-indigo-1: #8d8cff;
+  --dvp-c-orange-1: #ff925c;
 
-  --dark-vp-button-brand-bg: var(--dark-vp-c-brand-3);
-  --dark-vp-button-brand-text: #ffffff;
-  --dark-vp-button-brand-hover-bg: color-mix(
-    in srgb,
-    var(--dark-vp-c-brand-2),
-    var(--dark-vp-c-brand-3) 50%
-  );
-  --dark-vp-button-brand-active-bg: var(--dark-vp-c-brand-2);
+  --dvp-nav-bg-color: color-mix(in srgb, var(--dvp-c-bg) 64%, transparent);
+  --dvp-local-nav-bg-color: var(--dvp-nav-bg-color);
+
+  --dvp-button-brand-bg: var(--dvp-c-brand-3);
+  --dvp-button-brand-text: #ffffff;
+  --dvp-button-brand-hover-bg: color-mix(in srgb, var(--dvp-c-brand-2), var(--dvp-c-brand-3) 50%);
+  --dvp-button-brand-active-bg: var(--dvp-c-brand-2);
 
   /* Color Overrides */
 
-  --vp-button-alt-bg: var(--vp-c-bg-soft);
+  --vp-button-alt-bg: var(--vp-c-border);
   --vp-button-alt-text: var(--vp-c-text-1);
-  --vp-button-alt-hover-bg: color-mix(in srgb, var(--vp-c-border), var(--vp-c-bg-soft) 50%);
+  --vp-button-alt-hover-bg: color-mix(in srgb, var(--vp-c-text-1), var(--vp-c-border) 94%);
   --vp-button-alt-active-bg: var(--vp-c-border);
-
-  --vp-button-sponsor-bg: var(--vp-c-bg-soft);
+  --vp-button-sponsor-bg: var(--vp-c-border);
   --vp-button-sponsor-text: var(--vp-c-text-1);
-  --vp-button-sponsor-hover-bg: color-mix(in srgb, var(--vp-c-border), var(--vp-c-bg-soft) 50%);
+  --vp-button-sponsor-hover-bg: color-mix(in srgb, var(--vp-c-text-1), var(--vp-c-border) 94%);
   --vp-button-sponsor-active-bg: var(--vp-c-border);
 }
 
 .dark {
-  --vp-c-bg: var(--dark-vp-c-bg);
-  --vp-c-bg-alt: var(--dark-vp-c-bg-alt);
-  --vp-c-bg-elv: var(--dark-vp-c-bg-elv);
-  --vp-c-bg-soft: var(--dark-vp-c-bg-soft);
-  --vp-c-border: var(--dark-vp-c-border);
-  --vp-c-divider: var(--dark-vp-c-divider);
-  --vp-c-gutter: var(--dark-vp-c-gutter);
-  --vp-code-bg: var(--dark-vp-code-bg);
-  --vp-code-block-bg: var(--dark-vp-code-block-bg);
-  --vp-code-block-selection: var(--dark-vp-code-block-selection);
+  --vp-c-bg: var(--dvp-c-bg);
+  --vp-c-bg-alt: var(--dvp-c-bg-alt);
+  --vp-c-bg-elv: var(--dvp-c-bg-elv);
+  --vp-c-bg-soft: var(--dvp-c-bg-soft);
+  --vp-c-border: var(--dvp-c-border);
+  --vp-c-divider: var(--dvp-c-divider);
+  --vp-c-gutter: var(--dvp-c-gutter);
+  --vp-code-bg: var(--dvp-code-bg);
+  --vp-code-block-bg: var(--dvp-code-block-bg);
+  --vp-code-block-selection: var(--dvp-code-block-selection);
 
-  --vp-c-text-1: var(--dark-vp-c-text-1);
-  --vp-c-text-2: var(--dark-vp-c-text-2);
-  --vp-c-text-3: var(--dark-vp-c-text-3);
+  --vp-c-text-1: var(--dvp-c-text-1);
+  --vp-c-text-2: var(--dvp-c-text-2);
+  --vp-c-text-3: var(--dvp-c-text-3);
 
-  --vp-c-brand-1: var(--dark-vp-c-brand-1);
-  --vp-c-brand-2: var(--dark-vp-c-brand-2);
-  --vp-c-brand-3: var(--dark-vp-c-brand-3);
+  --vp-c-brand-1: var(--dvp-c-brand-1);
+  --vp-c-brand-2: var(--dvp-c-brand-2);
+  --vp-c-brand-3: var(--dvp-c-brand-3);
 
-  --vp-nav-bg-color: var(--dark-vp-nav-bg-color);
-  --vp-local-nav-bg-color: var(--dark-vp-local-nav-bg-color);
+  --vp-c-orange-1: var(--dvp-c-orange-1);
+  --vp-c-indigo-1: var(--dvp-c-indigo-1);
 
-  --vp-button-brand-bg: var(--dark-vp-button-brand-bg);
-  --vp-button-brand-text: var(--dark-vp-button-brand-text);
-  --vp-button-brand-hover-bg: var(--dark-vp-button-brand-hover-bg);
-  --vp-button-brand-active-bg: var(--dark-vp-button-brand-active-bg);
+  --vp-nav-bg-color: var(--dvp-nav-bg-color);
+  --vp-local-nav-bg-color: var(--dvp-local-nav-bg-color);
+
+  --vp-button-brand-bg: var(--dvp-button-brand-bg);
+  --vp-button-brand-text: var(--dvp-button-brand-text);
+  --vp-button-brand-hover-bg: var(--dvp-button-brand-hover-bg);
+  --vp-button-brand-active-bg: var(--dvp-button-brand-active-bg);
 }
 
 /*************************************************** GLOBAL & BASE STYLES ****************************************************/
@@ -209,6 +213,29 @@ body .vp-doc > div > .api-item {
   margin-right: auto !important;
 }
 
+/* Wider content for the Changelog page */
+body:has(.release-card) .vp-doc > div > *,
+body:has(.release-card) .vp-doc > div > div[class*='language-'],
+body:has(.release-card) .vp-doc > div > .custom-block,
+.changelog-page .vp-doc > div > *,
+.changelog-page .vp-doc > div > div[class*='language-'],
+.changelog-page .vp-doc > div > .custom-block {
+  max-width: 58rem;
+}
+
+/* Hide minor version headings on the changelog page (only needed for the sidebar). */
+body:has(.release-card) .vp-doc > div > h2,
+.changelog-page .vp-doc > div > h2 {
+  height: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0;
+  line-height: 0;
+  border: none !important;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 /**************************************************** HEADER & NAVIGATION ****************************************************/
 
 .VPNavBar:not(.home.top),
@@ -219,6 +246,10 @@ body .vp-doc > div > .api-item {
 }
 
 /******************************************************* HOME FEATURES *******************************************************/
+
+.VPFeature {
+  border: 1px solid var(--vp-c-divider) !important;
+}
 
 .VPFeature .icon {
   margin-bottom: 1.25rem;
@@ -434,37 +465,29 @@ body .vp-doc > div > .api-item {
 
 /* Custom brighter background for terminal blocks (always dark). */
 .vp-doc .ext-terminal {
-  --vp-code-lang-color: var(--dark-vp-c-text-3);
-  --vp-code-copy-code-active-text: var(--dark-vp-c-text-2);
+  --vp-code-lang-color: var(--dvp-c-text-3);
+  --vp-code-copy-code-active-text: var(--dvp-c-text-2);
   --vp-code-copy-code-border-color: color-mix(
     in srgb,
-    var(--dark-vp-c-text-3),
-    var(--dark-vp-c-bg-elv) 70%
+    var(--dvp-c-text-3),
+    var(--dvp-c-bg-elv) 70%
   );
-  --vp-code-copy-code-bg: var(--dark-vp-c-divider);
+  --vp-code-copy-code-bg: var(--dvp-c-divider);
   --vp-code-copy-code-hover-border-color: color-mix(
     in srgb,
-    var(--dark-vp-c-text-3),
-    var(--dark-vp-c-bg-elv) 70%
+    var(--dvp-c-text-3),
+    var(--dvp-c-bg-elv) 70%
   );
-  --vp-code-copy-code-hover-bg: color-mix(
-    in srgb,
-    var(--dark-vp-c-divider),
-    var(--dark-vp-c-bg-elv) 70%
-  );
-  border-color: var(--dark-vp-c-border) !important;
-  border-top-color: color-mix(
-    in srgb,
-    var(--dark-vp-c-border),
-    var(--dark-vp-c-bg-elv) 32%
-  ) !important;
+  --vp-code-copy-code-hover-bg: color-mix(in srgb, var(--dvp-c-divider), var(--dvp-c-bg-elv) 70%);
+  border-color: var(--dvp-c-border) !important;
+  border-top-color: color-mix(in srgb, var(--dvp-c-border), var(--dvp-c-bg-elv) 32%) !important;
 }
 .vp-doc .ext-terminal,
 .vp-doc .ext-terminal > pre {
-  background-color: var(--dark-vp-c-bg-elv) !important;
+  background-color: var(--dvp-c-bg-elv) !important;
 }
 .vp-doc .ext-terminal::after {
-  box-shadow: inset 0 0 16px 8px var(--dark-vp-c-bg-elv) !important;
+  box-shadow: inset 0 0 16px 8px var(--dvp-c-bg-elv) !important;
 }
 
 /* Classic Inverted Terminal Selection */
@@ -483,7 +506,7 @@ body .vp-doc > div > .api-item {
 .term {
   --term-base-fg: var(--term-white);
   --term-fg: var(--term-base-fg);
-  --term-bg: var(--dark-vp-c-bg-elv);
+  --term-bg: var(--dvp-c-bg-elv);
   line-height: 1.1rem !important;
   color: var(--term-fg) !important;
 
@@ -657,7 +680,7 @@ body .vp-doc > div > .api-item {
     text-decoration: underline;
   }
   .dim {
-    --term-fg: color-mix(in srgb, var(--term-base-fg) 50%, var(--dark-vp-c-bg-elv));
+    --term-fg: color-mix(in srgb, var(--term-base-fg) 50%, var(--dvp-c-bg-elv));
     color: var(--term-fg) !important;
   }
 }
@@ -764,4 +787,150 @@ body .vp-doc > div > .api-item {
 .vp-doc :is(h1, h2, h3, h4, h5, h6):target > code,
 .vp-doc :is(h1, h2, h3, h4, h5, h6):target > code * {
   animation: target-flash 1.5s ease-out;
+}
+
+/**************************************************** CHANGELOG & RELEASES ***************************************************/
+
+.release-card {
+  /* Make fenced code blocks inside match the website background: */
+  --vp-code-block-bg: var(--vp-c-bg);
+  margin: 28px 0;
+  padding: 24px 28px;
+  border-radius: 12px;
+  position: relative;
+  border: 1px solid var(--vp-c-divider);
+  background-color: var(--vp-c-bg-soft);
+  transition:
+    border-color 250ms,
+    box-shadow 250ms;
+}
+.release-card.level-major {
+  border-left: 4px solid var(--vp-c-brand-1);
+}
+.release-card.is-broken {
+  border-color: color-mix(in srgb, var(--vp-c-orange-1) 40%, transparent);
+  border-left: 4px solid var(--vp-c-orange-1);
+}
+.release-card.is-hotfix {
+  border-left: 4px solid var(--vp-c-indigo-1);
+}
+
+.release-anchor-alias {
+  top: -80px;
+  width: 0;
+  height: 0;
+  display: block;
+  position: relative;
+  visibility: hidden;
+}
+
+.release-header {
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.release-meta {
+  gap: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.release-heading {
+  gap: 8px;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  letter-spacing: -0.01em;
+  scroll-margin-top: calc(var(--vp-nav-height) + 32px);
+  border: none !important;
+  display: inline-flex;
+  align-items: center;
+}
+
+.release-version {
+  font-family: var(--vp-font-family-mono);
+  color: var(--vp-c-text-1);
+}
+
+.release-badge {
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  border-radius: calc(infinity * 1px);
+  display: inline-flex;
+  align-items: center;
+}
+.release-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.badge-major {
+  color: var(--vp-c-brand-1);
+  border: 1px solid color-mix(in srgb, var(--vp-c-brand-1) 36%, transparent);
+  background-color: color-mix(in srgb, var(--vp-c-brand-1) 12%, transparent);
+}
+.badge-broken {
+  color: var(--vp-c-orange-1);
+  border: 1px solid color-mix(in srgb, var(--vp-c-orange-1) 36%, transparent);
+  background-color: color-mix(in srgb, var(--vp-c-orange-1) 12%, transparent);
+}
+.badge-hotfix {
+  color: var(--vp-c-indigo-1);
+  border: 1px solid color-mix(in srgb, var(--vp-c-indigo-1) 36%, transparent);
+  background-color: color-mix(in srgb, var(--vp-c-indigo-1) 12%, transparent);
+}
+
+.release-date {
+  font-size: 0.88rem;
+  font-weight: 500;
+  font-family: var(--vp-font-family-mono);
+  color: var(--vp-c-text-2);
+}
+.release-date.is-unreleased {
+  font-weight: 600;
+  font-style: italic;
+  color: var(--vp-c-brand-1);
+}
+
+.release-content > :first-child {
+  margin-top: 0 !important;
+}
+.release-content > :last-child {
+  margin-bottom: 0 !important;
+}
+.release-content ul {
+  padding-left: 20px;
+}
+.release-content li {
+  margin: 6px 0;
+  line-height: 1.6;
+}
+
+/* Sidebar Outline Status Classes */
+.outline-link.status-broken {
+  color: color-mix(in srgb, var(--vp-c-orange-1) 72%, transparent) !important;
+}
+.outline-link.status-broken:hover,
+.outline-link.status-broken.active {
+  color: var(--vp-c-orange-1) !important;
+}
+
+.outline-link.status-hotfix {
+  color: color-mix(in srgb, var(--vp-c-indigo-1) 72%, transparent) !important;
+}
+.outline-link.status-hotfix:hover,
+.outline-link.status-hotfix.active {
+  color: var(--vp-c-indigo-1) !important;
 }

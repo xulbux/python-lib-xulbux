@@ -1,11 +1,10 @@
 <span id="top" />
 
-# <br><b>Changelog</b><br>
+# Changelog
 
+All notable changes and releases to this project are documented on this page.
 
-<span id="v2-0-0" /><span id="v2" />
-
-## … `v2.0` Major Release 💎
+<Release version="2.0.0" date="">
 
 *   **Quality & Consistency:**
     -   Unified all error messages throughout the whole library to always pass the given value if the error is caused by that value being invalid.
@@ -99,10 +98,8 @@
     -   Removed `FormattableString`, `AnyRgba`, `AnyHsla`, and `AnyHexa` type aliases from `xulbux.base.types`.
     -   Removed `COLOR` class presets and `ANSI` class from `xulbux.base.consts`.
 
-
-<span id="v1-9-7" />
-
-## 26.04.2026 `v1.9.7`
+</Release>
+<Release version="1.9.7" date="26.04.2026">
 
 *   Restructured CLI commands under a single `xulbux-lib` entry point:
     -   `xulbux-lib` – Shows library info.
@@ -122,10 +119,8 @@
 *   All `Console` methods that allow console default colors as input for their color parameters now actually validate the given color, raising an error if it's not valid.
 *   The default for `box_bg_color` in `Console.log_box_filled()` is now the console foreground color (`None`) instead of `br:green`.
 
-
-<span id="v1-9-6" />
-
-## 13.04.2026 `v1.9.6`
+</Release>
+<Release version="1.9.6" date="13.04.2026">
 
 *   The compiled version of the library now includes the type stub files (`.pyi`), so type checkers can thoroughly check types.
 *   Made all type hints in the whole library way more strict and accurate.
@@ -139,10 +134,8 @@
 *   Changed both names `DataStructureTypes` and `IndexIterableTypes` to `DataObjTT` and `IndexIterableTT` respectively (`TT` = type tuple).
 *   Made the return value of `String.single_char_repeats()` always be *`int`* and not `int | bool`.
 
-
-<span id="v1-9-5" />
-
-## 25.01.2026 `v1.9.5`
+</Release>
+<Release version="1.9.5" date="25.01.2026">
 
 *   Added a new class property `Console.encoding`, which returns the encoding used by the console (e.g., `utf-8`, `cp1252`, …).
 *   Added multiple new class properties to the `System` class:
@@ -172,10 +165,8 @@
 *   Renamed the classes `Args` and `ArgResult` to `ParsedArgs` and `ParsedArgData` to better describe their purpose.
 *   Renamed the attribute `is_positional` to `is_pos` everywhere so its name isn't that long.
 
-
-<span id="v1-9-4" />
-
-## 06.01.2026 `v1.9.4`
+</Release>
+<Release version="1.9.4" date="06.01.2026">
 
 *   Added a new base module `base.decorators` which contains custom decorators used throughout the library.
 *   Made `mypy_extensions` an optional dependency by wrapping all uses of `mypy_extensions.mypyc_attr` in a custom decorator that acts as a no-op if `mypy_extensions` is not installed.
@@ -192,12 +183,8 @@
 *   Updated all library methods that work with paths to accept `pathlib.Path` objects in addition to strings as path inputs.
 *   Also, all library methods that return paths now return `pathlib.Path` objects instead of strings.
 
-
-<span id="v1-9-3" />
-
-## 01.01.2026 `v1.9.3` Big Update 🚀
-
-**𝓗𝓪𝓹𝓹𝔂 𝟚𝟘𝟚𝟞 🎉**
+</Release>
+<Release version="1.9.3" date="01.01.2026">
 
 *   Added a new method `Color.str_to_hsla()` to parse HSLA colors from strings.
 *   Changed the default syntax highlighting for `Data.to_str()` and therefore also `Data.print()` to use console default colors.
@@ -229,10 +216,8 @@
 *   Removed the general `Pattern` and `Match` type aliases from the `base.types` module (they are pointless since you should always use a specific type and not “type1 OR typeB”).
 *   Removed the `_` prefix from the parameter `_syntax_highlighting` in `Data.render()`, since it's no longer just for internal use.
 
-
-<span id="v1-9-2" />
-
-## 16.12.2025 `v1.9.2`
+</Release>
+<Release version="1.9.2" date="16.12.2025">
 
 *   Added a new class `LazyRegex` to the `regex` module, which is used to define regex patterns that are only compiled when they are used for the first time.
 *   Removed unnecessary character escaping in the precompiled regex patterns in the `console` module.
@@ -255,10 +240,8 @@
 *   Renamed the constant `CLR` to `CLI_COLORS` and the constant `HELP` to `CLI_HELP` in the `cli.help` module.
 *   Changed the default value of the `strip_spaces` parameter in `Regex.brackets()` from `True` to `False`, since this is more intuitive behavior.
 
-
-<span id="v1-9-1" />
-
-## 26.11.2025 `v1.9.1`
+</Release>
+<Release version="1.9.1" date="26.11.2025">
 
 *   Unified the module and class docstring styles throughout the whole library.
 *   Moved the protocol `ProgressUpdater` from the `console` module to the `types` module.
@@ -273,9 +256,8 @@
 *   Renamed the class property `Console.usr` to `Console.user`, since it describes the property better.
 *   Added missing type checking to methods in the `path` module.
 
-<span id="v1-9-0" />
-
-## 21.11.2025 `v1.9.0` Big Update 🚀
+</Release>
+<Release version="1.9.0" date="21.11.2025">
 
 *   Standardized the docstrings for all public methods in the whole library to use the same style and structure.
 *   Replaced left over single quotes with double quotes for consistency.
@@ -295,10 +277,8 @@
 *   Added missing type checking to all public methods in the whole library, so now they will all throw errors if the parameters aren't of the expected type.
 *   Removed the second definitions of constants in with lowercase names in the `ANSI` class inside the `consts` module, so now you can only access them with their uppercase names (e.g., `ANSI.CHAR` instead of `ANSI.char`).
 
-
-<span id="v1-8-5" />
-
-## 14.11.2025 `v1.8.5`
+</Release>
+<Release version="1.8.5" date="14.11.2025">
 
 *   Made the help command `xulbux-help` use console default colors so it fits the user's console theme.
 *   Changed the default `box_bg_color` in `Console.log_box_filled()` from `green` to `br:green`.
@@ -311,12 +291,8 @@
 *   Removed the `*c` and `*color` formatting codes, since the user should just use the code `default` to achieve the same instead.
 *   Renamed the method `FormatCodes.remove_formatting()` to `FormatCodes.remove()`.
 
-
-<span id="v1-8-4" />
-
-## 11.11.2025 `v1.8.4`
-
-**𝓢𝓲𝓷𝓰𝓵𝓮𝓼 𝓓𝓪𝔂 🥇😉**
+</Release>
+<Release version="1.8.4" date="11.11.2025">
 
 *   Adjusted `Regex.hsla_str()` to not include optional degree (`°`) and percent (`%`) symbols in the captured groups.
 *   Fixed that `Regex.hexa_str()` couldn't match hex colors anywhere inside a string, but only if the whole string was just the hex color.
@@ -329,10 +305,8 @@
     -   `value: Optional[str]` – For regular flagged arguments.
     -   `values: list[str]` – For positional `"before"`/`"after"` arguments.
 
-
-<span id="v1-8-3" />
-
-## 08.10.2025 `v1.8.3`
+</Release>
+<Release version="1.8.3" date="08.10.2025">
 
 *   Adjusted the look of the prompts and inputs of the `System.check_libs()` method.
 *   Added a new parameter to `System.check_libs()`:<br>
@@ -353,10 +327,8 @@
 
 *   Reordered the parameters of `Console.pause_exit()` to be more logical.
 
-
-<span id="v1-8-2" />
-
-## 11.09.2025 `v1.8.2`
+</Release>
+<Release version="1.8.2" date="11.09.2025">
 
 *   The client command `xulbux-help` now tells you that there's a newer version of the library available if you're not using the latest version.
 *   Added two new parameters to `Console.input()`:
@@ -372,12 +344,10 @@
 
 *   Spaces between a format code and the auto-reset brackets are no longer allowed, so `[red]␣(text)` will not be automatically reset and output as `␣(text)`.
 
+</Release>
+<Release version="1.8.1" date="20.08.2025" status="hotfix">
 
-<span id="v1-8-1" />
-
-## 20.08.2025 `v1.8.1`
-
-*   **<u>HOTFIX:</u> Fixed a critical bug that caused the package to not install properly and make the whole library not work.**
+*   Fixed a critical bug that caused the package to not install properly and make the whole library not work.
 *   Fixed several small bugs regarding the tabs and text wrapping inside `Console.log()`.
 *   Added two new parameters to `Console.log()`:
     -   `title_px: int = 1` – The horizontal padding (in chars) to the title (if `title_bg_color` is set).
@@ -387,10 +357,8 @@
 
 *   Renamed the parameter `_console_tabsize` from the method `Console.log()` to `tab_size`, and it will now just set the size for the log directly instead of specifying what the console's tab size is.
 
-
-<span id="v1-8-0" />
-
-## 28.08.2025 `v1.8.0` **⚠️ This release is broken!**
+</Release>
+<Release version="1.8.0" date="28.08.2025" status="broken">
 
 *   New options for the parameter `find_args` from the method `Console.get_args()`:<br>
     Previously, you could only input a dictionary with items like `"alias_name": ["-f", "--flag"]` that specify an arg's alias and the flags that correspond to it.<br>
@@ -409,10 +377,8 @@
 *   The constants from inside the `consts` module are now all uppercase (except the class methods) to make clear that they're constants.
 *   Removed the wildcard imports from the `__init__.py` file, so now you can only access the main classes directly with `from xulbux import …` and for the rest you have to import the specific module first.
 
-
-<span id="v1-7-3" />
-
-## 29.07.2025 `v1.7.3`
+</Release>
+<Release version="1.7.3" date="29.07.2025">
 
 *   Added a new parameter to the methods `Console.log_box_filled()` and `Console.log_box_bordered()`:<br>
     `indent: int = 0` – The indentation of the box (in chars).
@@ -422,10 +388,8 @@
 
 *   Removed the parameter `title_bg_color` from the `Console.log()` preset methods since that is part of the preset and doesn't need to be changed by the user.
 
-
-<span id="v1-7-2" />
-
-## 17.06.2025 `v1.7.2`
+</Release>
+<Release version="1.7.2" date="17.06.2025">
 
 *   The `Console.w`, `Console.h` and `Console.wh` class properties now return a default size if there is no console, instead of throwing an error.
 *   It wasn't actually possible to use default console colors (e.g., `"red"`, `"green"`, …) for the color parameters in `Console.log()` so that option was completely removed again.
@@ -433,10 +397,8 @@
 *   Fixed type hints for the whole library.
 *   Fixed a small bug in `Console.pause_exit()`, where the key pressed to unpause wasn't suppressed, so it was written into the next console input after unpausing.
 
-
-<span id="v1-7-1" />
-
-## 11.06.2025 `v1.7.1`
+</Release>
+<Release version="1.7.1" date="11.06.2025">
 
 *   Resolved an issue with the `Color.is_valid_…()` and `Color.is_valid()` methods, where you were unable to input any color without a type mismatch.
 *   Added a new method `Console.log_box_bordered()`, which does the same as `Console.log_box_filled()`, but with a border instead of a background color.
@@ -449,20 +411,16 @@
 
 *   Renamed the method `Console.log_box()` to `Console.log_box_filled()`.
 
-
-<span id="v1-7-0" />
-
-## 28.05.2025 `v1.7.0`
+</Release>
+<Release version="1.7.0" date="28.05.2025">
 
 *   Fixed a small bug in `Console.log()` where empty line breaks were removed.
 *   Corrected and added missing type hints for the whole library.
 *   Fixed possibly unbound variables for the whole library.
 *   Updated the client command `xulbux-help`.
 
-
-<span id="v1-6-9" />
-
-## 30.04.2025 `v1.6.9`
+</Release>
+<Release version="1.6.9" date="30.04.2025">
 
 *   Added a new parameter to the methods `FormatCodes.remove_ansi()` and `FormatCodes.remove_formatting()`:<br>
     `_ignore_linebreaks: bool = False` – Whether to include line breaks in the removal positions or not.
@@ -482,10 +440,8 @@
 *   Renamed parameter `correct_path` in `Path.extend()` and parameter `correct_paths` in `File.extend_or_make_path()` to `use_closest_match`, since this name describes its functionality better.
 *   Moved the method `extend_or_make_path()` from the `xx_file` module to the `xx_path` module and renamed it to `extend_or_make()`.
 
-
-<span id="v1-6-8" />
-
-## 18.03.2025 `v1.6.8`
+</Release>
+<Release version="1.6.8" date="18.03.2025">
 
 *   Made it possible to escape formatting codes by putting a slash (`/` or `\\`) at the beginning inside the brackets (e.g., `[/red]`).
 *   New methods for `Args` (the returned object from `Console.get_args()`):
@@ -501,10 +457,8 @@
 *   Added a new parameter to the method `Console.get_args()`:<br>
     `allow_spaces: bool = False` – Whether to take spaces as separators of arg values or as part of an arg value.
 
-
-<span id="v1-6-7" />
-
-## 26.02.2025 `v1.6.7`
+</Release>
+<Release version="1.6.7" date="26.02.2025">
 
 *   Made the static method `System.is_elevated()` into a class property, which now can be accessed as `System.is_elevated`.
 *   The method `File.create()` now throws a custom `SameContentFileExistsError` exception if a file with the same name and content already exists.
@@ -517,10 +471,8 @@
     Now, you can directly access the result with `args.<arg_alias>.value` and `args.<arg_alias>.exists`.
 *   Made the method `Path.get(cwd=True)` or `Path.get(base_dir=True)` into two class properties, which now can be accessed as `Path.cwd` and `Path.script_dir`.
 
-
-<span id="v1-6-6" />
-
-## 17.02.2025 `v1.6.6`
+</Release>
+<Release version="1.6.6" date="17.02.2025">
 
 *   Added a new method `Console.multiline_input()`.
 *   Added two new parameters to the method `Console.log_box()`:<br>
@@ -546,10 +498,8 @@
     -   `Console.wh` – A tuple with the console size as (columns, lines).<br>
     -   `Console.usr` – The current username.
 
-
-<span id="v1-6-5" />
-
-## 29.01.2025 `v1.6.5`
+</Release>
+<Release version="1.6.5" date="29.01.2025">
 
 *   Now the method `FormatCodes.to_ansi()` automatically converts the parameter `string` to a *`str`* if it isn't one already.
 *   Added a new method `FormatCodes.remove_codes()`.
@@ -560,17 +510,13 @@
     -   `end: str = "\n\n"` changed to `end: str = "\n"`
 *   Added the parameters `start: str = ""`, `end: str = "\n"` and `default_color: rgba | hexa = DEFAULT.color["cyan"]` to `Console.restricted_input()` and `Console.pwd_input()`.
 
+</Release>
+<Release version="1.6.4" date="22.01.2025" status="hotfix">
 
-<span id="v1-6-4" />
+*   Fixed a critical bug where the library could not be imported after the last update due to an issue in `xx_format_codes`.
 
-## 22.01.2025 `v1.6.4`
-
-*   **<u>HOTFIX:</u> Fixed a heavy bug, where the library could not be imported after the last update, because of a bug in `xx_format_codes`.**
-
-
-<span id="v1-6-3" />
-
-## 22.01.2025 `v1.6.3` **⚠️ This release is broken!**
+</Release>
+<Release version="1.6.3" date="22.01.2025" status="broken">
 
 *   Fixed a small bug in `xx_format_codes`:<br>
     Inside print strings, if there was a `'` or `"` inside an auto-reset formatting (e.g., `[u](there's a quote)`), that caused it to not be recognized as valid and therefore not be automatically reset.<br>
@@ -580,10 +526,8 @@
 *   Removed `lru_cache` from the `xx_format_codes` module's internal methods since it was unnecessary.
 *   Adjusted `FormatCodes.__config_console()` so it can only be called once per process.
 
-
-<span id="v1-6-2" />
-
-## 20.01.2025 `v1.6.2`
+</Release>
+<Release version="1.6.2" date="20.01.2025">
 
 *   Added a new method `elevate()` to `xx_system`, which is used to request elevated privileges.
 *   Fixed a bug in `rgba()`, `hsla()` and `hexa()`:<br>
@@ -598,10 +542,8 @@
 *   Moved the method `is_admin()` from `xx_console` to `xx_system`.
 *   Method `hex_int_to_rgba()` from `xx_color` now returns an `rgba()` object instead of the separate values `r`, `g`, `b` and `a`.
 
-
-<span id="v1-6-1" />
-
-## 15.01.2025 `v1.6.1`
+</Release>
+<Release version="1.6.1" date="15.01.2025">
 
 *   Changed the parameters in `File.make_path()`:<br>
     Previously there were the parameters `filename: str` and `filetype: str = ""` where `filename` didn't have to have the file extension included, as long as the `filetype` was set.<br>
@@ -615,19 +557,15 @@
     Now the parameter `file: str = ""` is the first parameter and `content: str = ""` is the second.
 *   Renamed `File.make_path()` to a more descriptive name `File.extend_or_make_path()` and adjusted the usages of `File.create()` and `File.make_path()` inside `xx_json` accordingly.
 
-
-<span id="v1-6-0" />
-
-## 07.01.2025 `v1.6.0`
+</Release>
+<Release version="1.6.0" date="07.01.2025">
 
 *   Fixed a small bug in `to_camel_case()` in the `xx_string` module:<br>
     Previously, it would return only the first part of the decomposed string.<br>
     Now it correctly returns all decomposed string parts, joined in CamelCase.
 
-
-<span id="v1-5-9" />
-
-## 21.12.2024 `v1.5.9`
+</Release>
+<Release version="1.5.9" date="21.12.2024">
 
 *   Fixed bugs in method `to_ansi()` in module `xx_format_codes`:<br>
     1.  The method always returned an empty string because the color validation was broken, and it would identify all colors as invalid.<br>
@@ -638,10 +576,8 @@
 *   Fixed a small bug in the help client command:<br>
     Added back the default text color.
 
-
-<span id="v1-5-8" />
-
-## 21.11.2024 `v1.5.8`
+</Release>
+<Release version="1.5.8" date="21.11.2024">
 
 *   Added method `String.is_empty()` to check if the string is empty.
 *   Added method `String.escape()` to escape special characters in a string.
@@ -659,10 +595,8 @@
 *   Renamed the module `xx_cmd` and its class `Cmd` to `xx_console` and `Console`.
 *   Renamed the module `xx_env_vars` and its class `EnvVars` to `xx_env_path` and `EnvPath`.
 
-
-<span id="v1-5-7" />
-
-## 15.11.2024 `v1.5.7`
+</Release>
+<Release version="1.5.7" date="15.11.2024">
 
 *   Change the testing modules to be able to run together with the library `pytest`.
 *   Added formatting checks, using `black`, `isort` and `flake8`.
@@ -677,22 +611,14 @@
 *   Moved the `help()` function to the file `_cli_.py`, because that's where all the scripts are located (and renamed it to `help_command()`).
 *   Moved the method `normalize_spaces()` to `xx_string`.
 
-
-<span id="v1-5-6" />
-
-## 11.11.2024 `v1.5.6`
-
-**Again 𝓢𝓲𝓷𝓰𝓵𝓮𝓼 𝓓𝓪𝔂 🥇😉**
+</Release>
+<Release version="1.5.6" date="11.11.2024">
 
 *   Moved the whole library to a separate repository: **[python-lib-xulbux](https://github.com/xulbux/python-lib-xulbux)**
 *   Updated all connections and links correspondingly.
 
-
-<span id="v1-5-5" />
-
-## 11.11.2024 `v1.5.5`
-
-**𝓢𝓲𝓷𝓰𝓵𝓮𝓼 𝓓𝓪𝔂 🥇😉**
+</Release>
+<Release version="1.5.5" date="11.11.2024">
 
 *   Added methods to get the width and height of the console (in characters and lines):<br>
     -   `Cmd.w() -> int` – How many text characters the console is wide.<br>
@@ -708,10 +634,8 @@
 *   Added required non-standard libraries to the project file.
 *   Added more metadata to the project file.
 
-
-<span id="v1-5-4" />
-
-## 06.11.2024 `v1.5.4`
+</Release>
+<Release version="1.5.4" date="06.11.2024">
 
 *   Added a new method `normalize_spaces(code) -> str` to `Code`.
 *   Added new docstrings to `xx_code` and `xx_cmd`.
@@ -726,10 +650,8 @@
 
 *   Made the `blend()` method from all the color types modify the *`self`* object in addition to returning the result.
 
-
-<span id="v1-5-3" />
-
-## 30.10.2024 `v1.5.3`
+</Release>
+<Release version="1.5.3" date="30.10.2024">
 
 *   Added the default text color to the `_consts_.py` so it's easier to change it (and used it in the library).
 *   Added several other default colors to the `_consts_.py` (and used them in the library).
@@ -749,10 +671,8 @@
 
 *   Restructured the values in `_consts_.py`.
 
-
-<span id="v1-5-2" />
-
-## 28.10.2024 `v1.5.2`
+</Release>
+<Release version="1.5.2" date="28.10.2024">
 
 *   New parameter `correct_path: bool` in `Path.extend()`:
     This makes sure that typos in the path will only be corrected if this parameter is true.
@@ -764,10 +684,8 @@
     Previously, it would return `True` if the alpha channel was `None`.<br>
     Now in such cases it will return `False`.
 
-
-<span id="v1-5-1" />
-
-## 28.10.2024 `v1.5.1`
+</Release>
+<Release version="1.5.1" date="28.10.2024">
 
 *   Now all methods in `xx_color` support both hex prefixes (`#` and `0x`).
 *   Added the default hex prefix to `_consts_.py`.
@@ -778,10 +696,8 @@
 
 *   Renamed all library files for a better naming convention.
 
-
-<span id="v1-5-0" />
-
-## 27.10.2024 `v1.5.0` Big Update 🚀
+</Release>
+<Release version="1.5.0" date="27.10.2024">
 
 *   Added a `__help__.py` file, which will show some information about the library and how to use it when it's run as a script or when the `help()` function is called.
 *   Added a lot more metadata to the library:<br>
@@ -798,19 +714,15 @@
 
 *   Split all classes into separate files so users can download only parts of the library more easily.
 
-
-<span id="v1-4-2" /><span id="v1-4-3" />
-
-## 27.10.2024 `v1.4.2` `v1.4.3`
+</Release>
+<Release version="1.4.2 - 1.4.3" date="27.10.2024">
 
 *   `Path.extend(rel_path) -> abs_path` now also extends system variables like `%USERPROFILE%` and `%APPDATA%`.
 *   Removed unnecessary parts when checking for missing required libraries.
 *   You can now get the library's current version by accessing the attribute `XulbuX.__version__`.
 
-
-<span id="v1-4-1" />
-
-## 26.10.2024 `v1.4.1`
+</Release>
+<Release version="1.4.1" date="26.10.2024">
 
 *   Added methods to each color type:<br>
     -   `is_grayscale() -> self`<br>
@@ -820,10 +732,8 @@
 *   Updated the `blend(other, ratio)` method of all color types to use additive blending except for the alpha channel.
 *   Fixed problem with method chaining for all color types.
 
-
-<span id="v1-4-0" />
-
-## 25.10.2024 `v1.4.0` Big Update 🚀
+</Release>
+<Release version="1.4.0" date="25.10.2024">
 
 *   Massive update to the custom color types:
     -   Now all type methods support chaining.
@@ -841,17 +751,13 @@
         `with_alpha(alpha) -> self`<br>
         `complementary() -> self`
 
-
-<span id="v1-3-1" />
-
-## 23.10.2024 `v1.3.1`
+</Release>
+<Release version="1.3.1" date="23.10.2024">
 
 *   Now the alpha channel will be rounded to a maximum of 2 decimals if converting from `hexa()` to `rgba()` or `hsla()`.
 
-
-<span id="v1-3-0" />
-
-## 21.10.2024 `v1.3.0` Big Update 🚀
+</Release>
+<Release version="1.3.0" date="21.10.2024">
 
 *   Fixed the custom types `rgba()`, `hsla()` and `hexa()`:<br>
     -   `rgba()`:<br>
@@ -871,10 +777,8 @@
     `Color.is_valid_hexa()`<br>
     `Color.is_valid()`
 
-
-<span id="v1-2-4" /><span id="v1-2-5" />
-
-## 18.10.2024 `v1.2.4` `v1.2.5`
+</Release>
+<Release version="1.2.4 - 1.2.5" date="18.10.2024">
 
 *   Added more info to the `README.md` as well as additional links.
 *   Adjusted the structure inside `CHANGELOG.md` for a better overview and readability.
@@ -884,88 +788,66 @@
 *   Renamed the class `rgb()` to `rgba()` to communicate more clearly that it supports an alpha channel.
 *   Renamed the class `hsl()` to `hsla()` to communicate more clearly that it supports an alpha channel.
 
-
-<span id="v1-2-3" />
-
-## 18.10.2024 `v1.2.3`
+</Release>
+<Release version="1.2.3" date="18.10.2024">
 
 *   Added project links to the Python-project-file.
 *   Made some `CHANGELOG.md` improvements.
 *   Improved `README.md`.
 
-
-<span id="v1-2-1" /><span id="v1-2-2" />
-
-## 18.10.2024 `v1.2.1` `v1.2.2`
+</Release>
+<Release version="1.2.1 - 1.2.2" date="18.10.2024">
 
 *   Fixed a bug in the method `Path.get(base_dir=True)`:<br>
     Previously, setting `base_dir` to `True` would not return the actual base directory or even cause an error.<br>
     Setting `base_dir` to `True` now will return the actual base directory of the current program (except if not running from a file).
 
-
-<span id="v1-2-0" />
-
-## 17.10.2024 `v1.2.0`
+</Release>
+<Release version="1.2.0" date="17.10.2024">
 
 *   New method in the `Path` class:<br>
     `Path.remove()`
 
-
-<span id="v1-1-9" />
-
-## 17.10.2024 `v1.1.9`
+</Release>
+<Release version="1.1.9" date="17.10.2024">
 
 **BREAKING CHANGES:**
 
 *   Corrected the naming of classes to comply with Python naming standards.
 
-
-<span id="v1-1-8" />
-
-## 17.10.2024 `v1.1.8`
+</Release>
+<Release version="1.1.8" date="17.10.2024">
 
 *   Added support for all OSes to the OS-dependent methods.
 
-
-<span id="v1-1-6" /><span id="v1-1-7" />
-
-## 17.10.2024 `v1.1.6` `v1.1.7`
+</Release>
+<Release version="1.1.6 - 1.1.7" date="17.10.2024">
 
 *   Fixed the `Cmd.cls()` method:<br>
     There was a bug where only on Windows 10, the ANSI formats weren't cleared.
 
-
-<span id="v1-1-4" /><span id="v1-1-5" />
-
-## 17.10.2024 `v1.1.4` `v1.1.5`
+</Release>
+<Release version="1.1.4 - 1.1.5" date="17.10.2024">
 
 *   Added links to the `CHANGELOG.md` and `README.md` files.
 
-
-<span id="v1-1-3" />
-
-## 17.10.2024 `v1.1.3`
+</Release>
+<Release version="1.1.3" date="17.10.2024">
 
 *   Changed the default value of the parameter `compactness: int` in the method `Data.print()` to `1` instead of `0`.
 
-
-<span id="v1-1-1" /><span id="v1-1-2" />
-
-## 17.10.2024 `v1.1.1` `v1.1.2`
+</Release>
+<Release version="1.1.1 - 1.1.2" date="17.10.2024">
 
 *   Adjusted the library's description.
 
-
-<span id="v1-1-0" />
-
-## 16.10.2024 `v1.1.0`
+</Release>
+<Release version="1.1.0" date="16.10.2024">
 
 *   Made it possible to also auto-reset the color and not only the predefined formats, using the [auto-reset-format](#auto-reset-format) (`[format](Automatically resetting)`).
 
-
-<span id="v1-0-9" />
-
-## 16.10.2024 `v1.0.9`
+</Release>
+<Release version="1.0.9" date="16.10.2024">
 
 *   Added a library description, which gets shown if the library base import is run directly.
 *   Made it possible to escape an <span id="auto-reset-format">auto-reset-format</span> (`[format](Automatically resetting)`) with a slash, so you can still have `()` brackets behind a `[format]`:
@@ -982,18 +864,14 @@
 
     prints: <code><u>(Automatically resetting) following text</u></code>
 
-
-<span id="v1-0-7" /><span id="v1-0-8" />
-
-## 16.10.2024 `v1.0.7` `v1.0.8`
+</Release>
+<Release version="1.0.7 - 1.0.8" date="16.10.2024">
 
 *   Added an `input()` method to the `FormatCodes` class so you can make pretty-looking input prompts.
 *   Added a warning for no network connection when trying to [install missing libraries](#improved-lib-importing).
 
-
-<span id="v1-0-6" />
-
-## 15.10.2024 `v1.0.6`
+</Release>
+<Release version="1.0.6" date="15.10.2024">
 
 *   <span id="improved-lib-importing">Improved **$\color{#8085FF}\textsf{XulbuX}$** library importing:</span><br>
     Checks for missing required libraries and gives you the option to directly install them, if there are any.
@@ -1003,19 +881,15 @@
 
 *   Moved constant variables into a separate file.
 
-
-<span id="v1-0-1" /><span id="v1-0-2" /><span id="v1-0-3" /><span id="v1-0-4" /><span id="v1-0-5" />
-
-## 15.10.2024 `v1.0.1` `v1.0.2` `v1.0.3` `v1.0.4` `v1.0.5`
+</Release>
+<Release version="1.0.1 - 1.0.5" date="15.10.2024">
 
 *   Fixed `f-string` issues for Python 3.10:
     1.  Not making use of the same quotes inside f-strings anymore.
     2.  No backslash escaping in f-strings.
 
-
-<span id="release" /><span id="v1-0-0" /><span id="v1" />
-
-## 14.10.2024 `v1.0` Initial Release 💎
+</Release>
+<Release version="1.0.0" date="14.10.2024">
 
 **At initial release**, the library **$\color{#8085FF}\textsf{XulbuX}$** looks like this:
 
@@ -1081,3 +955,5 @@ from XulbuX import rgb, hsl, hexa
         </tr>
     </tbody>
 </table>
+
+</Release>

@@ -24,6 +24,8 @@ DIR_DOCS_SRC = DIR_DOCS / "src"
 DIR_DOCS_BUILD = DIR_DOCS / ".build"
 
 DIR_API_OUT = DIR_DOCS_BUILD / "docs" / "api"
+PATH_CHANGELOG = DIR_ROOT / "CHANGELOG.md"
+PATH_DOCS_CHANGELOG = DIR_DOCS_BUILD / "changelog.md"
 PATH_SIDEBAR = DIR_DOCS_BUILD / ".vitepress" / "sidebar.json"
 PATH_API_LINKS = DIR_DOCS_BUILD / ".vitepress" / "api-links.json"
 API_LINKS: dict[str, str] = {}
@@ -242,6 +244,24 @@ def process_docstring(doc: str | None) -> str:
         out.append("```")
 
     return transform_special_docs_components("\n".join(out))
+
+
+def insert_minor_version_headers(content: str) -> str:
+    """Inserts `## vX.Y` headers before the first release of a minor series."""
+
+    seen_minors: set[str] = set()
+    out: list[str] = []
+
+    for line in content.split("\n"):
+        if match := re.match(r'^<Release\s+version="([^"]+)"', line):
+            first_ver_parts = match.group(1).split("-")[0].strip().lstrip("v").split(".")
+            if len(first_ver_parts) >= 2 and (minor_ver := f"v{first_ver_parts[0]}.{first_ver_parts[1]}") not in seen_minors:
+                seen_minors.add(minor_ver)
+                out.append(f"\n## {minor_ver}\n")
+
+        out.append(line)
+
+    return "\n".join(out)
 
 
 def generate_md_for_api(api_path: str) -> str:  # ruff:ignore[complex-structure]
@@ -523,8 +543,18 @@ def get_base_sidebar(docs_src_dir: Path) -> list[Any]:
 def _process_single_file(file_path: Path) -> None:
     """Processes a single changed file (Python source or Markdown docs) and updates the build."""
 
+    # Handle root change log:
+    if (resolved := file_path.resolve()) == PATH_CHANGELOG.resolve():
+        PATH_DOCS_CHANGELOG.parent.mkdir(parents=True, exist_ok=True)
+        if not (content := PATH_CHANGELOG.read_text(encoding="utf-8")).startswith("---"):
+            content = "---\ntitle: Changelog\nsidebar: false\noutline: [2, 3]\npageClass: changelog-page\n---\n\n" + content
+        PATH_DOCS_CHANGELOG.write_text(
+            transform_special_docs_components(insert_minor_version_headers(content)), encoding="utf-8"
+        )
+        print(f"  generated {PATH_DOCS_CHANGELOG.name}")
+
     # Handle Python source file:
-    if (file_path := file_path.resolve()).suffix == ".py" and DIR_SRC_XULBUX in file_path.parents:
+    elif resolved.suffix == ".py" and DIR_SRC_XULBUX in resolved.parents:
         if PATH_API_LINKS.exists():
             with suppress(json.JSONDecodeError):
                 API_LINKS.update(json.loads(PATH_API_LINKS.read_text("utf-8")))
@@ -563,9 +593,17 @@ def _build_all_api_docs() -> None:
     print(f"\nCopied {DIR_DOCS_SRC.name} to {DIR_DOCS_BUILD.name}\n")
 
     for md_file_path in DIR_DOCS_BUILD.rglob("*.md"):
-        content = md_file_path.read_text(encoding="utf-8")
-        if (transformed := transform_special_docs_components(content)) != content:
+        if (transformed := transform_special_docs_components(content := md_file_path.read_text(encoding="utf-8"))) != content:
             md_file_path.write_text(transformed, encoding="utf-8")
+
+    if PATH_CHANGELOG.exists():
+        PATH_DOCS_CHANGELOG.parent.mkdir(parents=True, exist_ok=True)
+        if not (content := PATH_CHANGELOG.read_text(encoding="utf-8")).startswith("---"):
+            content = "---\ntitle: Changelog\nsidebar: false\noutline: [2, 3]\npageClass: changelog-page\n---\n\n" + content
+        PATH_DOCS_CHANGELOG.write_text(
+            transform_special_docs_components(insert_minor_version_headers(content)), encoding="utf-8"
+        )
+        print(f"  generated {PATH_DOCS_CHANGELOG.name}")
 
     # [2] Auto-discover all Python modules and generate markdown files for them:
     sidebar_root_items: list[dict[str, Any]] = []
