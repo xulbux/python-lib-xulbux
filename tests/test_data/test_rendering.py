@@ -84,3 +84,58 @@ def test_render_validation_errors() -> None:
 
     with pytest.raises(TypeError, match="must be a dict or bool"):
         _data_module.render({}, syntax_highlighting="invalid_type")  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
+
+
+def test_render_max_width_dict_expansion() -> None:
+    short_dict = {"a": 1, "b": 2}
+    rendered_short = _data_module.render(short_dict, compactness=1, max_width=50)
+    assert "\n" not in rendered_short.raw
+
+    long_dict = {
+        "total": "15.7 GB",
+        "available": "1.2 GB",
+        "used": "14.5 GB",
+        "usage_percent": "92.4%",
+        "swap_total": "26.0 GB",
+        "swap_used": "9.0 GB",
+        "swap_percent": "34.5%",
+    }
+    rendered_long = _data_module.render(long_dict, compactness=1, max_width=50)
+    assert "\n" in rendered_long.raw
+
+
+def test_render_max_width_sequence_expansion() -> None:
+    short_seq = [1, 2, 3]
+    rendered_short = _data_module.render(short_seq, compactness=1, max_width=50)
+    assert "\n" not in rendered_short.raw
+
+    long_seq = [f"long_element_name_{i}" for i in range(10)]
+    rendered_long = _data_module.render(long_seq, compactness=1, max_width=50)
+    assert "\n" in rendered_long.raw
+
+
+def test_render_nested_dict_line_width_expansion() -> None:
+    nested_data: dict[str, dict[str, str | list[str]]] = {
+        "memory": {
+            "total": "15.7 GB",
+            "available": "1.2 GB",
+            "used": "14.5 GB",
+            "usage_percent": "92.4%",
+            "swap_total": "26.0 GB",
+            "swap_used": "9.0 GB",
+            "swap_percent": "34.5%",
+        },
+        "gpu": {"gpus": []},
+    }
+    rendered = _data_module.render(nested_data, indent=2, compactness=1, max_width=127, as_json=True)
+    raw_lines = rendered.raw.splitlines()
+
+    # Verify memory is expanded into multiple lines:
+    assert '"memory": {' in rendered.raw
+
+    # Verify compact gpu dict is preserved on a single line:
+    assert '"gpu": {"gpus": []}' in rendered.raw
+
+    # Verify no line exceeds `max_width`:
+    for line in raw_lines:
+        assert len(line) <= 127

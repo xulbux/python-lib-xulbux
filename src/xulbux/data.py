@@ -863,17 +863,17 @@ class _DataRenderHelper:
 
         return S(_rx.sub(r"\s+(?=\n)", "", formatted))
 
-    def format_value(self, value: Any, /, current_indent: int | None = None) -> str:
+    def format_value(self, value: Any, /, current_indent: int | None = None, prefix_len: int = 0) -> str:
         """Formats a single value based on its type and the current indentation level."""
 
         if current_indent is not None and is_dict(value):
-            return self.format_dict(value, current_indent + self.indent)
+            return self.format_dict(value, current_indent + self.indent, prefix_len)
 
         elif current_indent is not None and hasattr(value, "__dict__"):
-            return self.format_dict(value.__dict__, current_indent + self.indent)
+            return self.format_dict(value.__dict__, current_indent + self.indent, prefix_len)
 
         elif current_indent is not None and is_seq_or_set(value):
-            return self.format_sequence(value, current_indent + self.indent)
+            return self.format_sequence(value, current_indent + self.indent, prefix_len)
 
         elif current_indent is not None and isinstance(value, (bytes, bytearray)):
             try:
@@ -931,24 +931,58 @@ class _DataRenderHelper:
 
         return score
 
-    def should_expand(self, seq: SeqOrSet[Any], /) -> bool:
-        """Determines whether a sequence should be expanded based on its content and the current compactness settings."""
+    def _is_complex(self, data: SeqOrSet[Any] | dict[Any, Any], /) -> bool:
+        """Determines whether a collection has high structural complexity."""
+
+        complex_types = _JSON_COMPLEX_TYPES if self.as_json else _COMPLEX_TYPES
+        items = list(data.values()) if is_dict(data) else list(data)
+        complex_items = sum([1 for item in items if isinstance(item, complex_types)])  # ruff:ignore[unnecessary-comprehension-in-call]
+        complexity = sum([self.get_complexity(item) for item in items])  # ruff:ignore[unnecessary-comprehension-in-call]
+
+        return complex_items > 1 and complexity > 2
+
+    def should_expand(self, data: SeqOrSet[Any] | dict[Any, Any], current_indent: int = 0, prefix_len: int = 0, /) -> bool:
+        """Determines whether a sequence or dictionary should be expanded based on its content and compactness settings."""
 
         if self.compactness == 0:
             return True
         elif self.compactness == 2:
             return False
 
-        complex_types = _JSON_COMPLEX_TYPES if self.as_json else _COMPLEX_TYPES
-        complex_items = sum([1 for item in seq if isinstance(item, complex_types)])  # ruff:ignore[unnecessary-comprehension-in-call]
-        complexity = sum([self.get_complexity(item) for item in seq])  # ruff:ignore[unnecessary-comprehension-in-call]
+        if self._is_complex(data):
+            return True
 
-        return (complex_items > 1 and complexity > 2) or count_chars(seq) + (len(seq) * len(self.sep)) > self.max_width
+        if is_dict(data):
+            collapsed = (
+                self.punct["{"]
+                + self.sep.join([
+                    f"{self.format_value(key)}{self.punct[':']} {self.format_value(val, current_indent)}"
+                    for key, val in data.items()
+                ])
+                + self.punct["}"]
+            )
+        else:
+            brackets = (
+                (self.punct["["], self.punct["]"])
+                if isinstance(data, list)
+                else (
+                    (self.punct["{"], self.punct["}"])
+                    if isinstance(data, (set, frozenset))
+                    else (self.punct["("], self.punct[")"])
+                )
+            )
+            items_str = self.sep.join([self.format_value(item, current_indent) for item in data])
+            collapsed = f"{brackets[0]}{items_str}{brackets[1]}"
 
-    def format_dict(self, data_dict: dict[Any, Any], current_indent: int, /) -> str:
+        line_width = (prefix_len if prefix_len > 0 else current_indent) + len(
+            S(collapsed).raw if self.do_syntax_hl else collapsed
+        )
+        return "\n" in collapsed or line_width > self.max_width
+
+    def format_dict(self, data_dict: dict[Any, Any], current_indent: int, prefix_len: int = 0, /) -> str:
         """Formats a dictionary as a string, applying indentation and compactness rules."""
 
-        if self.compactness == 2 or not data_dict or not self.should_expand(list(data_dict.values())):
+        if self.compactness == 2 or not data_dict or not self.should_expand(data_dict, current_indent, prefix_len):
             return (
                 self.punct["{"]
                 + self.sep.join([
@@ -960,12 +994,20 @@ class _DataRenderHelper:
 
         items: list[str] = []
         for key, val in data_dict.items():
-            formatted_value = self.format_value(val, current_indent)
-            items.append(f"{' ' * (current_indent + self.indent)}{self.format_value(key)}{self.punct[':']} {formatted_value}")
+            formatted_key = self.format_value(key)
+            child_prefix_len = (
+                current_indent
+                + self.indent
+                + len(S(formatted_key).raw if self.do_syntax_hl else formatted_key)
+                + len(S(self.punct[":"]).raw if self.do_syntax_hl else self.punct[":"])
+                + 1
+            )
+            formatted_value = self.format_value(val, current_indent, child_prefix_len)
+            items.append(f"{' ' * (current_indent + self.indent)}{formatted_key}{self.punct[':']} {formatted_value}")
 
         return self.punct["{"] + "\n" + f"{self.sep}\n".join(items) + f"\n{' ' * current_indent}" + self.punct["}"]
 
-    def format_sequence(self, seq: SeqOrSet[Any], current_indent: int, /) -> str:
+    def format_sequence(self, seq: SeqOrSet[Any], current_indent: int, prefix_len: int = 0, /) -> str:
         """Formats a list or tuple as a string, applying indentation and compactness rules."""
 
         if self.as_json:
@@ -993,11 +1035,12 @@ class _DataRenderHelper:
 
         trailing_comma = self.punct[","] if not self.as_json and isinstance(seq, tuple) and len(seq) == 1 else ""
 
-        if self.compactness == 2 or not self.should_expand(seq):
+        if self.compactness == 2 or not self.should_expand(seq, current_indent, prefix_len):
             items_str = self.sep.join([self.format_value(item, current_indent) for item in seq])
             return f"{prefix}{brackets[0]}{items_str}{trailing_comma}{brackets[1]}"
 
-        items = [self.format_value(item, current_indent) for item in seq]
-        formatted_items = f"{self.sep}\n".join([f"{' ' * (current_indent + self.indent)}{item}" for item in items])
+        item_prefix_len = current_indent + self.indent
+        items = [self.format_value(item, current_indent, item_prefix_len) for item in seq]
+        formatted_items = f"{self.sep}\n".join([f"{' ' * item_prefix_len}{item}" for item in items])
 
         return f"{prefix}{brackets[0]}\n{formatted_items}{trailing_comma}\n{' ' * current_indent}{brackets[1]}"
