@@ -122,12 +122,34 @@ class StubGen(ast.NodeTransformer):
 
         # Remove all empty lines inserted by `ast.unparse`; Ruff will format it correctly:
         source = re.sub(r"\n{2,}", r"\n", source)
+        source = cls._add_empty_line_after_if_statements(source)
 
         # Write the generated stub content to the output file:
         out_file = output_dir / source_file.with_suffix(".pyi").name
         out_file.write_text(source, encoding="utf-8")
 
         return out_file
+
+    @staticmethod
+    def _add_empty_line_after_if_statements(source: str) -> str:
+        """Inserts an empty line after top-level `if` statement blocks."""
+
+        lines = source.splitlines(keepends=True)
+        result: list[str] = []
+        in_if_block = False
+
+        for line in lines:
+            if in_if_block and not line.startswith((" ", "\t", "elif ", "else:")):
+                if line.strip():
+                    result.append("\n")
+                in_if_block = False
+
+            if line.startswith("if "):
+                in_if_block = True
+
+            result.append(line)
+
+        return "".join(result)
 
     @staticmethod
     def _get_type_checking_shadowed_names(tree: ast.AST) -> set[str]:
@@ -451,22 +473,6 @@ class StubGen(ast.NodeTransformer):
             node.names = [n for n in node.names if n.name != "TYPE_CHECKING"]
             if not node.names:
                 return None
-
-        else:
-            for alias in node.names:
-                if alias.asname is None and alias.name != "*":
-                    alias.asname = alias.name
-
-        return node
-
-    def visit_Import(self, node: ast.Import):
-        """Visits the import statement node and ensures all imports have explicit aliases for stub generation."""
-
-        self.generic_visit(node)
-
-        for alias in node.names:
-            if alias.asname is None and alias.name != "*":
-                alias.asname = alias.name
 
         return node
 

@@ -4,7 +4,7 @@ from xulbux.ansi import S
 import pytest
 
 if TYPE_CHECKING:
-    from xulbux.base.types import Renderable
+    from xulbux.ansi import Renderable
 
 
 def test_styled_text_join() -> None:

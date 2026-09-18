@@ -6,7 +6,7 @@ from xulbux.console import ArgumentParser
 import pytest
 
 if TYPE_CHECKING:
-    from xulbux.base.types import Renderable
+    from xulbux.ansi import Renderable
 
 
 def test_argument_parser_help_generation_full_options() -> None:
