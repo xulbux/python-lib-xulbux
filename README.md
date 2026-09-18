@@ -81,7 +81,7 @@ pip install --upgrade xulbux
             </tr>
             <tr>
               <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/base.exceptions">exceptions</a></code></b></td>
-              <td>Custom exception classes used throughout the library.</td>
+              <td>Custom exception classes, used throughout the library.</td>
             </tr>
             <tr>
               <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/base.types">types</a></code></b></td>
@@ -109,7 +109,7 @@ pip install --upgrade xulbux
     </tr>
     <tr>
       <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/fs">fs</a></code></b></td>
-      <td>File system utilities including fuzzy path resolution, enhanced JSON file handling, safe directory creation, and common system path lookups.</td>
+      <td>File system utilities, including fuzzy path resolution, enhanced JSON file handling, safe directory creation, and common system path lookups.</td>
     </tr>
     <tr>
       <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/regex">regex</a></code></b></td>
@@ -121,7 +121,7 @@ pip install --upgrade xulbux
     </tr>
     <tr>
       <td align="center"><b><code><a href="https://xulbux.github.io/python-lib-xulbux/docs/api/system">system</a></code></b></td>
-      <td>OS-level automation helpers including clipboard access, file launching, command execution, privilege checks, and dependency installation.</td>
+      <td>OS-level automation helpers, including clipboard access, file launching, command execution, privilege checks, and dependency installation.</td>
     </tr>
   </tbody>
 </table>
@@ -148,7 +148,7 @@ from xulbux import ArgumentParser, S
 ```
 
 Certain things aren't exposed under the `xulbux` package directly.<br>
-They can be imported from their respective submodules, for example:
+They can be imported from their respective submodules; for example:
 
 ```python
 from xulbux.base.consts import CHARS

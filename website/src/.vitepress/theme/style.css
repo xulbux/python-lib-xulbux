@@ -35,9 +35,9 @@
   --vp-c-bg-alt: #fafafa;
   --vp-c-bg-elv: #f0f0f0;
   --vp-c-bg-soft: #fafafa;
-  --vp-c-border: #ededed;
   --vp-c-divider: #ededed;
   --vp-c-gutter: #ededed;
+  --vp-c-border: color-mix(in srgb, var(--vp-c-bg), var(--vp-c-divider) 72%);
   --vp-code-bg: var(--vp-c-bg-elv);
   --vp-code-block-bg: var(--vp-c-bg-alt);
   --vp-code-block-selection: color-mix(in srgb, var(--vp-c-text-1) 10%, transparent);
@@ -67,9 +67,9 @@
   --dvp-c-bg-alt: #000000;
   --dvp-c-bg-elv: #1a1a1a;
   --dvp-c-bg-soft: #000000;
-  --dvp-c-border: #262626;
   --dvp-c-divider: #262626;
   --dvp-c-gutter: #262626;
+  --dvp-c-border: color-mix(in srgb, var(--dvp-c-bg), var(--dvp-c-divider) 72%);
   --dvp-code-bg: var(--dvp-c-border);
   --dvp-code-block-bg: var(--dvp-c-bg-alt);
   --dvp-code-block-selection: color-mix(in srgb, var(--dvp-c-text-1) 18%, transparent);
@@ -269,7 +269,7 @@ body:has(.release-card) .vp-doc > div > h2,
 /******************************************************* HOME FEATURES *******************************************************/
 
 .VPFeature {
-  border: 1px solid var(--vp-c-divider) !important;
+  border: 1px solid var(--vp-c-border) !important;
 }
 
 .VPFeature .icon {
@@ -326,7 +326,7 @@ body:has(.release-card) .vp-doc > div > h2,
 .vp-doc div[class*='language-'] {
   position: relative;
   overflow: hidden !important;
-  border: 1px solid color-mix(in srgb, var(--vp-c-bg), var(--vp-c-border) 70%);
+  border: 1px solid var(--vp-c-border);
 }
 
 .vp-doc div[class*='language-'] > pre {
@@ -463,7 +463,7 @@ body:has(.release-card) .vp-doc > div > h2,
   margin-top: 0 !important;
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
-  border-top: 1px solid color-mix(in srgb, var(--vp-c-bg), var(--vp-c-border) 70%) !important;
+  border-top: 1px solid var(--vp-c-divider) !important;
   clip-path: inset(0 -30px -30px -30px);
 }
 
@@ -492,17 +492,17 @@ body:has(.release-card) .vp-doc > div > h2,
   --vp-code-copy-code-border-color: color-mix(
     in srgb,
     var(--dvp-c-text-3),
-    var(--dvp-c-bg-elv) 70%
+    var(--dvp-c-bg-elv) 72%
   );
   --vp-code-copy-code-bg: var(--dvp-c-divider);
   --vp-code-copy-code-hover-border-color: color-mix(
     in srgb,
     var(--dvp-c-text-3),
-    var(--dvp-c-bg-elv) 70%
+    var(--dvp-c-bg-elv) 72%
   );
-  --vp-code-copy-code-hover-bg: color-mix(in srgb, var(--dvp-c-divider), var(--dvp-c-bg-elv) 70%);
-  border-color: var(--dvp-c-border) !important;
-  border-top-color: color-mix(in srgb, var(--dvp-c-border), var(--dvp-c-bg-elv) 32%) !important;
+  --vp-code-copy-code-hover-bg: color-mix(in srgb, var(--dvp-c-divider), var(--dvp-c-bg-elv) 72%);
+  border-color: var(--dvp-c-divider) !important;
+  border-top-color: var(--dvp-c-border) !important;
 }
 .vp-doc .ext-terminal,
 .vp-doc .ext-terminal > pre {

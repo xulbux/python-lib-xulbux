@@ -35,13 +35,13 @@ RE_DEPRECATED_ANNOTATED = re.compile(
 )
 """Pattern to strip `Annotated[…, deprecated(…)]` wrappers if they exist."""
 RE_ATTACHED_CODE = re.compile(
-    r"<!--\s*DOCS:\s*<AttachedCode>(?:-->)?(.*?)(?:<!--\s*DOCS:\s*)?</AttachedCode>\s*-->|"
+    r"<!--\s*DOCS:\s*<AttachedCode>(?:\s*-->)?(.*?)(?:<!--\s*DOCS:\s*)?</AttachedCode>\s*-->|"
     r"<AttachedCode>(.*?)</AttachedCode>",
     re.DOTALL,
 )
 """Pattern to match both commented and uncommented `<AttachedCode>` blocks."""
 RE_TERMINAL_OUTPUT = re.compile(
-    r"<!--\s*DOCS:\s*<TerminalOutput>(?:-->)?(.*?)(?:<!--\s*DOCS:\s*)?</TerminalOutput>\s*-->|"
+    r"<!--\s*DOCS:\s*<TerminalOutput>(?:\s*-->)?(.*?)(?:<!--\s*DOCS:\s*)?</TerminalOutput>\s*-->|"
     r"<TerminalOutput>(.*?)</TerminalOutput>",
     re.DOTALL,
 )
