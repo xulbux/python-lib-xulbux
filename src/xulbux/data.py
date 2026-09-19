@@ -491,7 +491,7 @@ def render(
     *   `sep` – The separator between items in the data structure.
     *   `as_json` – if true, the output will be in valid JSON format.
     *   `syntax_highlighting` – A dictionary defining the syntax highlighting styles
-        (explained below – section 2) or `True` to apply default syntax highlighting styles<br>
+        (explained below – section 2) or `True` to apply default syntax highlighting styles
         or `False`/`None` to disable syntax highlighting.\n
     ----------------------------------------------------------------------------------------------------
     There are three different levels of `compactness`:

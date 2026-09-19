@@ -1,3 +1,7 @@
+"""
+CLI command to render a smooth true-color gradient in the terminal.
+"""
+
 from ..ansi import Renderable, S
 from ..base.consts import CHARS
 from ..color import hexa, hsla, rgba

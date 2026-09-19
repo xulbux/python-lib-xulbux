@@ -1,5 +1,5 @@
 """
-This module provides the `S` and `Term` classes for building richly styled<br>
+This module provides the `S` and `Term` classes for building richly styled
 terminal output using a typed, operator-based syntax.
 
 ---
@@ -42,7 +42,7 @@ A list of all possible style attributes can be found below.
 
 ### Auto Resetting Styles
 
-Every `_Style`, `_StyleGroup`, `_ColorStyle` or `_Link` call automatically generates the<br>
+Every `_Style`, `_StyleGroup`, `_ColorStyle` or `_Link` call automatically generates the
 matching reset sequence behind its text, just like shown in the following example:
 
 ```python
@@ -357,7 +357,7 @@ def _config_terminal() -> None:
 
     if _sys.platform == "win32":
         with _suppress(Exception):
-            kernel32 = _ctypes.windll.kernel32  # type: ignore[attr-defined]
+            kernel32 = _ctypes.windll.kernel32  # type:ignore[attr-defined]
             handle = kernel32.GetStdHandle(-11)  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
             mode = _ctypes.c_ulong()
             kernel32.GetConsoleMode(handle, _ctypes.byref(mode))  # pyright:ignore[reportUnknownMemberType]

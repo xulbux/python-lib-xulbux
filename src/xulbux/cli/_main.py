@@ -1,3 +1,7 @@
+"""
+Main entry point for the library's CLI tools.
+"""
+
 import sys as _sys
 
 

@@ -1,3 +1,7 @@
+"""
+CLI help command and version update checking for the `xulbux-lib` tool.
+"""
+
 from .. import __version__
 from .. import console as _console_module
 from ..ansi import S, TextRenderable

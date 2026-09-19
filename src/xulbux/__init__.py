@@ -110,7 +110,7 @@ def __getattr__(name: str) -> Any:
 
 
 def __dir__() -> list[str]:
-    """Returns the list of attributes available in this module,<br>
+    """Returns the list of attributes available in this module,
     including submodules and submodule attributes."""
 
     return __all__

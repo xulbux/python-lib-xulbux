@@ -1237,7 +1237,7 @@ def has_color_support() -> bool:
     elif _sys.platform == "win32":
         # Check if VT100 mode is enabled on Windows:
         with suppress(Exception):
-            kernel32 = _ctypes.windll.kernel32  # type: ignore[attr-defined]
+            kernel32 = _ctypes.windll.kernel32  # type:ignore[attr-defined]
             handle = kernel32.GetStdHandle(-11)  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
             mode = _ctypes.c_ulong()
 
@@ -1346,8 +1346,8 @@ def log(
         title_style = S.BOLD
         title_px = 0  # Remove padding if title has no BG color.
 
-    # Padding = space inside title BG color
-    # Margin = space outside title BG color
+    # Padding = space inside title BG color.
+    # Margin = space outside title BG color.
     px, mx = " " * title_px, " " * title_mx
 
     # Title length including padding and margin:

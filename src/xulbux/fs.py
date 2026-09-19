@@ -218,9 +218,7 @@ def rename_file_ext(
     ```"""
 
     path = Path(file_path)
-    filename_with_ext = path.name
-
-    filename = filename_with_ext.split(".", 1)[0] if full_extension else path.stem
+    filename = path.name.split(".", 1)[0] if full_extension else path.stem
 
     if camel_case_filename:
         filename = _string_module.to_camel_case(filename)

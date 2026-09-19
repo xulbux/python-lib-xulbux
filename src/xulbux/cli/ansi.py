@@ -1,3 +1,7 @@
+"""
+CLI command to display all available ANSI style and color codes in the terminal.
+"""
+
 from ..ansi import RenderSegment, S
 from ..console import get_width
 
