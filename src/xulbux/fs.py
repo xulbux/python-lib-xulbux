@@ -145,9 +145,7 @@ def resolve_or_create_path(
         return resolve_path(rel_path, search_in=search_in, raise_error=True, fuzzy_match=fuzzy_match) or Path()
 
     except PathNotFoundError:
-        path = Path(str(rel_path))
-        base_dir = get_script_dir() if prefer_script_dir else Path.cwd()
-        return base_dir / path
+        return (get_script_dir() if prefer_script_dir else Path.cwd()) / Path(str(rel_path))
 
 
 def create_file(file_path: Path | str, content: str = "", /, *, force: bool = False) -> Path:
@@ -327,12 +325,10 @@ def read_json(
     file_path = resolve_path(json_path) or json_path
 
     with open(file_path, encoding="utf-8") as file:
-        content = file.read()
-
-    try:
-        data = cast("dict[str, Any]", _json.loads(content))
-    except _json.JSONDecodeError as exc:
-        raise ValueError(f"Error parsing JSON in {file_path!r}:\n  {'\n  '.join(str(exc).splitlines())}") from exc
+        try:
+            data = cast("dict[str, Any]", _json.loads(file.read()))
+        except _json.JSONDecodeError as exc:
+            raise ValueError(f"Error parsing JSON in {file_path!r}:\n  {'\n  '.join(str(exc).splitlines())}") from exc
 
     if not (processed_data := _data_module.remove_comments(data, comment_start=comment_start, comment_end=comment_end)):
         raise ValueError(f"The JSON file {file_path!r} contains no data")

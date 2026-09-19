@@ -17,7 +17,13 @@ from contextlib import suppress as _suppress
 from typing import Any, Final, Literal, cast, overload
 import regex as _rx
 
-_PATTERNS: Final[LazyRegex] = LazyRegex(remove_comments_default=r"^((?:(?!>>).)*)>>(?:(?:(?!<<).)*)(?:<<)?(.*?)$")
+_PATTERNS: Final[LazyRegex] = LazyRegex(
+    remove_comments_default=r"^((?:(?!>>).)*)>>(?:(?:(?!<<).)*)(?:<<)?(.*?)$",
+)
+"""Lazy-compiled regex patterns for data operations."""
+
+_HEX_CHARS: Final[frozenset[str]] = frozenset("0123456789ABCDEFabcdef")
+"""Valid hexadecimal digit characters for path ID validation."""
 
 _DEFAULT_SYNTAX_HL: Final[dict[str, AnyStyle]] = {
     "str": S.BR.BLUE,
@@ -26,7 +32,7 @@ _DEFAULT_SYNTAX_HL: Final[dict[str, AnyStyle]] = {
     "type": S.ITALIC | S.GREEN,
     "punctuation": S.BR.BLACK,
 }
-"""Default syntax highlighting styles for data structure rendering."""
+"""Default syntax highlighting color mapping for data rendering."""
 
 _COMPLEX_TYPES: Final[tuple[type, ...]] = (list, tuple, dict, set, frozenset)
 """Collection types considered complex for nesting analysis and rendering formatting."""
@@ -606,7 +612,7 @@ def _sep_path_id(path_id: str, /) -> list[int]:
             if chunk_len > 0 and (len(payload) % chunk_len == 0):
                 valid = True
                 for char in payload:
-                    if char not in "0123456789ABCDEFabcdef":
+                    if char not in _HEX_CHARS:
                         valid = False
                         break
 

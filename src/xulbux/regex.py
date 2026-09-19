@@ -159,31 +159,31 @@ def brackets(
     <!-- DOCS: </AttachedCode> -->"""
 
     group_prefix = "" if is_group else "?:"
-    b1 = _rx.escape(bracket1) if len(bracket1) == 1 else bracket1
-    b2 = _rx.escape(bracket2) if len(bracket2) == 1 else bracket2
-    s1 = r"\s*" if strip_spaces else ""
-    s2 = "" if strip_spaces else r"\s*"
+    open_pat = _rx.escape(bracket1) if len(bracket1) == 1 else bracket1
+    close_pat = _rx.escape(bracket2) if len(bracket2) == 1 else bracket2
+    sp_inner = r"\s*" if strip_spaces else ""
+    sp_outer = "" if strip_spaces else r"\s*"
 
     if ignore_in_strings:
-        return rf"""(?x){b1}{s1}({group_prefix}{s2}(?:
-                [^{b1}{b2}"']
+        return rf"""(?x){open_pat}{sp_inner}({group_prefix}{sp_outer}(?:
+                [^{open_pat}{close_pat}"']
                 |"(?:\\.|[^"\\])*"
                 |'(?:\\.|[^'\\])*'
-                |{b1}(?:
-                    [^{b1}{b2}"']
+                |{open_pat}(?:
+                    [^{open_pat}{close_pat}"']
                     |"(?:\\.|[^"\\])*"
                     |'(?:\\.|[^'\\])*'
                     |(?R)
-                )*{b2}
-            )*{s2}){s1}{b2}"""
+                )*{close_pat}
+            )*{sp_outer}){sp_inner}{close_pat}"""
     else:
-        return rf"""(?x){b1}{s1}({group_prefix}{s2}(?:
-                [^{b1}{b2}]
-                |{b1}(?:
-                    [^{b1}{b2}]
+        return rf"""(?x){open_pat}{sp_inner}({group_prefix}{sp_outer}(?:
+                [^{open_pat}{close_pat}]
+                |{open_pat}(?:
+                    [^{open_pat}{close_pat}]
                     |(?R)
-                )*{b2}
-            )*{s2}){s1}{b2}"""
+                )*{close_pat}
+            )*{sp_outer}){sp_inner}{close_pat}"""
 
 
 def outside_strings(pattern: str = r".*", /) -> str:

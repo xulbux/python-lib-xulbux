@@ -99,7 +99,7 @@ class KEYS:
     ALT_RIGHT: Final[frozenset[str]] = frozenset(("\x1b[1;3C", "\x1b\x1b[C", "\x00\x9d", "\xe0\x9d", "\x1bf"))
     """`Alt+Right` arrow key sequences."""
 
-    # ********************* NAVIGATION & EDITING *********************
+    # ******************** NAVIGATION & EDITING *********************
 
     HOME: Final[frozenset[str]] = frozenset(("\x1b[H", "\x1b[1~", "\x1b[7~", "\x1bOH", "\x00G", "\xe0G"))
     """Home key sequences."""
@@ -132,7 +132,7 @@ class KEYS:
     BACKTAB: Final[frozenset[str]] = frozenset(("\x1b[Z", "\x1b[9;2u", "\x00\x0f", "\xe0\x0f"))
     """Backtab and `Shift+Tab` key sequences."""
 
-    # *********************** ACTION & CONTROL ***********************
+    # ********************** ACTION & CONTROL ***********************
 
     CTRL_A: Final[frozenset[str]] = frozenset(("\x01",))
     """`Ctrl+A` key representation (Home / Select All)."""
@@ -172,7 +172,7 @@ class KEYS:
     SPACEBAR: Final[frozenset[str]] = frozenset((" ", "\x1b[32u"))
     """Space bar key representations."""
 
-    # ************************ FUNCTION KEYS *************************
+    # ************************ FUNCTION KEYS ************************
 
     F1: Final[frozenset[str]] = frozenset(("\x1bOP", "\x1b[11~", "\x1b[[A", "\x00;", "\xe0;"))
     """`F1` function key sequences."""

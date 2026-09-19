@@ -3,13 +3,13 @@ from unittest.mock import patch
 from xulbux.ansi import S
 from xulbux.console import (
     _LOG_TITLE_CACHE_MAX,
-    _as_bg_color_style,
-    _as_fg_color_style,
     _persist_style,
     _prepare_log_box,
     _render_log_title,
     _resolve_title_colors,
     _split_hr_parts,
+    _to_bg_color_style,
+    _to_fg_color_style,
     box,
     debug,
     done,
@@ -251,21 +251,21 @@ def test_box_validation() -> None:
     with pytest.raises(ValueError, match="border_style"):
         box("Error", border_style=S.BG.RED)
     with pytest.raises(ValueError, match="border_style"):
-        box("Error", border_style=object())  # type:ignore[arg-type,call-overload]  # pyright:ignore[reportArgumentType]
+        box("Error", border_style=object())  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="border"):
-        box("Error", border="invalid")  # type:ignore[arg-type,call-overload]  # pyright:ignore[reportArgumentType]
+        box("Error", border="invalid")  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="bg"):
-        box("Error", bg="invalid")  # type:ignore[arg-type,call-overload]  # pyright:ignore[reportArgumentType]
+        box("Error", bg="invalid")  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="width"):
         box("Error", width=-1)
     with pytest.raises(ValueError, match="width"):
         box("Error", width=3)  # too small: min is 2 + 2*1 + 1 = 5
     with pytest.raises(ValueError, match="width"):
-        box("Error", width="invalid")  # type:ignore[arg-type,call-overload]  # pyright:ignore[reportArgumentType]
+        box("Error", width="invalid")  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="width"):
-        box("Error", width=True)  # type:ignore[arg-type,call-overload]
+        box("Error", width=True)  # pyright:ignore[reportArgumentType]
     with pytest.raises(ValueError, match="align"):
-        box("Error", align="invalid")  # type:ignore[arg-type,call-overload]  # pyright:ignore[reportArgumentType]
+        box("Error", align="invalid")  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
 
 
 def test_box_alignment() -> None:
@@ -341,21 +341,21 @@ def test_style_resolution_and_persistence_helpers() -> None:
     with pytest.raises(ValueError, match="title_bg_color"):
         _resolve_title_colors(S.RED)
 
-    # _as_bg_color_style:
-    assert _as_bg_color_style(S.BG.BLUE) == S.BG.BLUE
-    assert _as_bg_color_style(S.BG.rgb(10, 20, 30)) is not None
+    # _to_bg_color_style:
+    assert _to_bg_color_style(S.BG.BLUE) == S.BG.BLUE
+    assert _to_bg_color_style(S.BG.rgb(10, 20, 30)) is not None
     with pytest.raises(ValueError, match="box_bg_color"):
-        _as_bg_color_style(S.BLUE)
+        _to_bg_color_style(S.BLUE)
     with pytest.raises(ValueError, match="box_bg_color"):
-        _as_bg_color_style(object())
+        _to_bg_color_style(object())
 
-    # _as_fg_color_style:
-    assert _as_fg_color_style(S.GREEN) == S.GREEN
-    assert _as_fg_color_style(S.hex("#ff00ff")) is not None
+    # _to_fg_color_style:
+    assert _to_fg_color_style(S.GREEN) == S.GREEN
+    assert _to_fg_color_style(S.hex("#ff00ff")) is not None
     with pytest.raises(ValueError, match="color"):
-        _as_fg_color_style(S.BG.GREEN)
+        _to_fg_color_style(S.BG.GREEN)
     with pytest.raises(ValueError, match="color"):
-        _as_fg_color_style(object())
+        _to_fg_color_style(object())
 
     # _persist_style:
     assert _persist_style("plain text", "\x1b[31m") == "plain text"

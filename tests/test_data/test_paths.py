@@ -140,7 +140,7 @@ def test_get_value_by_path_id_errors() -> None:
         _data_module.get_value_by_path_id({"a": 1}, "102")
 
     class IncompleteDict(dict[str, Any]):
-        def items(self) -> Any:  # type:ignore[override]
+        def items(self) -> Any:  # pyright:ignore[reportIncompatibleMethodOverride]
             return []
 
     data = IncompleteDict({"a": [1]})

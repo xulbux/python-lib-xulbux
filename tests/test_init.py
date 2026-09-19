@@ -22,10 +22,8 @@ def test_dir() -> None:
 
 
 def test_getattr_direct() -> None:
-    res_s = xulbux.S
-    assert res_s is not None
-    res_console = xulbux.console
-    assert res_console is not None
+    assert xulbux.S is not None
+    assert xulbux.console is not None
 
     with pytest.raises(AttributeError):
         _ = getattr(xulbux, "invalid")  # ruff:ignore[get-attr-with-constant]

@@ -5,23 +5,21 @@ def test_extract_func_calls_simple_and_nested() -> None:
     sample = "foo()\nbar(1, 2)\nbaz('test')"
     result = _string_module.extract_func_calls(sample)
     assert len(result) == 3
-    assert ("foo", "") in result
-    assert ("bar", "1, 2") in result
-    assert ("baz", "'test'") in result
+    assert ("foo", "") in set(result)
+    assert ("bar", "1, 2") in set(result)
+    assert ("baz", "'test'") in set(result)
 
-    nested_sample = "outer(inner1(), inner2(param))"
-    nested_result = _string_module.extract_func_calls(nested_sample)
+    nested_result = _string_module.extract_func_calls("outer(inner1(), inner2(param))")
     func_names = [call[0] for call in nested_result]
-    assert "outer" in func_names
-    assert "inner1" in func_names
-    assert "inner2" in func_names
+    assert "outer" in set(func_names)
+    assert "inner1" in set(func_names)
+    assert "inner2" in set(func_names)
 
 
 def test_extract_func_calls_methods_and_empty() -> None:
     assert _string_module.extract_func_calls("no function calls here") == []
 
-    method_sample = "obj.method()\nobj.other_method(123)"
-    method_result = _string_module.extract_func_calls(method_sample)
+    method_result = _string_module.extract_func_calls("obj.method()\nobj.other_method(123)")
     assert len(method_result) == 2
     assert ("method", "") in method_result
     assert ("other_method", "123") in method_result

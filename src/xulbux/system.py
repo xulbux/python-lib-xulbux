@@ -352,10 +352,7 @@ def _persistent_env_path(path: Path, /, *, remove: bool = False) -> None:
 
     # Unix-like (Linux/macOS):
     else:
-        home_path = Path.home()
-        bashrc = home_path / ".bashrc"
-        zshrc = home_path / ".zshrc"
-        shell_rc_file = bashrc if bashrc.exists() else zshrc
+        shell_rc_file = bashrc if (bashrc := (home_path := Path.home()) / ".bashrc").exists() else home_path / ".zshrc"
 
         with open(shell_rc_file, "r+", encoding="utf-8") as file:
             content = file.read()

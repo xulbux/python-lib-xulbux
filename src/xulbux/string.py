@@ -50,6 +50,7 @@ _PATTERNS: Final[LazyRegex] = LazyRegex(
     js_indicators_try_catch=r"(?i)\btry\s*\{[^}]*\}\s*catch\s*\(",
     js_indicators_var_let_const=r"(?i)\b(var|let|const)\s+[\w_$]+",
 )
+"""Lazy-compiled regex patterns for string operations."""
 
 _DEFAULT_JS_FUNCS: Final[frozenset[str]] = frozenset({"__", "$t", "$lang"})
 """Default function identifiers frequently used in localized JavaScript frameworks."""

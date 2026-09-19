@@ -57,8 +57,9 @@ def show_true_color(color_arg: str | None = None, /) -> None:
 
     lines: list[Renderable] = [S.RESET]
 
-    # Pixel generator function:
     def get_pixel(pixel_x: int, pixel_y: int) -> tuple[int, int, int]:
+        """Calculates RGB color values for a pixel at the given coordinates."""
+
         lightness = round((1.0 - (pixel_y / (height - 1))) * 100)
 
         if parsed_hsla is not None:

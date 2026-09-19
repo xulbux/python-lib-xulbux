@@ -12,8 +12,7 @@ def test_read_simple_json_file(tmp_path: Path) -> None:
     file_path = tmp_path / "sample.json"
     file_path.write_text('{"name": "test", "value": 123}')
 
-    data = _fs_module.read_json(str(file_path))
-    assert data == {"name": "test", "value": 123}
+    assert _fs_module.read_json(str(file_path)) == {"name": "test", "value": 123}
 
 
 def test_read_without_json_extension(tmp_path: Path) -> None:

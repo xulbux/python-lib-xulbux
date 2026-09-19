@@ -1362,7 +1362,7 @@ def log(
     # Convert the prompt to styled text and apply the optional default color:
     prompt_st: S = _to_styled_text(prompt)
     if default_color is not None:
-        prompt_st = _as_fg_color_style(default_color, param_name="default_color")(prompt_st)
+        prompt_st = _to_fg_color_style(default_color, param_name="default_color")(prompt_st)
 
     # Wrap prompt text to the next line with proper indentation after the title and tab:
     joined_prompt = S(f"\n{' ' * title_len + tab}").join(prompt_st.wrap(wrap_len))
@@ -1799,10 +1799,10 @@ def _resolve_box_bg(
         bg_open = (S.RESET_FG | S.INVERSE).ansi
     else:
         has_bg = True
-        bg_open = _as_bg_color_style(bg, param_name="bg").ansi
+        bg_open = _to_bg_color_style(bg, param_name="bg").ansi
 
     if default_color is not None:
-        content_open = _as_fg_color_style(default_color, param_name="default_color").ansi
+        content_open = _to_fg_color_style(default_color, param_name="default_color").ansi
     elif has_bg and is_bg_color_style(bg):
         content_open = bg.as_text_fg().ansi
     else:
@@ -2181,7 +2181,7 @@ def confirm(
         "): ",
     )
     head = f"{_to_styled_text(start)}{_to_styled_text(prompt).ansi} "
-    head_seg = _as_fg_color_style(default_color, param_name="default_color")(head) if default_color is not None else head
+    head_seg = _to_fg_color_style(default_color, param_name="default_color")(head) if default_color is not None else head
 
     confirmed = input(S(head_seg, S.RESET, yes_no).ansi).strip().lower() in (
         {"", "y", "yes"} if default_is_yes else {"y", "yes"}
@@ -2230,7 +2230,7 @@ def multiline_input(
     kb.add("escape", "enter", eager=True)(_multiline_input_submit)
 
     head = f"{start}{_to_styled_text(prompt).ansi}"
-    S(_as_fg_color_style(default_color, param_name="default_color")(head) if default_color is not None else head).print()
+    S(_to_fg_color_style(default_color, param_name="default_color")(head) if default_color is not None else head).print()
 
     if show_keybindings:
         S.DIM("[", S.BOLD("ALT+ENTER"), " : confirm input]").print()
@@ -2380,7 +2380,7 @@ def input(
 
     prompt_ansi = _to_styled_text(prompt).ansi
     if default_color is not None:
-        prompt_ansi = _as_fg_color_style(default_color, param_name="default_color")(prompt_ansi).ansi
+        prompt_ansi = _to_fg_color_style(default_color, param_name="default_color")(prompt_ansi).ansi
 
     session: _pt.PromptSession[str] = _pt.PromptSession(
         message=_pt.formatted_text.ANSI(prompt_ansi),
@@ -2629,7 +2629,7 @@ def _resolve_title_colors(title_bg_color: object, /) -> tuple[BgColorStyle, FgCo
     )
 
 
-def _as_bg_color_style(color: object, /, *, param_name: str = "box_bg_color") -> BgColorStyle:
+def _to_bg_color_style(color: object, /, *, param_name: str = "box_bg_color") -> BgColorStyle:
     """Resolves and validates an `S` background color style."""
 
     if is_bg_color_style(color):
@@ -2641,7 +2641,7 @@ def _as_bg_color_style(color: object, /, *, param_name: str = "box_bg_color") ->
     )
 
 
-def _as_fg_color_style(color: object, /, *, param_name: str = "color") -> FgColorStyle:
+def _to_fg_color_style(color: object, /, *, param_name: str = "color") -> FgColorStyle:
     """Resolves and validates an `S` foreground color style."""
 
     if is_fg_color_style(color):
