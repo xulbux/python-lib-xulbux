@@ -6,7 +6,7 @@ hero:
   text: 'Python Library'
   tagline: 'A modern, high-performance Python library to simplify common tasks.'
   image:
-    src: /icon.svg
+    src: /logo.svg
     alt: XulbuX Logo
   actions:
     - theme: brand
@@ -28,10 +28,10 @@ features:
     details: Expressive ANSI styling via operator syntax, styled loggers, interactive prompts, and progress bars.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><circle cx="12" cy="13" r="1"/></svg>'
     title: System & File Automation
-    details: Fuzzy path resolution, safe JSON and directory handling, clipboard access, and cross-platform OS helpers.
+    details: Fuzzy path resolution, safe JSON and directory handling, and cross-platform OS helpers.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12h.01"/><path d="M16 12h.01"/><path d="m17 7 5 5-5 5"/><path d="m7 7-5 5 5 5"/><path d="M8 12h.01"/></svg>'
     title: Modern Data & Text Tools
-    details: Deep dictionary merging, recursive sorting, syntax-highlighted data rendering, and dynamic regex builders.
+    details: Path-based key access, data cleansing, syntax-highlighted rendering, and dynamic regex builders.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg>'
     title: Zero Bloat & Lazy Loading
     details: Engineered for instantaneous startup times with PEP 562 modular lazy loading and minimal dependencies.
@@ -90,7 +90,7 @@ xx.console.box(
 <br>
 
 <div align="center" style="margin-top: 2.5rem; margin-bottom: 2.5rem;">
-  <a href="/docs/guide/get-started" style="font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
+  <a href="/python-lib-xulbux/docs/guide/get-started" style="font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
     Explore the Getting Started Guide
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
   </a>

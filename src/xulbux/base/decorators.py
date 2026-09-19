@@ -1,8 +1,8 @@
 """
 Provides utility decorators used throughout the library.
-
-Includes decorators for caching properties, deprecating
-functions, and marking MyPyC compatibility.
+<br>
+Includes decorators for deprecating callables and configuring
+MyPyC compiler attributes.
 """
 
 import sys as _sys

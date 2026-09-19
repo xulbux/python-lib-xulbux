@@ -1,8 +1,8 @@
 """
-Provides comprehensive tools for terminal output and interaction.
-
-Features include styled logging, progress bars, interactive prompts,
-and command-line argument parsing.
+Provides comprehensive tools for terminal output and user interaction.
+<br>
+Includes styled logging, box rendering, progress bars, throbbers,
+interactive prompts, key reading, and command-line argument parsing.
 """
 
 from .ansi import (

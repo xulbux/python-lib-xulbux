@@ -1,8 +1,8 @@
 """
 Provides utility functions for advanced string manipulation.
-
-Includes methods for casing, stripping, finding differences,
-and safely converting to numeric or boolean types.
+<br>
+Includes case conversions, indentation and whitespace normalization,
+safe type parsing, character frequency analysis, and code pattern detection.
 """
 
 from . import data as _data_module

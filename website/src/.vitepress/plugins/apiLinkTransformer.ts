@@ -139,7 +139,8 @@ function shouldLinkMatch(
 function splitSpanText(
   spanInfo: SpanInfo,
   validMatches: RegExpMatchArray[],
-  apiLinks: Record<string, string>
+  apiLinks: Record<string, string>,
+  base = '/'
 ) {
   const spanMatches = validMatches.filter(
     (match) =>
@@ -153,6 +154,7 @@ function splitSpanText(
   const { text } = spanInfo;
   let lastIdx = 0;
   const newChildren: HastNode[] = [];
+  const normalizedBase = base.endsWith('/') ? base : `${base}/`;
 
   for (const match of spanMatches) {
     const [matchedStr] = match;
@@ -162,9 +164,15 @@ function splitSpanText(
       newChildren.push({ type: 'text', value: text.substring(lastIdx, matchStartInSpan) });
     }
 
+    const target = apiLinks[matchedStr];
+    const href =
+      base !== '/' && target.startsWith('/')
+        ? `${normalizedBase}${target.replace(/^\//, '')}`
+        : target;
+
     newChildren.push({
       children: [{ type: 'text', value: matchedStr }],
-      properties: { class: 'api-link', href: apiLinks[matchedStr] },
+      properties: { class: 'api-link', href },
       tagName: 'a',
       type: 'element',
     });
@@ -200,7 +208,7 @@ function extractSpanInfos(children: HastNode[]): { lineText: string; spanInfos: 
   return { lineText, spanInfos };
 }
 
-export function apiLinkTransformer(dirname: string) {
+export function apiLinkTransformer(dirname: string, base = '/') {
   let apiLinks: Record<string, string> = {};
   let apiLinksPattern: RegExp | undefined = undefined;
 
@@ -243,7 +251,7 @@ export function apiLinkTransformer(dirname: string) {
       }
 
       for (const spanInfo of spanInfos) {
-        splitSpanText(spanInfo, validMatches, apiLinks);
+        splitSpanText(spanInfo, validMatches, apiLinks, base);
       }
     },
     name: 'api-link-transformer',

@@ -1,8 +1,8 @@
 """
 Provides file system and path resolution utilities.
-
-Includes fuzzy matching, recursive searching, safe directory creation,
-and dynamic access to common paths like `cwd` and `home`.
+<br>
+Includes fuzzy path resolution, safe file and directory creation,
+atomic JSON read and write helpers, and common path accessors.
 """
 
 from . import data as _data_module

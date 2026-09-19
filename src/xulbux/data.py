@@ -1,8 +1,8 @@
 """
-Provides utilities for processing and managing complex data structures.
-
-This includes deep merging, nested key access, recursive sorting,
-syntax-highlighted rendering, and data type conversions.
+Provides utilities for inspecting, transforming, and querying nested data structures.
+<br>
+Includes path-based value lookup and mutation, deep equality comparison,
+removal of empty elements or duplicates, comment stripping, and syntax-highlighted rendering.
 """
 
 from . import string as _string_module

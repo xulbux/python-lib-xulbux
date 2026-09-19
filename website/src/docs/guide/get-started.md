@@ -1,26 +1,58 @@
 # Getting Started
 
+## Prerequisites
+
+`xulbux` requires **Python 3.12 or newer**. It is compiled to C using MyPyC for high performance and strict type safety.
+
+<br>
+
 ## Installation
 
 It is recommended to install the library within a [virtual environment](https://docs.python.org/3/tutorial/venv.html) to align with modern Python standards and prevent `externally-managed-environment` errors on newer operating systems.
 
-To install the library, run:
+::: code-group
 
-```bash
+```bash [pip]
 pip install xulbux
 ```
 
+```bash [uv]
+uv add xulbux
+```
+
+```bash [poetry]
+poetry add xulbux
+```
+
+:::
+
 To upgrade to the latest available version:
 
-```bash
+::: code-group
+
+```bash [pip]
 pip install --upgrade xulbux
 ```
+
+```bash [uv]
+uv add --upgrade xulbux
+```
+
+```bash [poetry]
+poetry update xulbux
+```
+
+:::
 
 <br>
 
 ## Usage
 
-The library's modules can be accessed by importing the `xulbux` package. It is highly recommended to alias the package (e.g., as `xx`) to prevent naming conflicts with common variable names like `data` or `file`:
+The library's modules can be accessed by importing the `xulbux` package.
+
+::: tip Why alias as `xx`?
+It is highly recommended to alias the package as `xx` (`import xulbux as xx`). This prevents naming collisions with common variable names like `data` (`xx.data`), `fs` (`xx.fs`), or `system` (`xx.system`), while keeping module calls concise.
+:::
 
 ```python
 import xulbux as xx
@@ -29,19 +61,20 @@ xx.console.log("Hello, World!")
 xx.data.render({"key": "value"})
 ```
 
-The library's classes can be imported directly from the `xulbux` package:
+The library's classes and convenience functions can also be imported directly from `xulbux`:
 
 ```python
-from xulbux import ArgumentParser, S
+from xulbux import ArgumentParser, S, hexa
 ```
 
-Certain things aren't exposed under the `xulbux` package directly.<br>
-They can be imported from their respective submodules, for example:
+Certain lower-level constants, types, and decorators are located in their respective submodules:
 
 ```python
 from xulbux.base.consts import CHARS
 from xulbux.base.types import PathsList
 ```
+
+> For a complete list of all core modules, base utilities, and their purposes, see the [Modules Overview](/docs/guide/modules).
 
 <br>
 
@@ -108,3 +141,4 @@ if __name__ == "__main__":
 <span class="dim">│</span> <span class="b">HSLA: </span><span class="i">hsla(257°, 100%, 77%)</span>   <span class="dim">│</span>
 <span class="dim">╰───────────────────────────────╯</span>
 </TerminalOutput>
+

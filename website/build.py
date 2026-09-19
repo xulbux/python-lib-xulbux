@@ -12,7 +12,7 @@ import sys
 import textwrap
 from contextlib import suppress
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, TypedDict, cast
 
 DIR_ROOT = Path(__file__).parent.parent.resolve()  # Ensure we can import xulbux.
 
@@ -26,8 +26,10 @@ DIR_WEBSITE_BUILD = DIR_WEBSITE / ".build"
 DIR_API_OUT = DIR_WEBSITE_BUILD / "docs" / "api"
 PATH_CHANGELOG = DIR_ROOT / "CHANGELOG.md"
 PATH_WEBSITE_CHANGELOG = DIR_WEBSITE_BUILD / "changelog.md"
-PATH_SIDEBAR = DIR_WEBSITE_BUILD / ".vitepress" / "sidebar.json"
+PATH_SIDEBAR_REL = Path(".vitepress") / "sidebar.json"
+PATH_SIDEBAR = DIR_WEBSITE_BUILD / PATH_SIDEBAR_REL
 PATH_API_LINKS = DIR_WEBSITE_BUILD / ".vitepress" / "api-links.json"
+PATH_MODULES_BUILD = DIR_WEBSITE_BUILD / "docs" / "guide" / "modules.md"
 API_LINKS: dict[str, str] = {}
 
 RE_DEPRECATED_ANNOTATED = re.compile(
@@ -525,11 +527,174 @@ def _generate_markdown_for_obj(  # ruff:ignore[complex-structure]
     return "\n".join(lines)
 
 
+def _extract_module_summary(file_path: Path) -> str:
+    """Extracts the introductory summary from a module's docstring."""
+
+    try:
+        tree = ast.parse(file_path.read_text(encoding="utf-8"))
+        doc = ast.get_docstring(tree) or ""
+    except Exception:
+        return ""
+
+    if not doc:
+        return ""
+
+    lines: list[str] = []
+    for line in doc.strip().splitlines():
+        stripped = line.strip()
+        if stripped.startswith("---") or stripped.startswith("###") or stripped.startswith("```"):
+            break
+        lines.append(line)
+
+    summary_text = "\n".join(lines).strip()
+    paragraphs = [re.sub(r"\s+", " ", part.strip()) for part in summary_text.split("\n\n") if part.strip()]
+
+    return " ".join(paragraphs)
+
+
+class _SubpackageInfo(TypedDict):
+    title: str
+    description: str
+    modules: list[tuple[str, str, str]]
+
+
+def _extract_subpackage_info(init_path: Path) -> tuple[str, str]:
+    """Extracts the section title and introductory summary from a subpackage's `__init__.py`."""
+
+    raw_name = init_path.parent.name
+    fallback_title = raw_name.upper() if raw_name.lower() == "cli" else raw_name.replace("_", " ").title()
+
+    try:
+        source_code = init_path.read_text(encoding="utf-8")
+        tree = ast.parse(source_code)
+    except Exception:
+        return fallback_title, ""
+
+    title = ""
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == "__title__" and isinstance(node.value, ast.Constant):
+                    title = str(node.value.value)
+                    break
+        elif (
+            isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == "__title__"
+            and isinstance(node.value, ast.Constant)
+        ):
+            title = str(node.value.value)
+            break
+
+    if not title:
+        title = fallback_title
+
+    doc = ast.get_docstring(tree) or ""
+    if not doc:
+        return title, ""
+
+    lines: list[str] = []
+    for line in doc.strip().splitlines():
+        stripped = line.strip()
+        if stripped.startswith("---") or stripped.startswith("###") or stripped.startswith("```"):
+            break
+        lines.append(line)
+
+    summary_text = "\n".join(lines).strip()
+    paragraphs = [
+        re.sub(r"[ \t]+", " ", "\n".join(part.strip() for part in p.splitlines()))
+        for p in summary_text.split("\n\n")
+        if p.strip()
+    ]
+
+    return title, "\n\n".join(paragraphs)
+
+
+def _discover_subpackages() -> dict[str, _SubpackageInfo]:
+    """Discovers all subpackages and their metadata directly under the `src/xulbux/` directory."""
+
+    subpackages: dict[str, _SubpackageInfo] = {}
+
+    for subpkg_dir in sorted(DIR_SRC_XULBUX.iterdir()):
+        if (
+            subpkg_dir.is_dir()
+            and not subpkg_dir.name.startswith((".", "_"))
+            and (init_file := subpkg_dir / "__init__.py").exists()
+        ):
+            title, description = _extract_subpackage_info(init_file)
+            subpackages[subpkg_dir.name] = {
+                "title": title,
+                "description": description,
+                "modules": [],
+            }
+
+    return subpackages
+
+
+def generate_modules_overview() -> str:
+    """Generates Markdown documentation for the modules overview guide page."""
+
+    core_modules: list[tuple[str, str, str]] = []
+    subpackages = _discover_subpackages()
+
+    for py_file in sorted(DIR_SRC_XULBUX.rglob("*.py")):
+        if py_file.name.startswith("_"):
+            continue
+
+        rel_path = py_file.relative_to(DIR_SRC_XULBUX).with_suffix("")
+        parts = rel_path.parts
+        flat_name = ".".join(parts)
+        link = f"/docs/api/{flat_name}"
+        summary = _extract_module_summary(py_file)
+
+        if len(parts) == 1:
+            core_modules.append((flat_name, link, summary))
+        elif (top_pkg := parts[0]) in subpackages:
+            subpackages[top_pkg]["modules"].append((flat_name, link, summary))
+
+    lines: list[str] = [
+        "# Modules Overview",
+        "",
+        "This page provides a quick overview of all available modules and their purpose.<br>",
+        "For detailed API documentation, click on any module name.",
+        "",
+        "## Core Modules",
+        "",
+        "These are the main modules you'll interact with most.",
+        "",
+    ]
+
+    for name, link, summary in core_modules:
+        lines.append(f"### [`{name}`]({link})")
+        lines.append("")
+        if summary:
+            lines.append(summary)
+            lines.append("")
+
+    for subpkg in subpackages.values():
+        lines.append("<br>")
+        lines.append("")
+        lines.append(f"## {subpkg['title']}")
+        lines.append("")
+        if description := subpkg["description"]:
+            lines.append(description)
+            lines.append("")
+
+        for name, link, summary in subpkg["modules"]:
+            lines.append(f"### [`{name}`]({link})")
+            lines.append("")
+            if summary:
+                lines.append(summary)
+                lines.append("")
+
+    return "\n".join(lines)
+
+
 def get_base_sidebar(website_src_dir: Path) -> list[Any]:
     """Returns the base sidebar structure from the `.vitepress/sidebar.json` file in<br>
     the `website/src` directory, or an empty list if the file doesn't exist or is invalid."""
 
-    if (src_sidebar_file := website_src_dir / PATH_SIDEBAR).exists() and (
+    if (src_sidebar_file := website_src_dir / PATH_SIDEBAR_REL).exists() and (
         src_content := src_sidebar_file.read_text(encoding="utf-8").strip()
     ):
         with suppress(json.JSONDecodeError):
@@ -570,6 +735,12 @@ def _process_single_file(file_path: Path) -> None:
 
         print(f"  generated {md_file_path.name} ({api_path})")
 
+        # Update modules overview in case module docstring changed:
+        modules_md = generate_modules_overview()
+        PATH_MODULES_BUILD.parent.mkdir(parents=True, exist_ok=True)
+        PATH_MODULES_BUILD.write_text(modules_md, encoding="utf-8")
+        print(f"  updated {PATH_MODULES_BUILD.name}")
+
     # Handle manual docs source file:
     elif DIR_WEBSITE_SRC in file_path.parents:
         dest_path = DIR_WEBSITE_BUILD / file_path.relative_to(DIR_WEBSITE_SRC)
@@ -605,7 +776,13 @@ def _build_all_api_docs() -> None:
         )
         print(f"  generated {PATH_WEBSITE_CHANGELOG.name}")
 
-    # [2] Auto-discover all Python modules and generate markdown files for them:
+    # [2] Generate modules overview guide page:
+    modules_md = generate_modules_overview()
+    PATH_MODULES_BUILD.parent.mkdir(parents=True, exist_ok=True)
+    PATH_MODULES_BUILD.write_text(modules_md, encoding="utf-8")
+    print(f"  generated {PATH_MODULES_BUILD.name}")
+
+    # [3] Auto-discover all Python modules and generate markdown files for them:
     sidebar_root_items: list[dict[str, Any]] = []
     sidebar_groups: dict[str, list[dict[str, str]]] = {}
     sidebar_items: list[dict[str, Any]] = []
@@ -642,7 +819,7 @@ def _build_all_api_docs() -> None:
         sidebar_items.append({"text": group_name, "collapsed": False, "items": items})
     sidebar_items.extend(sidebar_root_items)
 
-    # Write `sidebar.json`:
+    # [4] Write `sidebar.json`:
     sidebar_data = get_base_sidebar(DIR_WEBSITE_SRC)
     sidebar_data.append({"text": "API Reference", "items": sidebar_items})
 
@@ -651,7 +828,7 @@ def _build_all_api_docs() -> None:
     sidebar_file.write_text(json.dumps(sidebar_data, indent=2), encoding="utf-8")
     print(f"\nGenerated sidebar.json with {len(sidebar_root_items) + sum(len(i) for i in sidebar_groups.values())} items\n")
 
-    # Write `api-links.json`:
+    # [5] Write `api-links.json`:
     PATH_API_LINKS.parent.mkdir(parents=True, exist_ok=True)
     PATH_API_LINKS.write_text(json.dumps(API_LINKS, indent=2), encoding="utf-8")
 

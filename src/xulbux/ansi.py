@@ -1,6 +1,6 @@
 """
-This module provides the `S` and `Term` classes for building richly styled
-terminal output using a typed, operator-based syntax.
+Provides the `S` and `Term` classes for typed, operator-based terminal styling,
+as well as terminal cursor and screen control.
 
 ---
 

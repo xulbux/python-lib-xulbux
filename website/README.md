@@ -3,7 +3,7 @@
 <div align="center">
 <br><br>
 <h1>
-<a href="https://xulbux.github.io/python-lib-xulbux"><img height="64" src="https://github.com/xulbux/python-lib-xulbux/blob/main/assets/icon.svg?raw=true"></a>
+<a href="https://xulbux.github.io/python-lib-xulbux"><img height="64" src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/logo.svg"></a>
 <br>
 Library Website
 <br><br>

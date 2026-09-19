@@ -1,8 +1,8 @@
 """
-Provides robust handling for RGBA, HSLA, and hex color spaces.
-
-Includes dedicated classes for each color model and utility methods
-for interpolating, lightening, darkening, and blending colors.
+Provides color manipulation across RGBA, HSLA, and hex spaces.
+<br>
+Includes dedicated classes for each color model, conversions, parsing,
+luminance calculation, color adjustments, and gradient generation.
 """
 
 from __future__ import annotations

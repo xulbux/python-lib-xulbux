@@ -1,8 +1,8 @@
 """
-Provides utilities for dynamic regex pattern generation and evaluation.
-
-Includes a `LazyRegex` class for deferred compilation, improving
-startup performance for large libraries.
+Provides utilities for dynamic regex pattern generation and compilation.
+<br>
+Includes composable pattern builders for color strings, balanced brackets,
+quotes, and function calls, alongside `LazyRegex` for deferred compilation.
 """
 
 from .base.decorators import mypyc_attr

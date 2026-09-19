@@ -1,7 +1,8 @@
 """
 Provides custom type definitions and TypeVars used throughout the library.
-
-Includes type aliases for complex structures and protocol definitions.
+<br>
+Includes type aliases for structured color formats, path representations,
+and generic nested data structures.
 """
 
 from __future__ import annotations

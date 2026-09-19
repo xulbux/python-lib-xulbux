@@ -3,7 +3,7 @@
 <div align="center">
 <br><br>
 <h1>
-<a href="https://xulbux.github.io/python-lib-xulbux"><img height="64" src="https://github.com/xulbux/python-lib-xulbux/blob/main/assets/icon.svg?raw=true"></a>
+<a href="https://xulbux.github.io/python-lib-xulbux"><img height="64" src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/logo.svg"></a>
 <br>
 Python library <code>xulbux</code>
 <br><br>
@@ -19,9 +19,9 @@ It provides a clean, unified suite of utilities for typed terminal styling, colo
 <br>
 
 > <br>
-> 🌐 <b>Official Website:</b> Visit <a href="https://xulbux.github.io/python-lib-xulbux"><b>xulbux.github.io/python-lib-xulbux</b></a><br>
-> ⚡ <b>Live Example:</b> Check out the <a href="https://xulbux.github.io/python-lib-xulbux/docs/guide/get-started#example-usage"><b>example CLI color converter</b></a> with live terminal preview.<br>
-> 📖 <b>API Reference:</b> Explore all modules in the <a href="https://xulbux.github.io/python-lib-xulbux/docs"><b>API Documentation</b></a>.
+> <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/globe-code.svg" width="16" height="16" align="middle" style="vertical-align:-3px;" alt="" /> <b>Official Website:</b> Visit <a href="https://xulbux.github.io/python-lib-xulbux"><b>xulbux.github.io/python-lib-xulbux</b></a><br>
+> <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/code-xml.svg" width="16" height="16" align="middle" style="vertical-align:-3px;" alt="" /> <b>Live Example:</b> Check out the <a href="https://xulbux.github.io/python-lib-xulbux/docs/guide/get-started#example-usage"><b>example CLI color converter</b></a> with live terminal preview.<br>
+> <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/square-text.svg" width="16" height="16" align="middle" style="vertical-align:-3px;" alt="" /> <b>API Reference:</b> Explore all modules in the <a href="https://xulbux.github.io/python-lib-xulbux/docs"><b>API Documentation</b></a>.
 > <br><br>
 
 <br>
@@ -29,7 +29,7 @@ It provides a clean, unified suite of utilities for typed terminal styling, colo
 
 <span id="installation" />
 
-## Installation 📦
+## Installation <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/package.svg" width="22" height="22" align="middle" style="vertical-align:-3px;" alt="" />
 
 It is recommended to install the library within a [virtual environment](https://docs.python.org/3/tutorial/venv.html) to align with modern Python standards and prevent `externally-managed-environment` errors on newer operating systems.
 
@@ -49,7 +49,7 @@ pip install --upgrade xulbux
 
 <span id="quick-start" />
 
-## Quick Start ⚙️
+## Quick Start <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/zap.svg" width="22" height="22" align="middle" style="vertical-align:-3px;" alt="" />
 
 ```python
 import xulbux as xx
@@ -70,9 +70,9 @@ For full usage guides, visit the [**Getting Started Guide**](https://xulbux.gith
 
 <span id="feedback" />
 
-## Enjoying this library? Have suggestions?
+## Enjoying this library? Have suggestions? <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/heart-handshake.svg" width="22" height="22" align="middle" style="vertical-align:-3px;" alt="" />
 
-Please consider giving a ⭐ on [**GitHub**](https://github.com/xulbux/python-lib-xulbux) or suggesting improvements in the [**Discussions**](https://github.com/xulbux/python-lib-xulbux/discussions).
+Please consider giving a <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/star.svg" width="16" height="16" align="middle" style="vertical-align:-3px;" alt="star" /> on [**GitHub**](https://github.com/xulbux/python-lib-xulbux) or suggesting improvements in the [**Discussions**](https://github.com/xulbux/python-lib-xulbux/discussions).
 
 <br>
 <br>

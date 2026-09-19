@@ -2,8 +2,9 @@
 
 """
 Provides constant values used throughout the library.
-
-Includes character sets and terminal key sequences.
+<br>
+Includes Unicode character sets, box-drawing characters,
+keyboard escape sequences, and ANSI formatting constants.
 """
 
 from .types import AllTextChars

@@ -1,8 +1,8 @@
 """
 Provides custom exception classes used throughout the library.
-
-Includes exceptions for missing dependencies,
-execution failures, and formatting errors.
+<br>
+Includes exceptions for missing dependencies, execution failures,
+data formatting errors, and filesystem operations.
 """
 
 from .decorators import mypyc_attr

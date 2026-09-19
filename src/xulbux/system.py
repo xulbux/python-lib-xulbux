@@ -1,8 +1,8 @@
 """
-Provides OS-level integration and automation helpers.
-
-Features include copying to clipboard, opening files, executing shell
-commands, installing dependencies, and managing application restarts.
+Provides OS-level integration and system environment utilities.
+<br>
+Features include OS and hardware detection, environment PATH manipulation,
+privilege elevation, process restarting, and runtime dependency checking.
 """
 
 from . import console as _console_module
