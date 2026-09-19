@@ -1,4 +1,4 @@
-# CLI Commands
+# CLI Tools
 
 When the library is installed, the following commands are available in the terminal:
 

@@ -3,7 +3,7 @@
     "text": "Guide",
     "items": [
       { "text": "Getting Started", "link": "/docs/guide/get-started" },
-      { "text": "CLI Commands", "link": "/docs/guide/commands" }
+      { "text": "CLI Tools", "link": "/docs/guide/cli-tools" }
     ]
   }
 ]
