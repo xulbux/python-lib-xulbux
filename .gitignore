@@ -1,15 +1,19 @@
-# COMPILED FILES & CACHES
 __pycache__/
 __pypackages__/
 .mypy_cache/
 .pytest_cache/
+.pytest_tmp/
+.ruff_cache/
+*.egg-info/
+/.venv/
+/build/
+/dist/
+/mutants/
+/website/.build/
+/website/node_modules/
+/website/src/.vitepress/cache/
+/website/src/.vitepress/dist/
+
+.coverage
 *.py[cdio]
 *$py.class
-
-# BUILD ARTIFACTS
-*.egg-info/
-build/
-dist/
-
-# TESTING
-.venv/

@@ -1,12 +1,11 @@
-import sys
+"""
+Command-line interface utilities packaged with `xulbux`.
+"""
 
+from ._main import main
 
-def main() -> None:
-    """Main entry point for the `xulbux-lib` CLI command."""
-    match sys.argv[1] if len(sys.argv) > 1 else "":
-        case "fc":
-            from .tools import render_format_codes
-            render_format_codes()
-        case _:
-            from .help import show_help
-            show_help()
+from typing import Final
+
+__title__: Final[str] = "CLI Tools"
+
+__all__ = ["main"]
