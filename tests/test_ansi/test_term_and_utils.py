@@ -133,15 +133,18 @@ def test_build_open_close_complex_groups() -> None:
 
     # Link only group (no SGR opens):
     link_only_opens, link_only_closes = _build_open_close(_StyleGroup(S.link("https://example.com")))
-    assert "https://example.com" in "".join(link_only_opens)
+    assert link_only_opens == ("\x1b]8;;https://example.com\x1b\\",)
     assert link_only_closes == ("\x1b]8;;\x1b\\",)
 
     # StyleGroup with multiple colors & resets:
     complex_group = S.BOLD | S.rgb(255, 0, 0) | S.BG.rgb(0, 0, 255) | S.link("https://example.com")
     opens, closes = _build_open_close(complex_group)
 
-    joined_opens = "".join(opens)
-    assert "https://example.com" in joined_opens
-    assert "38;2;255;0;0" in joined_opens
-    assert "48;2;0;0;255" in joined_opens
-    assert "\x1b]8;;\x1b\\" in "".join(closes)
+    assert opens == (
+        "\x1b]8;;https://example.com\x1b\\",
+        "\x1b[1;38;2;255;0;0;48;2;0;0;255m",
+    )
+    assert closes == (
+        "\x1b[22;39;49m",
+        "\x1b]8;;\x1b\\",
+    )
