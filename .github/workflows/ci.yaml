@@ -4,6 +4,7 @@
 name: CI
 permissions:
   contents: read
+  security-events: write
 
 on:
   push:
@@ -56,3 +57,17 @@ jobs:
       - name: Test with PyTest
         run: |
           python -m pytest --verbose
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: python
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
