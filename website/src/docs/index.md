@@ -3,7 +3,7 @@ layout: false
 ---
 
 <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
-  Redirecting to the <a :href="fallbackLink">documentation</a>...
+  Redirecting to the <a :href="redirectLink">documentation</a>...
 </div>
 
 <script setup>
@@ -15,12 +15,12 @@ const router = useRouter();
 
 // Get the first link from the sidebar dynamically:
 const firstLink = theme.value.sidebar?.[0]?.items?.[0]?.link || '/';
-const fallbackLink = withBase(firstLink);
+const redirectLink = withBase(firstLink);
 
 onMounted(() => {
   // Client-side redirect:
   if (typeof window !== 'undefined') {
-    router.go(firstLink);
+    router.go(redirectLink);
   }
 })
 </script>
