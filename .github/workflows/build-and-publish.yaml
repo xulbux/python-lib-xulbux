@@ -3,22 +3,19 @@
 # To build and install locally for testing, run the following command:
 # py -m pip install "/path/to/python-lib-xulbux" --no-deps --no-cache-dir --force-reinstall -vv
 
-# To create a new release, tag a commit with the following format:
-# git tag vX.Y.Z
-# git push origin vX.Y.Z
-
-# If the tag `vX.Y.Z` already exists, run the following commands first:
-# git tag -d vX.Y.Z
-# git push origin :refs/tags/vX.Y.Z
+# To create a new release after merging the PR into main:
+# [1] On GitHub, go to `Releases` > `Draft a new release`.
+# [2] Create a new tag `vX.Y.Z` targeting the `main` branch.
+# [3] Set the release title (e.g., `vX.Y.Z`) and add a short description.
+# [4] Click `Publish release` – this triggers the workflow automatically.
 
 name: Build and Publish
 permissions:
   contents: read
 
 on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+  release:
+    types: [published]
   workflow_dispatch: # Allow manual trigger.
 
 jobs:
@@ -73,7 +70,7 @@ jobs:
     name: Upload to PyPI
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'release'
     permissions:
       id-token: write
     steps:
