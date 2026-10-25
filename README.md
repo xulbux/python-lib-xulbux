@@ -9,8 +9,8 @@
     <br><br>
     <a href="https://pypi.org/project/xulbux"><img src="https://svg.xul.is/badge/pypi/xulbux/v?color=indigo" /></a>
     <a href="https://svg.xul.is/badge/pypi/xulbux/dt"><img src="https://svg.xul.is/badge/pypi/xulbux/dt?special=sparkline" /></a>
-    <a href="https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE"><img src="https://svg.xul.is/badge/License/MIT*?variant=2&color=indigo&icon=scale" /></a>
-    <a href="https://github.com/xulbux/python-lib-xulbux/commits"><img src="https://svg.xul.is/badge/gh/xulbux/python-lib-xulbux/commit?variant=2&color=rose"/></a>
+    <a href="https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE"><img src="https://svg.xul.is/badge/License/MIT*?variant=3&color=neutral&icon=scale" /></a>
+    <a href="https://github.com/xulbux/python-lib-xulbux/commits"><img src="https://svg.xul.is/badge/gh/xulbux/python-lib-xulbux/commit?variant=3&color=neutral"/></a>
     <a href="https://github.com/sponsors/xulbux"><img src="https://svg.xul.is/badge/Sponsor?variant=2&color=rose&icon=heart&anim=pulse"/></a>
   </h1>
   <h3>A modern, high-performance Python library to simplify common tasks.</h3>
