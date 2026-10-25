@@ -1,16 +1,20 @@
 <span id="top" />
 
 <div align="center">
-<br><br>
-<h1>
-<a href="https://xulbux.github.io/python-lib-xulbux"><img height="96" src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/logo.svg"></a>
-<br>
-Python library <code>xulbux</code>
-<br><br>
-<a href="https://pypi.org/project/xulbux"><img src="https://img.shields.io/pypi/v/xulbux?style=flat&labelColor=404060&color=7075FF"/></a> <a href="https://clickpy.clickhouse.com/dashboard/xulbux"><img src="https://img.shields.io/pepy/dt/xulbux?style=flat&labelColor=404060&color=7075FF"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE"><img src="https://img.shields.io/github/license/xulbux/python-lib-xulbux?style=flat&labelColor=404060&color=A6A8FF"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/commits"><img src="https://img.shields.io/github/last-commit/xulbux/python-lib-xulbux?style=flat&labelColor=554046&color=FF6680"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/issues"><img src="https://img.shields.io/github/issues/xulbux/python-lib-xulbux?style=flat&labelColor=554046&color=FF6680"/></a> <a href="https://github.com/xulbux/python-lib-xulbux/stargazers"><img src="https://img.shields.io/github/stars/xulbux/python-lib-xulbux?label=%E2%98%85&style=flat&labelColor=554046&color=FF8FA2"/></a>
-</h1>
-<h3>A modern, high-performance Python library to simplify common tasks.</h3>
-<br><br>
+  <br><br>
+  <h1>
+    <a href="https://xulbux.github.io/python-lib-xulbux"><img width="96" src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/logo.svg"></a>
+    <br>
+    Python library <code>xulbux</code>
+    <br><br>
+    <a href="https://pypi.org/project/xulbux"><img src="https://svg.xul.is/badge/pypi/xulbux/v?color=indigo" /></a>
+    <a href="https://svg.xul.is/badge/pypi/xulbux/dt"><img src="https://svg.xul.is/badge/pypi/xulbux/dt?special=sparkline" /></a>
+    <a href="https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE"><img src="https://svg.xul.is/badge/License/MIT*?variant=2&color=indigo&icon=scale" /></a>
+    <a href="https://github.com/xulbux/python-lib-xulbux/commits"><img src="https://svg.xul.is/badge/gh/xulbux/python-lib-xulbux/commit?variant=2&color=rose"/></a>
+    <a href="https://github.com/sponsors/xulbux"><img src="https://svg.xul.is/badge/Sponsor?variant=2&color=rose&icon=heart&anim=pulse"/></a>
+  </h1>
+  <h3>A modern, high-performance Python library to simplify common tasks.</h3>
+  <br><br>
 </div>
 
 **`xulbux`** is a modern, high-performance Python library compiled to C using MyPyC.<br>
@@ -19,17 +23,15 @@ It provides a clean, unified suite of utilities for typed terminal styling, colo
 <br>
 
 > <br>
-> <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/globe-code.svg" width="16" height="16" alt="" /> <b>Official Website:</b> Visit <a href="https://xulbux.github.io/python-lib-xulbux"><b>xulbux.github.io/python-lib-xulbux</b></a><br>
-> <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/code-xml.svg" width="16" height="16" alt="" /> <b>Live Example:</b> Check out the <a href="https://xulbux.github.io/python-lib-xulbux/docs/guide/get-started#example-usage"><b>example CLI color converter</b></a> with live terminal preview.<br>
-> <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/square-text.svg" width="16" height="16" alt="" /> <b>API Reference:</b> Explore all modules in the <a href="https://xulbux.github.io/python-lib-xulbux/docs"><b>API Documentation</b></a>.
+> &numsp;<b>Official Website:</b>&numsp;Visit <a href="https://xulbux.github.io/python-lib-xulbux"><b>xulbux.github.io/python-lib-xulbux</b></a><br>
+> &numsp;<b>Live Example:</b>&numsp;Check out the <a href="https://xulbux.github.io/python-lib-xulbux/docs/guide/get-started#example-usage"><b>example CLI color converter</b></a> with output preview.<br>
+> &numsp;<b>API Reference:</b>&numsp;Explore all modules in the <a href="https://xulbux.github.io/python-lib-xulbux/docs"><b>API Documentation</b></a>.
 > <br><br>
 
 <br>
 <br>
 
-<span id="installation" />
-
-## Installation <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/package.svg" width="28" height="28" alt="" />
+## <a href="#installation"><img src="https://svg.xul.is/icon/package?size=32&stroke=2" align="left" /></a>Installation
 
 It is recommended to install the library within a [virtual environment](https://docs.python.org/3/tutorial/venv.html) to align with modern Python standards and prevent `externally-managed-environment` errors on newer operating systems.
 
@@ -47,9 +49,7 @@ pip install --upgrade xulbux
 
 <br>
 
-<span id="quick-start" />
-
-## Quick Start <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/zap.svg" width="28" height="28" alt="" />
+## <a href="#quick-start"><img src="https://svg.xul.is/icon/zap?size=32&stroke=2" align="left" /></a>Quick Start
 
 ```python
 import xulbux as xx
@@ -68,11 +68,9 @@ For full usage guides, visit the [**Getting Started Guide**](https://xulbux.gith
 <br>
 <br>
 
-<span id="feedback" />
+## Enjoying this library?&numsp;Have suggestions?
 
-## Enjoying this library? Have suggestions? <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/heart-handshake.svg" width="28" height="28" alt="" />
-
-Please consider giving a <img src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icons/star.svg" width="16" height="16" alt="star" /> on [**GitHub**](https://github.com/xulbux/python-lib-xulbux) or suggesting improvements in the [**Discussions**](https://github.com/xulbux/python-lib-xulbux/discussions).
+Please consider giving a [![star](https://svg.xul.is/icon/star?size=20&anim=shake)](https://github.com/xulbux/python-lib-xulbux) on [**GitHub**](https://github.com/xulbux/python-lib-xulbux) or suggesting improvements in the [**Discussions**](https://github.com/xulbux/python-lib-xulbux/discussions).
 
 <br>
 <br>
@@ -80,4 +78,4 @@ Please consider giving a <img src="https://raw.githubusercontent.com/xulbux/pyth
 
 ---
 
-✨ Always creating more cool stuff for you! ✨ —⠀[**XulbuX**](https://xulbux.com)
+[![](https://svg.xul.is/icon/sparkles?size=20)](https://xulbux.com) Always creating more cool stuff for you! [![](https://svg.xul.is/icon/sparkles?size=20)](https://xulbux.com)&emsp;—&numsp;[**XulbuX**](https://xulbux.com)
