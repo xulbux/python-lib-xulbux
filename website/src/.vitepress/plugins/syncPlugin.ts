@@ -41,10 +41,12 @@ export function syncPlugin(dirname: string) {
       const srcDir = path.resolve(dirname, '../../src');
       const pySrcDir = path.resolve(dirname, '../../../src');
       const changelogPath = path.resolve(dirname, '../../../CHANGELOG.md');
+      const iconPath = path.resolve(dirname, '../../../assets/icon.png');
 
       server.watcher.add(srcDir);
       server.watcher.add(pySrcDir);
       server.watcher.add(changelogPath);
+      server.watcher.add(iconPath);
 
       function runPythonCommand(
         args: string[],
@@ -135,6 +137,14 @@ export function syncPlugin(dirname: string) {
             runPythonCommand(
               ['website/build.py', '--process-file', `"${filePath}"`],
               'Processed Changelog',
+              filePath
+            );
+          }
+        } else if (filePath === iconPath) {
+          if (eventName === 'change' || eventName === 'add') {
+            runPythonCommand(
+              ['website/build.py', '--process-file', `"${filePath}"`],
+              'Copied Icon',
               filePath
             );
           }

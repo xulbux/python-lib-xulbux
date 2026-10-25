@@ -15,7 +15,7 @@ export default defineConfig({
   base,
   cleanUrls: true,
   description: 'A modern, high-performance Python library to simplify common tasks.',
-  head: [['link', { href: `${base}logo.svg`, rel: 'icon' }]],
+  head: [['link', { href: `${base}icon.png`, rel: 'icon' }]],
   markdown: {
     codeTransformers: [apiLinkTransformer(dirname, base)],
     math: true,
@@ -29,7 +29,7 @@ export default defineConfig({
         '✨ From <a href="https://xulbux.com" target="_blank" rel="noopener"><b>XulbuX</b></a> ✨',
       message: 'Released under the MIT License.',
     },
-    logo: '/logo.svg',
+    logo: '/icon.png',
     nav: [
       { link: '/', text: 'Home' },
       { link: sidebar[0]?.items[0]?.link || '/', text: 'Docs' },

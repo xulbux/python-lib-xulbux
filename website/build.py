@@ -26,6 +26,8 @@ DIR_WEBSITE_BUILD = DIR_WEBSITE / ".build"
 DIR_API_OUT = DIR_WEBSITE_BUILD / "docs" / "api"
 PATH_CHANGELOG = DIR_ROOT / "CHANGELOG.md"
 PATH_WEBSITE_CHANGELOG = DIR_WEBSITE_BUILD / "changelog.md"
+PATH_ICON = DIR_ROOT / "assets" / "icon.png"
+PATH_WEBSITE_ICON = DIR_WEBSITE_BUILD / "public" / "icon.png"
 PATH_SIDEBAR_REL = Path(".vitepress") / "sidebar.json"
 PATH_SIDEBAR = DIR_WEBSITE_BUILD / PATH_SIDEBAR_REL
 PATH_API_LINKS = DIR_WEBSITE_BUILD / ".vitepress" / "api-links.json"
@@ -718,6 +720,12 @@ def _process_single_file(file_path: Path) -> None:
         )
         print(f"  generated {PATH_WEBSITE_CHANGELOG.name}")
 
+    # Handle project icon:
+    elif resolved == PATH_ICON.resolve():
+        PATH_WEBSITE_ICON.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(PATH_ICON, PATH_WEBSITE_ICON)
+        print(f"  copied {PATH_WEBSITE_ICON.name}")
+
     # Handle Python source file:
     elif resolved.suffix == ".py" and DIR_SRC_XULBUX in resolved.parents:
         if PATH_API_LINKS.exists():
@@ -742,13 +750,13 @@ def _process_single_file(file_path: Path) -> None:
         print(f"  updated {PATH_MODULES_BUILD.name}")
 
     # Handle manual docs source file:
-    elif DIR_WEBSITE_SRC in file_path.parents:
-        dest_path = DIR_WEBSITE_BUILD / file_path.relative_to(DIR_WEBSITE_SRC)
+    elif DIR_WEBSITE_SRC in resolved.parents:
+        dest_path = DIR_WEBSITE_BUILD / resolved.relative_to(DIR_WEBSITE_SRC)
         dest_path.parent.mkdir(parents=True, exist_ok=True)
-        if file_path.suffix == ".md":
-            dest_path.write_text(transform_special_docs_components(file_path.read_text("utf-8")), encoding="utf-8")
+        if resolved.suffix == ".md":
+            dest_path.write_text(transform_special_docs_components(resolved.read_text("utf-8")), encoding="utf-8")
         else:
-            shutil.copy2(file_path, dest_path)
+            shutil.copy2(resolved, dest_path)
 
         print(f"  copied {dest_path.name}")
 
@@ -775,6 +783,11 @@ def _build_all_api_docs() -> None:
             transform_special_docs_components(insert_minor_version_headers(content)), encoding="utf-8"
         )
         print(f"  generated {PATH_WEBSITE_CHANGELOG.name}")
+
+    if PATH_ICON.exists():
+        PATH_WEBSITE_ICON.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(PATH_ICON, PATH_WEBSITE_ICON)
+        print(f"  copied {PATH_WEBSITE_ICON.name}")
 
     # [2] Generate modules overview guide page:
     modules_md = generate_modules_overview()

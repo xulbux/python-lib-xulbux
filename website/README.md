@@ -1,15 +1,15 @@
 <span id="top" />
 
 <div align="center">
-<br><br>
-<h1>
-<a href="https://xulbux.github.io/python-lib-xulbux"><img height="64" src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/logo.svg"></a>
-<br>
-Library Website
-<br><br>
-</h1>
-<h3>Development Guide</h3>
-<br><br>
+  <br><br>
+  <h1>
+    <a href="https://xulbux.github.io/python-lib-xulbux"><img height="64" src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icon.png"></a>
+    <br>
+    Library Website
+    <br><br>
+  </h1>
+  <h3>Development Guide</h3>
+  <br><br>
 </div>
 
 Build the website with:

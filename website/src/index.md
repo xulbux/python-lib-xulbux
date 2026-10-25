@@ -6,7 +6,7 @@ hero:
   text: 'Python Library'
   tagline: 'A modern, high-performance Python library to simplify common tasks.'
   image:
-    src: /logo.svg
+    src: /icon.png
     alt: XulbuX Logo
   actions:
     - theme: brand

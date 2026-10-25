@@ -248,21 +248,25 @@ body:has(.release-card) .vp-doc > div > h2,
 /********************************************************* HOME HERO *********************************************************/
 
 .VPHomeHero .VPImage {
+  max-width: 220px !important;
+  max-height: 220px !important;
   user-select: none;
 }
 
 .VPHomeHero .image-bg {
-  opacity: 0.06;
+  width: 220px !important;
+  height: 220px !important;
+  opacity: 0.1;
   border-radius: 0;
   user-select: none;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  background-image: url('/logo.svg');
+  background-image: url('/icon.png');
   filter: blur(12px) brightness(0);
 }
 .dark .VPHomeHero .image-bg {
-  opacity: 0.32;
+  opacity: 0.2;
   filter: blur(80px);
 }
 
