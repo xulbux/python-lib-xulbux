@@ -73,7 +73,7 @@ All test files, fixtures, and helpers must strictly adhere to the repository-wid
 CD into the project root, activate `.venv`, and run:
 
 ```bash
-ruff format . && ruff check . --fix && pyright --pythonpath .venv/bin/python . && mypy . && pytest -q --disable-warnings
+ruff format . && ruff check . --fix && pyright --pythonpath .venv/bin/python . && mypy . && pytest
 ```
 
 ### On Windows
@@ -81,7 +81,7 @@ ruff format . && ruff check . --fix && pyright --pythonpath .venv/bin/python . &
 CD into the project root and run:
 
 ```powershell
-ruff format . ; if ($?) { ruff check . --fix } ; if ($?) { pyright --pythonpath "$(py -c 'import sys; print(sys.executable)')" . } ; if ($?) { mypy . } ; if ($?) { pytest --basetemp .pytest_tmp -q --disable-warnings }
+ruff format . ; if ($?) { ruff check . --fix } ; if ($?) { pyright --pythonpath "$(py -c 'import sys; print(sys.executable)')" . } ; if ($?) { mypy . } ; if ($?) { pytest --basetemp .pytest_tmp }
 ```
 
 ---
