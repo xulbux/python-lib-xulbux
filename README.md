@@ -1,5 +1,3 @@
-<span id="top" />
-
 <div align="center">
   <br><br>
   <h1>
