@@ -1,7 +1,7 @@
 <div align="center">
   <br><br>
   <h1>
-    <a href="https://xulbux.github.io/python-lib-xulbux"><img width="96" src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icon.png"></a>
+    <a href="https://xulbux.github.io/python-lib-xulbux"><img height="96" src="https://raw.githubusercontent.com/xulbux/python-lib-xulbux/main/assets/icon.png"></a>
     <br>
     Python library <code>xulbux</code>
     <br><br>
