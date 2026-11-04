@@ -53,6 +53,7 @@ def test_add_positional_arguments() -> None:
     with patch("sys.argv", ["script.py", "in.txt", "out.txt", "1", "2", "3", "p1", "p2"]):
         result = parser.parse()
         assert result.input_file.exists is True
+        assert result.input_file.name == "input_file"
         assert result.input_file.val() == "in.txt"
         assert result.output_file.val() == "out.txt"
         assert result.fixed_three.vals(int) == (1, 2, 3)
@@ -123,24 +124,48 @@ def test_argument_parser_validation_errors() -> None:
         parser.add_opt(["-b"], expects_value="???")
 
 
+def _parse_positive_int(raw: str) -> int:
+    if (val := int(raw)) <= 0:
+        raise ValueError("non-positive")
+    return val
+
+
 def test_parsed_arg_data_representations_and_casts() -> None:
     data = ParsedArgData(exists=True, values=("10", "20"), is_arg=True, opt=None)
     assert bool(data) is True
     assert data.is_opt is False
+    assert data.name is None
     assert str(data) == "10 20"
     assert "ParsedArgData" in repr(data)
     assert data.val(int) == 10
     assert data.vals(int) == (10, 20)
 
-    # Casting errors:
-    with pytest.raises(ValueError, match="Failed to cast value"):
-        data.val(lambda v: int("not_a_number"))
-    with pytest.raises(ValueError, match="Failed to cast value"):
-        data.vals(lambda v: int("not_a_number"))
+    # Casting errors across all target and type branches:
+    with pytest.raises(ValueError, match="Argument must be valid, got '10'"):
+        data.val(lambda _raw: int("not_a_number"))
+    with pytest.raises(ValueError, match="Argument must be valid, got '10'"):
+        data.vals(lambda _raw: int("not_a_number"))
 
-    empty_data = ParsedArgData(exists=False, values=(), is_arg=False, opt="-f")
+    unnamed_opt = ParsedArgData(exists=True, values=("bad",), is_arg=False, opt=None, name=None)
+    with pytest.raises(ValueError, match="Option must be an integer, got 'bad'"):
+        unnamed_opt.val(int)
+
+    flagged_opt = ParsedArgData(exists=True, values=("f",), is_arg=False, opt="-b", name="batch_gen")
+    with pytest.raises(ValueError, match="Option '-b' must be an integer, got 'f'"):
+        flagged_opt.val(int)
+
+    named_arg = ParsedArgData(exists=True, values=("abc",), is_arg=True, opt=None, name="weight")
+    with pytest.raises(ValueError, match="Argument 'weight' must be a number, got 'abc'"):
+        named_arg.val(float)
+
+    named_opt = ParsedArgData(exists=True, values=("10", "-5"), is_arg=False, opt=None, name="count")
+    with pytest.raises(ValueError, match="Option 'count' must be of type '_parse_positive_int', got '-5'"):
+        named_opt.vals(_parse_positive_int)
+
+    empty_data = ParsedArgData(exists=False, values=(), is_arg=False, opt="-f", name="flag")
     assert bool(empty_data) is False
     assert empty_data.is_opt is False
+    assert empty_data.name == "flag"
     assert str(empty_data) == ""
     assert empty_data.val(default="fallback") == "fallback"
     assert empty_data.vals(default=("fallback",)) == ("fallback",)

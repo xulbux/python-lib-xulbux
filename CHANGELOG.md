@@ -1,9 +1,27 @@
-<span id="top" />
-
 # Changelog
 
-All notable changes and releases to this project are documented on this page.
+All notable changes to the Python library **`xulbux`** will be documented in this file.
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+<Release version="2.0.1" date="">
+
+*   **Feature Enhancements:**
+    -   Added `console.banner()` for rendering styled banners with customizable background colors, alignment, width modes, `{hr}` rules, and optional inline subtitles (now also used internally by `ArgumentParser`).
+    -   Added `compact: bool = False` and `indent: int = 0` to `console.log()` and all log presets (`debug()`, `info()`, `success()`, `warn()`, `error()`, `exit()`), enabling single-character icon logging (`✓`, `⚠`, `✗`, …) and indented log output.
+    -   Added `ParsedArgData.name` and updated `ParsedArgData.val()` / `ParsedArgData.vals()` cast failure `ValueError` messages to be CLI end-user facing (e.g., `"Option '-b' must be an integer, got 'f'"`).
+    -   Updated `ArgumentParser.print_help()` to style `Examples:` descriptions consistently with `Arguments:`, `Options:`, and `Controls:` instead of dimmed italic `#` comments, aligning short examples to `max_col_width` while expanding independently for longer example commands.
+*   **Bug Fixes:**
+    -   Fixed `console.log()` title foreground color resolution to use `.as_text_fg()`, ensuring high-contrast white text on dark standard and 256-color backgrounds (such as `S.BG.BLACK` and `S.BG.BR.BLACK`).
+
+**BREAKING CHANGES:**
+
+*   Renamed `console.done()` to `console.success()` and changed its badge title from `"DONE"` to `"OKAY"`.
+*   Renamed `console.fail()` to `console.error()` and changed its badge title from `"FAIL"` to `"ERROR"`.
+*   Log presets (`debug()`, `info()`, `success()`, `warn()`, `error()`, `exit()`) now default `default_color` to their respective preset color instead of leaving the prompt uncolored, and `debug()` now uses `S.BR.BLACK` instead of `S.BR.YELLOW`.
+
+</Release>
 <Release version="2.0.0" date="2026-09-20">
 
 *   **Quality & Consistency:**
