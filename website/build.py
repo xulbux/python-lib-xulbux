@@ -172,6 +172,8 @@ PATH_SIDEBAR_REL = Path(".vitepress") / "sidebar.json"
 PATH_SIDEBAR = DIR_WEBSITE_BUILD / PATH_SIDEBAR_REL
 PATH_API_LINKS = DIR_WEBSITE_BUILD / ".vitepress" / "api-links.json"
 PATH_MODULES_BUILD = DIR_WEBSITE_BUILD / "docs" / "guide" / "modules.md"
+PATH_LLMS_TXT_BUILD = DIR_WEBSITE_BUILD / "public" / "llms.txt"
+SITE_URL = "https://xulbux.github.io/python-lib-xulbux"
 API_LINKS: dict[str, str] = {}
 
 RE_DEPRECATED_ANNOTATED = re.compile(
@@ -832,6 +834,70 @@ def generate_modules_overview() -> str:
     return "\n".join(lines)
 
 
+def generate_llms_txt() -> str:
+    """Generates `/llms.txt` documenting guides and all API modules for AI assistants."""
+
+    core_modules: list[tuple[str, str, str]] = []
+    subpackages = _discover_subpackages()
+
+    for py_file in sorted(DIR_SRC_XULBUX.rglob("*.py")):
+        if py_file.name.startswith("_"):
+            continue
+
+        rel_path = py_file.relative_to(DIR_SRC_XULBUX).with_suffix("")
+        parts = rel_path.parts
+        flat_name = ".".join(parts)
+        link = f"{SITE_URL}/docs/api/{flat_name}"
+        summary = " ".join(_extract_module_summary(py_file).replace("<br>", " ").split())
+
+        if len(parts) == 1:
+            core_modules.append((f"xulbux.{flat_name}", link, summary))
+        elif (top_pkg := parts[0]) in subpackages:
+            subpackages[top_pkg]["modules"].append((f"xulbux.{flat_name}", link, summary))
+
+    lines: list[str] = [
+        "# XulbuX Python Library",
+        "",
+        (
+            "> A modern, high-performance Python 3.12+ library compiled to C via MyPyC for terminal styling,"
+            " color manipulation, console UI, file system operations, data processing, regex building,"
+            " string utilities, and system introspection."
+        ),
+        "",
+        "## Guides",
+        "",
+        (
+            f"- [Getting Started]({SITE_URL}/docs/guide/get-started):"
+            " Installation, package aliasing (`import xulbux as xx`), and quickstart examples."
+        ),
+        (
+            f"- [Modules Overview]({SITE_URL}/docs/guide/modules):"
+            " High-level overview of all core modules, base utilities, and CLI tools."
+        ),
+        (
+            f"- [CLI Tools]({SITE_URL}/docs/guide/cli-tools):"
+            " Command-line previews (`xulbux-lib ansi`, `xulbux-lib c256`, `xulbux-lib tc`)."
+        ),
+        f"- [Changelog]({SITE_URL}/changelog): Release history and breaking changes.",
+        "",
+        "## Core Modules",
+        "",
+    ]
+
+    for name, link, summary in core_modules:
+        lines.append(f"- [`{name}`]({link}): {summary}")
+
+    for subpkg in subpackages.values():
+        lines.append("")
+        lines.append(f"## {subpkg['title']}")
+        lines.append("")
+        for name, link, summary in subpkg["modules"]:
+            lines.append(f"- [`{name}`]({link}): {summary}")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
 def get_base_sidebar(website_src_dir: Path) -> list[Any]:
     """Returns the base sidebar structure from the `.vitepress/sidebar.json` file in<br>
     the `website/src` directory, or an empty list if the file doesn't exist or is invalid."""
@@ -888,6 +954,15 @@ def _process_single_file(file_path: Path) -> None:
         PATH_MODULES_BUILD.parent.mkdir(parents=True, exist_ok=True)
         PATH_MODULES_BUILD.write_text(modules_md, encoding="utf-8")
         print(f"  updated {PATH_MODULES_BUILD.name}")
+
+    # Handle local Isolux theme file:
+    elif DIR_LOCAL_ISOLUX_DIST in resolved.parents and resolved.name in ISOLUX_THEME_FILES:
+        DIR_THEMES_BUILD.mkdir(parents=True, exist_ok=True)
+        (DIR_THEMES_BUILD / resolved.name).write_bytes(resolved.read_bytes().replace(b"\r\n", b"\n"))
+        if (src_style := DIR_WEBSITE_SRC / ".vitepress" / "theme" / "style.css").is_file():
+            shutil.copy2(src_style, PATH_STYLE_CSS_BUILD)
+            _apply_isolux_theme_colors()
+        print(f"  synced local Isolux theme ({resolved.name})")
 
     # Handle manual docs source file:
     elif DIR_WEBSITE_SRC in resolved.parents:
@@ -1028,13 +1103,8 @@ def _extract_themes_from_vsix(vsix_bytes: bytes) -> bool:
     return False
 
 
-def _sync_isolux_themes() -> None:
-    """Downloads the latest published Isolux Pro syntax themes, falling back to local `../vscode-theme-isolux/dist`."""
-
-    if (fetched := _fetch_isolux_vsix_openvsx() or _fetch_isolux_vsix_github()) and _extract_themes_from_vsix(fetched[0]):
-        _apply_isolux_theme_colors()
-        print(f"  synced Isolux theme ({fetched[1]})")
-        return
+def _copy_local_isolux_themes() -> bool:
+    """Copies the compiled Isolux Pro theme JSON files from local `../vscode-theme-isolux/dist` if present."""
 
     local_files = [DIR_LOCAL_ISOLUX_DIST / file_name for file_name in ISOLUX_THEME_FILES]
     if all(path.is_file() for path in local_files):
@@ -1043,12 +1113,28 @@ def _sync_isolux_themes() -> None:
             (DIR_THEMES_BUILD / src_file.name).write_bytes(src_file.read_bytes().replace(b"\r\n", b"\n"))
         _apply_isolux_theme_colors()
         print("  copied Isolux theme from local ../vscode-theme-isolux/dist")
+        return True
+    return False
+
+
+def _sync_isolux_themes(prefer_local: bool = False) -> None:
+    """Syncs the Isolux Pro syntax themes (preferring local `../vscode-theme-isolux/dist` when `prefer_local=True`)."""
+
+    if prefer_local and _copy_local_isolux_themes():
+        return
+
+    if (fetched := _fetch_isolux_vsix_openvsx() or _fetch_isolux_vsix_github()) and _extract_themes_from_vsix(fetched[0]):
+        _apply_isolux_theme_colors()
+        print(f"  synced Isolux theme ({fetched[1]})")
+        return
+
+    if not prefer_local and _copy_local_isolux_themes():
         return
 
     print("[WARN] Could not fetch Isolux theme; falling back to built-in syntax theme.")
 
 
-def _build_all_api_docs() -> None:
+def _build_all_api_docs(prefer_local_theme: bool = False) -> None:
     """Discovers all Python modules, generates Markdown docs, and builds the sidebar structure."""
 
     # [1] Clean and recreate the build directory to ensure a fresh slate:
@@ -1058,7 +1144,7 @@ def _build_all_api_docs() -> None:
     shutil.copytree(DIR_WEBSITE_SRC, DIR_WEBSITE_BUILD)
     print(f"\nCopied {DIR_WEBSITE_SRC.name} to {DIR_WEBSITE_BUILD.name}\n")
 
-    _sync_isolux_themes()
+    _sync_isolux_themes(prefer_local=prefer_local_theme)
 
     for md_file_path in DIR_WEBSITE_BUILD.rglob("*.md"):
         if (transformed := transform_special_docs_components(content := md_file_path.read_text(encoding="utf-8"))) != content:
@@ -1078,11 +1164,15 @@ def _build_all_api_docs() -> None:
         shutil.copy2(PATH_ICON, PATH_WEBSITE_ICON)
         print(f"  copied {PATH_WEBSITE_ICON.name}")
 
-    # [2] Generate modules overview guide page:
+    # [2] Generate modules overview guide page and llms.txt:
     modules_md = generate_modules_overview()
     PATH_MODULES_BUILD.parent.mkdir(parents=True, exist_ok=True)
     PATH_MODULES_BUILD.write_text(modules_md, encoding="utf-8")
     print(f"  generated {PATH_MODULES_BUILD.name}")
+
+    PATH_LLMS_TXT_BUILD.parent.mkdir(parents=True, exist_ok=True)
+    PATH_LLMS_TXT_BUILD.write_text(generate_llms_txt(), encoding="utf-8")
+    print(f"  generated {PATH_LLMS_TXT_BUILD.name}")
 
     # [3] Auto-discover all Python modules and generate markdown files for them:
     sidebar_root_items: list[dict[str, Any]] = []
@@ -1145,7 +1235,7 @@ def main() -> None:
         _process_single_file(Path(args.process_file))
         return
 
-    _build_all_api_docs()
+    _build_all_api_docs(prefer_local_theme=args.dev)
 
     # [3] Build or serve the final site using VitePress:
     if not (pnpm_exe := shutil.which("pnpm")):

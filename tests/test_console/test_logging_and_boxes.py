@@ -143,7 +143,7 @@ def test_log_compact_mode_and_presets() -> None:
     assert raw_lines[3].startswith("  ")
     assert "\n  Empty title" in raw_output
     assert "\n★ Uncolored compact icon" in raw_output
-    assert "⚙ Compact debug" in raw_lines_set
+    assert "› Compact debug" in raw_lines_set  # ruff:ignore[ambiguous-unicode-character-string]
     assert "🛈 Compact info" in raw_lines_set
     assert "✓ Compact success" in raw_lines_set
     assert "⚠ Compact warn" in raw_lines_set

@@ -34,6 +34,7 @@ export default defineConfig({
     ['meta', { content: `${siteUrl}icon.png`, property: 'og:image' }],
     ['meta', { content: 'summary', name: 'twitter:card' }],
   ],
+  lang: 'en-US',
   markdown: {
     codeTransformers: [apiLinkTransformer(dirname, base)],
     math: true,

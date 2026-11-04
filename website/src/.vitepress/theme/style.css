@@ -4,6 +4,8 @@
 
 :root {
   --vp-layout-max-width: 100dvw;
+  --vp-font-family-base:
+    'Geist', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
   --vp-font-family-mono:
     'JetBrains Mono NF', 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco,
     Consolas, 'Liberation Mono', 'Courier New', monospace;
@@ -13,6 +15,10 @@
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-pill: calc(infinity * 1px);
+
+  /* Fallback Focus & Strong Border Tokens (overridden at build time by Isolux JSON) */
+  --c-border-strong: #dcdcdc;
+  --c-focus: #8e8e8e;
 
   /* Derived Theme Tokens (base palette & terminal colors injected from Isolux JSON at build time) */
   --vp-c-border: color-mix(in srgb, var(--vp-c-bg), var(--vp-c-divider) 72%);
@@ -73,6 +79,8 @@
 }
 
 .dark {
+  --c-border-strong: #3d3d3d;
+  --c-focus: #646464;
   --vp-c-border: color-mix(in srgb, var(--vp-c-bg), var(--vp-c-divider) 72%);
   --vp-code-bg: color-mix(in srgb, var(--vp-c-bg), var(--vp-c-divider) 65%);
   --vp-code-block-bg: var(--vp-c-bg-soft);
@@ -85,6 +93,49 @@
 
 ::selection {
   background-color: color-mix(in srgb, var(--vp-c-indigo-2) 32%, transparent);
+}
+
+/* Keyboard Focus Rings (svg-api) */
+:where(a, button, summary, [role='button'], [tabindex]):focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--c-focus) !important;
+  outline-offset: 2px !important;
+}
+
+.VPSkipLink:focus-visible {
+  border-radius: var(--radius-md);
+  outline: 2px solid var(--c-focus) !important;
+  outline-offset: 2px !important;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.VPNavBarTitle .title:focus-visible,
+.VPNavBarMenuLink:focus-visible,
+.VPNavBarHamburger:focus-visible,
+.DocSearch-Button:focus-visible,
+.VPLocalNav .menu:focus-visible,
+.VPLocalNavOutlineDropdown button:focus-visible,
+.VPDocAsideOutline .outline-link:focus-visible {
+  border-radius: var(--radius-sm);
+  outline-offset: -2px !important;
+}
+
+.VPSocialLink:focus-visible {
+  border-radius: var(--radius-sm);
+}
+
+.VPSidebarItem .item:focus-visible,
+.VPSidebarItem .link:focus-visible,
+.VPSidebarItem .caret:focus-visible {
+  border-radius: 4px;
+  outline-offset: -2px !important;
+}
+
+/* Remove off-screen closed mobile sidebar from the keyboard Tab order. */
+@media (max-width: 959px) {
+  .VPSidebar:not(.open) {
+    visibility: hidden;
+  }
 }
 
 /* Non-Interactive Images & Icons (svg-api) */
@@ -172,7 +223,10 @@ body .vp-doc > div {
 /* Restrict regular markdown elements back to optimal typographic line length. */
 body .vp-doc > div > *,
 body .vp-doc > div > div[class*='language-'],
-body .vp-doc > div > .custom-block {
+body .vp-doc > div > .custom-block,
+body .VPHome .vp-doc > div > div > *,
+body .VPHome .vp-doc > div > div > div[class*='language-'],
+body .VPHome .vp-doc > div > div > .custom-block {
   max-width: 48rem;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -203,6 +257,7 @@ body:has(.release-card) .vp-doc > div > h2,
   line-height: 0;
   border: none !important;
   overflow: hidden;
+  visibility: hidden;
   pointer-events: none;
 }
 
@@ -216,13 +271,15 @@ body:has(.release-card) .vp-doc > div > h2,
 }
 
 /* Crisp Search Button & Theme Switch Borders (svg-api) */
-.DocSearch-Button {
-  border: 1px solid var(--vp-c-divider) !important;
-  border-radius: var(--radius-md) !important;
-  background-color: var(--vp-c-bg-soft) !important;
-}
-.DocSearch-Button:hover {
-  border-color: var(--c-border-strong) !important;
+@media (min-width: 768px) {
+  .DocSearch-Button {
+    border: 1px solid var(--vp-c-divider) !important;
+    border-radius: var(--radius-md) !important;
+    background-color: var(--vp-c-bg-soft) !important;
+  }
+  .DocSearch-Button:hover {
+    border-color: var(--c-border-strong) !important;
+  }
 }
 
 .VPSwitch {
@@ -248,6 +305,7 @@ body:has(.release-card) .vp-doc > div > h2,
   color: var(--vp-c-brand-1);
 }
 .VPFooter a {
+  border-radius: 4px;
   color: inherit !important;
   text-decoration-color: color-mix(in srgb, currentColor 38%, transparent) !important;
   text-decoration-thickness: 1px !important;
@@ -280,13 +338,13 @@ body:has(.release-card) .vp-doc > div > h2,
 /********************************************************* HOME HERO *********************************************************/
 
 .VPHomeHero .VPImage {
-  max-width: 220px !important;
-  max-height: 220px !important;
+  max-width: 148px !important;
+  max-height: 148px !important;
 }
 
 .VPHomeHero .image-bg {
-  width: 220px !important;
-  height: 220px !important;
+  width: 148px !important;
+  height: 148px !important;
   opacity: 0.1;
   border-radius: 0;
   user-select: none;
@@ -302,6 +360,46 @@ body:has(.release-card) .vp-doc > div > h2,
   filter: blur(64px);
 }
 
+@media (max-width: 959px) {
+  .VPHomeHero .image {
+    margin: -24px auto 20px !important;
+  }
+
+  .VPHomeHero .image-container {
+    width: 180px !important;
+    height: 180px !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 959px) {
+  .VPHomeHero .image-container {
+    width: 212px !important;
+    height: 212px !important;
+  }
+
+  .VPHomeHero .VPImage {
+    max-width: 180px !important;
+    max-height: 180px !important;
+  }
+
+  .VPHomeHero .image-bg {
+    width: 180px !important;
+    height: 180px !important;
+  }
+}
+
+@media (min-width: 960px) {
+  .VPHomeHero .VPImage {
+    max-width: 220px !important;
+    max-height: 220px !important;
+  }
+
+  .VPHomeHero .image-bg {
+    width: 220px !important;
+    height: 220px !important;
+  }
+}
+
 /******************************************************* HOME FEATURES *******************************************************/
 
 .VPFeature {
@@ -310,21 +408,82 @@ body:has(.release-card) .vp-doc > div > h2,
   background-color: var(--vp-c-bg-soft) !important;
 }
 
+.VPFeature .box {
+  padding: clamp(14px, 2.2vw, 20px) clamp(16px, 2.4vw, 22px) !important;
+  row-gap: 6px;
+  column-gap: 8px;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: auto 1fr;
+  display: grid !important;
+  align-items: center;
+}
+
 .VPFeature .icon {
-  margin-bottom: 1.25rem;
-  width: fit-content;
-  height: auto;
-  display: inline-flex;
+  margin: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  display: inline-flex !important;
   user-select: none;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   color: var(--vp-c-brand-1);
   background-color: transparent !important;
 }
 
 .VPFeature .icon svg {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.VPFeature .title {
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  color: var(--vp-c-text-1);
+}
+
+.VPFeature .details {
+  padding-top: 0 !important;
+  grid-column: 1 / -1;
+  align-self: start;
+  font-size: 0.84rem !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  color: var(--vp-c-text-2);
+}
+
+@media (max-width: 640px) {
+  .VPFeatures .items {
+    gap: 10px;
+    margin: 0 !important;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 148px), 1fr));
+    display: grid !important;
+  }
+
+  .VPFeatures .item {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .VPFeature .box {
+    padding: 11px 12px !important;
+    column-gap: 7px;
+    grid-template-rows: auto;
+  }
+
+  .VPFeature .icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .VPFeature .title {
+    font-size: 0.85rem !important;
+  }
+
+  .VPFeature .details {
+    display: none !important;
+  }
 }
 
 /************************************************** TYPOGRAPHY & INLINE CODE *************************************************/
@@ -340,6 +499,7 @@ body:has(.release-card) .vp-doc > div > h2,
 
 /* Subtle Semi-Transparent Underlines on Prose Links (svg-api) */
 .vp-doc a:not(.header-anchor, .api-link, .VPButton) {
+  border-radius: 4px;
   color: inherit !important;
   text-decoration-color: color-mix(in srgb, currentColor 38%, transparent);
   text-decoration-thickness: 1px;
@@ -431,6 +591,7 @@ body:has(.release-card) .vp-doc > div > h2,
 
 /* API Cross-Reference Links */
 .vp-doc .api-link {
+  border-radius: 3px;
   text-decoration: none;
   color: inherit;
   border-bottom: 0.1rem dashed color-mix(in srgb, currentColor 40%, transparent);
@@ -454,6 +615,8 @@ body:has(.release-card) .vp-doc > div > h2,
 
 /* Move scrolling to the `<pre>` so we can overlay a fixed vignette on the wrapper. */
 .vp-doc div[class*='language-'] {
+  margin-left: 0;
+  margin-right: 0;
   position: relative;
   overflow: hidden !important;
   border-radius: var(--radius-md);
@@ -520,7 +683,7 @@ body:has(.release-card) .vp-doc > div > h2,
   opacity: 0;
   border-radius: 5px;
   cursor: pointer;
-  display: flex;
+  display: none;
   position: absolute;
   align-items: center;
   pointer-events: none;
@@ -535,11 +698,16 @@ body:has(.release-card) .vp-doc > div > h2,
     background-color 200ms;
 }
 
-.vp-doc div[class*='language-']:hover > .scroll-btn.visible {
+.vp-doc div[class*='language-'] > .scroll-btn.visible {
+  display: flex;
+}
+
+.vp-doc div[class*='language-']:is(:hover, :focus-within) > .scroll-btn.visible,
+.vp-doc div[class*='language-'] > .scroll-btn.visible:focus-visible {
   opacity: 1;
   pointer-events: auto;
 }
-.vp-doc div[class*='language-'] > .scroll-btn.visible:hover {
+.vp-doc div[class*='language-'] > .scroll-btn.visible:is(:hover, :focus-visible) {
   opacity: 1 !important;
   color: var(--vp-c-text-1);
   border-color: var(--c-border-strong);
@@ -553,7 +721,7 @@ body:has(.release-card) .vp-doc > div > h2,
   left: 36px; /* Next to the left button. */
 }
 
-.vp-doc div[class*='language-']:hover > .scroll-btn.visible.disabled {
+.vp-doc div[class*='language-']:is(:hover, :focus-within) > .scroll-btn.visible.disabled {
   cursor: default;
   pointer-events: none !important;
   color: color-mix(in srgb, var(--vp-code-copy-code-active-text) 40%, transparent) !important;
@@ -567,13 +735,29 @@ body:has(.release-card) .vp-doc > div > h2,
   -webkit-backdrop-filter: blur(5px) !important;
 }
 
-/* Hide focus ring for code blocks. */
+/* Code Block Keyboard Focus Ring (drawn on the outer card so `overflow: hidden` does not clip it). */
 .vp-doc div[class*='language-']:focus,
-.vp-doc div[class*='language-']:focus-within,
 .vp-doc div[class*='language-'] > pre:focus,
 .vp-doc div[class*='language-'] > pre:focus-visible {
   outline: none !important;
   box-shadow: none !important;
+}
+
+.vp-doc div[class*='language-']:has(> pre:focus-visible),
+.vp-doc .vp-code-group:has(div[class*='language-'].active > pre:focus-visible) {
+  border-radius: var(--radius-md) !important;
+  outline: 2px solid var(--c-focus) !important;
+  outline-offset: 2px !important;
+}
+.vp-doc .vp-code-group div[class*='language-']:has(> pre:focus-visible) {
+  outline: none !important;
+}
+
+/* Code Group Tab Focus Ring (visually-hidden `<input type="radio">` -> `<label>`). */
+.vp-doc .vp-code-group .tabs input:focus-visible + label {
+  border-radius: 4px;
+  outline: 2px solid var(--c-focus) !important;
+  outline-offset: -4px !important;
 }
 
 /******************************************************** CODE GROUPS ********************************************************/
@@ -854,8 +1038,8 @@ body:has(.release-card) .vp-doc > div > h2,
     --term-fg: var(--term-base-fg);
     color: var(--term-fg) !important;
   }
-  .bg-\#A8F {
-    --term-bg: #a8f;
+  .bg-\#67F {
+    --term-bg: #67f;
     background-color: var(--term-bg) !important;
   }
 
@@ -869,7 +1053,7 @@ body:has(.release-card) .vp-doc > div > h2,
     text-decoration: underline;
   }
   .dim {
-    --term-fg: color-mix(in srgb, var(--term-base-fg) 50%, var(--dvp-c-bg-elv));
+    --term-fg: color-mix(in srgb, var(--term-base-fg) 54%, var(--dvp-c-bg-elv));
     color: var(--term-fg) !important;
   }
 }
@@ -937,6 +1121,7 @@ body:has(.release-card) .vp-doc > div > h2,
   z-index: 0;
   opacity: 0.64;
   font-weight: 500;
+  border-radius: 3px;
   position: relative;
   text-decoration: none;
   border-bottom: 0.1rem dashed color-mix(in srgb, currentColor 64%, transparent);
@@ -1036,6 +1221,7 @@ body:has(.release-card) .vp-doc > div > h2,
   gap: 8px;
   margin: 0 !important;
   padding: 0 !important;
+  position: relative;
   font-size: 1.35rem !important;
   font-weight: 700 !important;
   line-height: 1.3 !important;

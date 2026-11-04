@@ -1591,11 +1591,11 @@ def debug(
     pause: bool = False,
     exit_code: int | None = None,
 ) -> None:
-    """A preset for `log()`: `DEBUG` (`⚙`) log message.\n
+    """A preset for `log()`: `DEBUG` (`›`) log message.\n
     ----------------------------------------------------------------------------------------------------
     *   `prompt` – The log message.
     *   `active` – Whether to execute the debug log, pause, and exit or not.
-    *   `compact` – Whether to render using the compact `⚙` icon layout instead of the `DEBUG` badge.
+    *   `compact` – Whether to render using the compact `›` icon layout instead of the `DEBUG` badge.
     *   `indent` – The indentation of the log (in chars).
     *   `start` – Something to print before the log is printed.
     *   `end` – Something to print after the log is printed (e.g., `\\n`).
@@ -1604,7 +1604,7 @@ def debug(
     *   `exit_code` – The exit code to use when exiting the program, or `None` to not exit."""
 
     if active:
-        _log_preset("DEBUG", "⚙", prompt, S.BR.BLACK, compact, indent, start, end, default_color, pause, exit_code)
+        _log_preset("DEBUG", "›", prompt, S.BR.BLACK, compact, indent, start, end, default_color, pause, exit_code)  # ruff:ignore[ambiguous-unicode-character-string]
 
 
 @overload
@@ -1925,7 +1925,7 @@ def _resolve_box_border(
     else:
         raise ValueError(
             "The 'border_style' parameter must be a valid non-background style "
-            f"(e.g., 'S.DIM | S.BR.BLUE', 'S.hex(\"#A8F\")'), got {border_style!r}"
+            f"(e.g., 'S.DIM | S.BR.BLUE', 'S.hex(\"#67F\")'), got {border_style!r}"
         )
 
     borders = {"standard": "┌─┐│┘─└│├─┤", "rounded": "╭─╮│╯─╰│├─┤", "strong": "┏━┓┃┛━┗┃┣━┫", "double": "╔═╗║╝═╚║╠═╣"}
@@ -2101,7 +2101,7 @@ def _resolve_banner_bg(
     else:
         raise ValueError(
             "The 'bg' parameter must be True or a valid background color style "
-            f"(e.g., 'S.BG.RED', 'S.BG.hex(\"#A8F\")'), got {bg!r}"
+            f"(e.g., 'S.BG.RED', 'S.BG.hex(\"#67F\")'), got {bg!r}"
         )
 
     if default_color is not None:
@@ -2265,13 +2265,13 @@ def banner(
     end: str = "\n",
     print: bool = True,
 ) -> S | None:
-    """Formats and prints or returns a styled block (`▄` / `█` / `▀`) filled banner.\n
+    """Formats and prints or returns a filled banner.\n
     ----------------------------------------------------------------------------------------------------
     *   `title` – The bold banner title.
     *   `subtitle` – Optional subtitle or body content.<br>
         Supports multi-line text and `{hr}` markers to insert horizontal rules.
     *   `bg` – Background fill: `True` for inverted default console colors,
-        or an `S` background color style (e.g., `S.BG.BR.RED`, `S.BG.hex("#A8F")`).
+        or an `S` background color style (e.g., `S.BG.BR.RED`, `S.BG.hex("#67F")`).
     *   `default_color` – Explicit text color override (defaults to optimal high-contrast color).
     *   `inline_subtitle` – Whether to render `title` and `subtitle` on a single line separated by
         `" — "` when both fit within the banner width without line breaks.
@@ -3044,7 +3044,7 @@ def _read_single_key() -> None:
 def _resolve_title_colors(title_bg_color: object, /) -> tuple[BgColorStyle, FgColorStyle]:
     """Resolves the log title's background style and its matching foreground style.\n
     ----------------------------------------------------------------------------------------------------
-    *   `title_bg_color` – An `S` background color style (e.g., `S.BG.BLUE`, `S.BG.hex("#A8F")`)."""
+    *   `title_bg_color` – An `S` background color style (e.g., `S.BG.BLUE`, `S.BG.hex("#67F")`)."""
 
     if (cached := _TITLE_COLORS_CACHE.get(title_bg_color)) is not None:
         return cached
@@ -3068,7 +3068,7 @@ def _to_bg_color_style(color: object, /, *, param_name: str = "box_bg_color") ->
 
     raise ValueError(
         f"The {param_name!r} parameter must be a valid background color style "
-        f"(e.g., 'S.BG.BLUE', 'S.BG.hex(\"#A8F\")'), got {color!r}"
+        f"(e.g., 'S.BG.BLUE', 'S.BG.hex(\"#67F\")'), got {color!r}"
     )
 
 
@@ -3080,7 +3080,7 @@ def _to_fg_color_style(color: object, /, *, param_name: str = "color") -> FgColo
 
     raise ValueError(
         f"The {param_name!r} parameter must be a valid foreground color style "
-        f"(e.g., 'S.RED', 'S.hex(\"#A8F\")'), got {color!r}"
+        f"(e.g., 'S.RED', 'S.hex(\"#67F\")'), got {color!r}"
     )
 
 

@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 
 *   Added the `ansi` module with a new operator-based styling engine:
-    -   The `S` class exposes every ANSI style/color attribute and uses `|` to combine styles and `()` to apply them to text, e.g., `(S.BOLD | S.RED)("hi")` and `S.hex("#A8F")("hi")`.
+    -   The `S` class exposes every ANSI style/color attribute and uses `|` to combine styles and `()` to apply them to text, e.g., `(S.BOLD | S.RED)("hi")` and `S.hex("#67F")("hi")`.
     -   The `S(*segments, sep="")` class also directly builds the ANSI string on construction and exposes `.ansi`, `.raw`, `.code_positions`, `.raw_code_positions`, `.print()`, and `.input()`.
     -   A companion `Term` class provides commonly used cursor- and screen-control sequences (`Term.HIDE_CURSOR`, `Term.up(n)`, `Term.move(row, col)`, `Term.title(text)`, …).
 *   Added a `@deprecated` decorator to `xulbux.base.decorators` that conditionally imports from `warnings` on Python 3.13+ and `typing_extensions` on older versions.
