@@ -4,12 +4,16 @@ import importlib
 import importlib.machinery
 import importlib.util
 import inspect
+import io
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 import textwrap
+import urllib.request
+import zipfile
 from contextlib import suppress
 from pathlib import Path
 from typing import Any, TypedDict, cast
@@ -24,6 +28,11 @@ DIR_WEBSITE_SRC = DIR_WEBSITE / "src"
 DIR_WEBSITE_BUILD = DIR_WEBSITE / ".build"
 
 DIR_API_OUT = DIR_WEBSITE_BUILD / "docs" / "api"
+DIR_THEMES_BUILD = DIR_WEBSITE_BUILD / ".vitepress" / "themes"
+DIR_LOCAL_ISOLUX_DIST = DIR_ROOT.parent / "vscode-theme-isolux" / "dist"
+ISOLUX_THEME_FILES = ("isolux-pro-dark.json", "isolux-pro-light.json")
+URL_ISOLUX_OPENVSX = "https://open-vsx.org/api/xulbux/theme-isolux/latest"
+URL_ISOLUX_GITHUB = "https://api.github.com/repos/xulbux/vscode-theme-isolux/releases/latest"
 PATH_CHANGELOG = DIR_ROOT / "CHANGELOG.md"
 PATH_WEBSITE_CHANGELOG = DIR_WEBSITE_BUILD / "changelog.md"
 PATH_ICON = DIR_ROOT / "assets" / "icon.png"
@@ -761,6 +770,77 @@ def _process_single_file(file_path: Path) -> None:
         print(f"  copied {dest_path.name}")
 
 
+def _download_bytes(url: str, headers: dict[str, str] | None = None, timeout: int = 10) -> bytes:
+    """Downloads raw bytes from a URL with a standard `User-Agent` header."""
+
+    req_headers = {"User-Agent": "xulbux-website-builder/1.0"}
+    if headers:
+        req_headers.update(headers)
+    req = urllib.request.Request(url, headers=req_headers)
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        return cast("bytes", response.read())
+
+
+def _fetch_isolux_vsix_openvsx() -> tuple[bytes, str] | None:
+    """Fetches the latest published Isolux VSIX from Open VSX, returning `(bytes, label)` or `None`."""
+
+    with suppress(Exception):
+        meta = json.loads(_download_bytes(URL_ISOLUX_OPENVSX))
+        if download_url := meta.get("files", {}).get("download"):
+            version = meta.get("version", "latest")
+            return _download_bytes(download_url, timeout=15), f"v{version} via Open VSX"
+    return None
+
+
+def _fetch_isolux_vsix_github() -> tuple[bytes, str] | None:
+    """Fetches the latest published Isolux VSIX from GitHub Releases, returning `(bytes, label)` or `None`."""
+
+    with suppress(Exception):
+        headers = {"Accept": "application/vnd.github+json"}
+        if gh_token := os.environ.get("GITHUB_TOKEN"):
+            headers["Authorization"] = f"Bearer {gh_token}"
+        meta = json.loads(_download_bytes(URL_ISOLUX_GITHUB, headers=headers))
+        tag_name = meta.get("tag_name", "latest")
+        for asset in meta.get("assets", []):
+            if str(asset.get("name", "")).endswith(".vsix") and (download_url := asset.get("browser_download_url")):
+                return _download_bytes(download_url, timeout=15), f"{tag_name} via GitHub Releases"
+    return None
+
+
+def _extract_themes_from_vsix(vsix_bytes: bytes) -> bool:
+    """Extracts the compiled Isolux Pro theme JSON files from a `.vsix` archive into `DIR_THEMES_BUILD`."""
+
+    with suppress(Exception), zipfile.ZipFile(io.BytesIO(vsix_bytes)) as archive:
+        names = set(archive.namelist())
+        entries = {file_name: f"extension/dist/{file_name}" for file_name in ISOLUX_THEME_FILES}
+        if not all(entry in names for entry in entries.values()):
+            return False
+
+        DIR_THEMES_BUILD.mkdir(parents=True, exist_ok=True)
+        for file_name, entry in entries.items():
+            (DIR_THEMES_BUILD / file_name).write_bytes(archive.read(entry).replace(b"\r\n", b"\n"))
+        return True
+    return False
+
+
+def _sync_isolux_themes() -> None:
+    """Downloads the latest published Isolux Pro syntax themes, falling back to local `../vscode-theme-isolux/dist`."""
+
+    if (fetched := _fetch_isolux_vsix_openvsx() or _fetch_isolux_vsix_github()) and _extract_themes_from_vsix(fetched[0]):
+        print(f"  synced Isolux theme ({fetched[1]})")
+        return
+
+    local_files = [DIR_LOCAL_ISOLUX_DIST / file_name for file_name in ISOLUX_THEME_FILES]
+    if all(path.is_file() for path in local_files):
+        DIR_THEMES_BUILD.mkdir(parents=True, exist_ok=True)
+        for src_file in local_files:
+            (DIR_THEMES_BUILD / src_file.name).write_bytes(src_file.read_bytes().replace(b"\r\n", b"\n"))
+        print("  copied Isolux theme from local ../vscode-theme-isolux/dist")
+        return
+
+    print("[WARN] Could not fetch Isolux theme; falling back to built-in syntax theme.")
+
+
 def _build_all_api_docs() -> None:
     """Discovers all Python modules, generates Markdown docs, and builds the sidebar structure."""
 
@@ -770,6 +850,8 @@ def _build_all_api_docs() -> None:
 
     shutil.copytree(DIR_WEBSITE_SRC, DIR_WEBSITE_BUILD)
     print(f"\nCopied {DIR_WEBSITE_SRC.name} to {DIR_WEBSITE_BUILD.name}\n")
+
+    _sync_isolux_themes()
 
     for md_file_path in DIR_WEBSITE_BUILD.rglob("*.md"):
         if (transformed := transform_special_docs_components(content := md_file_path.read_text(encoding="utf-8"))) != content:

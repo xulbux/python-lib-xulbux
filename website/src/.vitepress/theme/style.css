@@ -5,114 +5,220 @@
 :root {
   --vp-layout-max-width: 100dvw;
   --vp-font-family-mono:
-    'JetBrains Mono NF', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas,
-    'Liberation Mono', 'Courier New', monospace;
+    'JetBrains Mono NF', 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
 
-  --base-brand: #7e52ff;
+  /* Corner Radii (Isolux / svg-api) */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: calc(infinity * 1px);
 
-  /* Terminal Theme */
+  /* Isolux Pro Dark Terminal Theme (always dark) */
+  --term-black: #2c2c2c;
+  --term-br-black: #646464;
+  --term-red: #ff7680;
+  --term-br-red: #ffa4aa;
+  --term-green: #93f0b0;
+  --term-br-green: #c3f7d1;
+  --term-yellow: #f0b27b;
+  --term-br-yellow: #f4d0ad;
+  --term-blue: #909fff;
+  --term-br-blue: #adbdff;
+  --term-magenta: #af91ff;
+  --term-br-magenta: #c5b3ff;
+  --term-cyan: #7ceee3;
+  --term-br-cyan: #acf9f0;
+  --term-white: #e6e6e6;
+  --term-br-white: #fafafa;
 
-  --term-black: #303134;
-  --term-br-black: #66676a;
-  --term-red: #ff6467;
-  --term-br-red: #ff9597;
-  --term-green: #58f7bd;
-  --term-br-green: #90ffd1;
-  --term-yellow: #ffba75;
-  --term-br-yellow: #ffda96;
-  --term-blue: #7c86ff;
-  --term-br-blue: #94a6ff;
-  --term-magenta: #b196ff;
-  --term-br-magenta: #d3a9fe;
-  --term-cyan: #53eafd;
-  --term-br-cyan: #81f3ff;
-  --term-white: #eaebee;
-  --term-br-white: #fbfcff;
-
-  /* Light Theme */
+  /* Isolux Pro Light Theme */
+  --vp-c-white: #ffffff;
+  --vp-c-black: #080808;
 
   --vp-c-bg: #ffffff;
-  --vp-c-bg-alt: #fafafa;
-  --vp-c-bg-elv: #f0f0f0;
   --vp-c-bg-soft: #fafafa;
-  --vp-c-divider: #ededed;
-  --vp-c-gutter: #ededed;
+  --vp-c-bg-alt: #fafafa;
+  --vp-c-bg-elv: #f6f6f6;
+  --vp-c-divider: #ebebeb;
+  --vp-c-gutter: #ebebeb;
+  --c-border-strong: #dcdcdc;
+  --c-focus: #8e8e8e;
   --vp-c-border: color-mix(in srgb, var(--vp-c-bg), var(--vp-c-divider) 72%);
-  --vp-code-bg: var(--vp-c-bg-elv);
-  --vp-code-block-bg: var(--vp-c-bg-alt);
-  --vp-code-block-selection: color-mix(in srgb, var(--vp-c-text-1) 10%, transparent);
+  --vp-code-bg: color-mix(in srgb, var(--vp-c-bg), var(--vp-c-divider) 65%);
+  --vp-code-block-bg: var(--vp-c-bg-soft);
+  --vp-code-block-selection: #0808081a;
 
-  --vp-c-text-1: rgba(0 0 0 / 0.88);
-  --vp-c-text-2: rgba(0 0 0 / 0.6);
-  --vp-c-text-3: rgba(0 0 0 / 0.38);
+  --vp-c-text-1: #181818;
+  --vp-c-text-2: #3d3d3d;
+  --vp-c-text-3: #646464;
 
-  --vp-c-brand-1: var(--base-brand);
-  --vp-c-brand-2: color-mix(in srgb, var(--base-brand), white 20%);
-  --vp-c-brand-3: color-mix(in srgb, var(--base-brand), white 40%);
+  --vp-c-gray-1: #dcdcdc;
+  --vp-c-gray-2: #e6e6e6;
+  --vp-c-gray-3: #f4f4f4;
+  --vp-c-gray-soft: #0808080d;
 
-  --vp-c-indigo-1: #4645cc;
-  --vp-c-orange-1: #cf4200;
+  --vp-c-indigo-1: #4f48ec;
+  --vp-c-indigo-2: #463ade;
+  --vp-c-indigo-3: #4f48ec;
+  --vp-c-indigo-soft: color-mix(in srgb, #4f48ec 12%, transparent);
+
+  --vp-c-purple-1: #7119b3;
+  --vp-c-purple-2: #8a0be5;
+  --vp-c-purple-3: #8b4ff9;
+  --vp-c-purple-soft: color-mix(in srgb, #8b4ff9 12%, transparent);
+
+  --vp-c-green-1: #1d6533;
+  --vp-c-green-2: #1d7e38;
+  --vp-c-green-3: #367a44;
+  --vp-c-green-soft: color-mix(in srgb, #367a44 12%, transparent);
+
+  --vp-c-yellow-1: #b34826;
+  --vp-c-yellow-2: #ac4220;
+  --vp-c-yellow-3: #8b371f;
+  --vp-c-yellow-soft: color-mix(in srgb, #b34826 12%, transparent);
+
+  --vp-c-red-1: #d01a34;
+  --vp-c-red-2: #e90034;
+  --vp-c-red-3: #9f102a;
+  --vp-c-red-soft: color-mix(in srgb, #d01a34 12%, transparent);
+
+  --vp-c-orange-1: #e12d00;
+  --vp-c-sponsor: #a21faf;
+
+  --vp-c-brand-1: var(--vp-c-indigo-1);
+  --vp-c-brand-2: var(--vp-c-indigo-2);
+  --vp-c-brand-3: var(--vp-c-indigo-3);
+  --vp-c-brand-soft: var(--vp-c-indigo-soft);
 
   --vp-nav-bg-color: color-mix(in srgb, var(--vp-c-bg) 75%, transparent);
   --vp-local-nav-bg-color: var(--vp-nav-bg-color);
+  --vp-sidebar-bg-color: var(--vp-c-bg-soft);
+  --vp-input-switch-bg-color: #f4f4f4;
 
-  --vp-button-brand-bg: var(--vp-c-brand-1);
-  --vp-button-brand-text: #ffffff;
-  --vp-button-brand-hover-bg: color-mix(in srgb, var(--vp-c-brand-2), var(--vp-c-brand-1) 50%);
-  --vp-button-brand-active-bg: var(--vp-c-brand-2);
+  /* Neutral Primary Buttons (Isolux keeps primary buttons neutral) */
+  --vp-button-brand-border: #0808080d;
+  --vp-button-brand-text: #fafafa;
+  --vp-button-brand-bg: #242424;
+  --vp-button-brand-hover-border: #0808080d;
+  --vp-button-brand-hover-text: #fafafa;
+  --vp-button-brand-hover-bg: #2f2f2f;
+  --vp-button-brand-active-border: #0808080d;
+  --vp-button-brand-active-text: #fafafa;
+  --vp-button-brand-active-bg: #242424;
 
-  /* Dark Theme */
-
-  --dvp-c-bg: #101010;
-  --dvp-c-bg-alt: #000000;
-  --dvp-c-bg-elv: #1a1a1a;
-  --dvp-c-bg-soft: #000000;
-  --dvp-c-divider: #262626;
-  --dvp-c-gutter: #262626;
+  /* Isolux Pro Dark Tokens (stored on :root so always-dark terminal blocks can read them) */
+  --dvp-c-bg: #141414;
+  --dvp-c-bg-soft: #080808;
+  --dvp-c-bg-alt: #080808;
+  --dvp-c-bg-elv: #181818;
+  --dvp-c-divider: #2c2c2c;
+  --dvp-c-gutter: #2c2c2c;
+  --dvp-c-border-strong: #3d3d3d;
+  --dvp-c-focus: #646464;
   --dvp-c-border: color-mix(in srgb, var(--dvp-c-bg), var(--dvp-c-divider) 72%);
-  --dvp-code-bg: var(--dvp-c-border);
-  --dvp-code-block-bg: var(--dvp-c-bg-alt);
-  --dvp-code-block-selection: color-mix(in srgb, var(--dvp-c-text-1) 18%, transparent);
+  --dvp-code-bg: color-mix(in srgb, var(--dvp-c-bg), var(--dvp-c-divider) 65%);
+  --dvp-code-block-bg: var(--dvp-c-bg-soft);
+  --dvp-code-block-selection: #fafafa26;
 
-  --dvp-c-text-1: rgba(255 255 255 / 0.9);
-  --dvp-c-text-2: rgba(255 255 255 / 0.6);
-  --dvp-c-text-3: rgba(255 255 255 / 0.38);
+  --dvp-c-text-1: #e6e6e6;
+  --dvp-c-text-2: #c2c2c2;
+  --dvp-c-text-3: #8a8a8a;
 
-  --dvp-c-brand-1: color-mix(in srgb, var(--base-brand), white 40%);
-  --dvp-c-brand-2: color-mix(in srgb, var(--base-brand), white 20%);
-  --dvp-c-brand-3: var(--base-brand);
+  --dvp-c-gray-1: #3d3d3d;
+  --dvp-c-gray-2: #2c2c2c;
+  --dvp-c-gray-3: #242424;
+  --dvp-c-gray-soft: #fafafa1a;
 
-  --dvp-c-indigo-1: #8d8cff;
-  --dvp-c-orange-1: #ff925c;
+  --dvp-c-indigo-1: #909fff;
+  --dvp-c-indigo-2: #a7b5ff;
+  --dvp-c-indigo-3: #4f48ec;
+  --dvp-c-indigo-soft: color-mix(in srgb, #909fff 14%, transparent);
+
+  --dvp-c-purple-1: #af91ff;
+  --dvp-c-purple-2: #d5acff;
+  --dvp-c-purple-3: #8b4ff9;
+  --dvp-c-purple-soft: color-mix(in srgb, #af91ff 14%, transparent);
+
+  --dvp-c-green-1: #93f0b0;
+  --dvp-c-green-2: #60c077;
+  --dvp-c-green-3: #367a44;
+  --dvp-c-green-soft: color-mix(in srgb, #93f0b0 14%, transparent);
+
+  --dvp-c-yellow-1: #f0b27b;
+  --dvp-c-yellow-2: #ec8c49;
+  --dvp-c-yellow-3: #b34826;
+  --dvp-c-yellow-soft: color-mix(in srgb, #f0b27b 14%, transparent);
+
+  --dvp-c-red-1: #ff7680;
+  --dvp-c-red-2: #ffa4aa;
+  --dvp-c-red-3: #d01a34;
+  --dvp-c-red-soft: color-mix(in srgb, #ff7680 14%, transparent);
+
+  --dvp-c-orange-1: #ff7a57;
+  --dvp-c-sponsor: #eba1f9;
 
   --dvp-nav-bg-color: color-mix(in srgb, var(--dvp-c-bg) 64%, transparent);
   --dvp-local-nav-bg-color: var(--dvp-nav-bg-color);
 
-  --dvp-button-brand-bg: var(--dvp-c-brand-3);
-  --dvp-button-brand-text: #ffffff;
-  --dvp-button-brand-hover-bg: color-mix(in srgb, var(--dvp-c-brand-2), var(--dvp-c-brand-3) 50%);
-  --dvp-button-brand-active-bg: var(--dvp-c-brand-2);
+  --dvp-button-brand-border: #fafafa26;
+  --dvp-button-brand-text: #080808;
+  --dvp-button-brand-bg: #dcdcdc;
+  --dvp-button-brand-hover-bg: #d1d1d1;
+  --dvp-button-brand-active-bg: #dcdcdc;
 
-  /* Color Overrides */
-
-  --vp-button-alt-bg: var(--vp-c-border);
+  /* Secondary / Alt Buttons & Custom Block Borders */
+  --vp-button-alt-border: var(--vp-c-divider);
   --vp-button-alt-text: var(--vp-c-text-1);
+  --vp-button-alt-bg: var(--vp-c-border);
+  --vp-button-alt-hover-border: var(--c-border-strong);
+  --vp-button-alt-hover-text: var(--vp-c-text-1);
   --vp-button-alt-hover-bg: color-mix(in srgb, var(--vp-c-text-1), var(--vp-c-border) 94%);
+  --vp-button-alt-active-border: var(--c-border-strong);
+  --vp-button-alt-active-text: var(--vp-c-text-1);
   --vp-button-alt-active-bg: var(--vp-c-border);
-  --vp-button-sponsor-bg: var(--vp-c-border);
+
+  --vp-button-sponsor-border: var(--vp-c-divider);
   --vp-button-sponsor-text: var(--vp-c-text-1);
+  --vp-button-sponsor-bg: var(--vp-c-border);
+  --vp-button-sponsor-hover-border: var(--c-border-strong);
+  --vp-button-sponsor-hover-text: var(--vp-c-text-1);
   --vp-button-sponsor-hover-bg: color-mix(in srgb, var(--vp-c-text-1), var(--vp-c-border) 94%);
   --vp-button-sponsor-active-bg: var(--vp-c-border);
+
+  --vp-custom-block-info-border: var(--vp-c-divider);
+  --vp-custom-block-info-bg: var(--vp-c-bg-soft);
+  --vp-custom-block-note-border: var(--vp-c-divider);
+  --vp-custom-block-note-bg: var(--vp-c-bg-soft);
+  --vp-custom-block-details-border: var(--vp-c-divider);
+  --vp-custom-block-details-bg: var(--vp-c-bg-soft);
+  --vp-custom-block-tip-border: color-mix(in srgb, var(--vp-c-brand-1) 36%, transparent);
+  --vp-custom-block-important-border: color-mix(in srgb, var(--vp-c-purple-1) 36%, transparent);
+  --vp-custom-block-warning-border: color-mix(in srgb, var(--vp-c-warning-1) 36%, transparent);
+  --vp-custom-block-danger-border: color-mix(in srgb, var(--vp-c-danger-1) 36%, transparent);
+  --vp-custom-block-caution-border: color-mix(in srgb, var(--vp-c-danger-1) 36%, transparent);
+
+  --vp-badge-info-border: var(--vp-c-border);
+  --vp-badge-tip-border: color-mix(in srgb, var(--vp-c-tip-1) 36%, transparent);
+  --vp-badge-warning-border: color-mix(in srgb, var(--vp-c-warning-1) 36%, transparent);
+  --vp-badge-danger-border: color-mix(in srgb, var(--vp-c-danger-1) 36%, transparent);
+
+  --vp-local-search-bg: var(--vp-c-bg-elv);
+  --vp-local-search-result-bg: var(--vp-c-bg-soft);
+  --vp-local-search-result-border: var(--vp-c-divider);
+  --vp-local-search-result-selected-bg: var(--vp-c-bg);
 }
 
 .dark {
   --vp-c-bg: var(--dvp-c-bg);
+  --vp-c-bg-soft: var(--dvp-c-bg-soft);
   --vp-c-bg-alt: var(--dvp-c-bg-alt);
   --vp-c-bg-elv: var(--dvp-c-bg-elv);
-  --vp-c-bg-soft: var(--dvp-c-bg-soft);
   --vp-c-border: var(--dvp-c-border);
   --vp-c-divider: var(--dvp-c-divider);
   --vp-c-gutter: var(--dvp-c-gutter);
+  --c-border-strong: var(--dvp-c-border-strong);
+  --c-focus: var(--dvp-c-focus);
   --vp-code-bg: var(--dvp-code-bg);
   --vp-code-block-bg: var(--dvp-code-block-bg);
   --vp-code-block-selection: var(--dvp-code-block-selection);
@@ -121,26 +227,58 @@
   --vp-c-text-2: var(--dvp-c-text-2);
   --vp-c-text-3: var(--dvp-c-text-3);
 
-  --vp-c-brand-1: var(--dvp-c-brand-1);
-  --vp-c-brand-2: var(--dvp-c-brand-2);
-  --vp-c-brand-3: var(--dvp-c-brand-3);
+  --vp-c-gray-1: var(--dvp-c-gray-1);
+  --vp-c-gray-2: var(--dvp-c-gray-2);
+  --vp-c-gray-3: var(--dvp-c-gray-3);
+  --vp-c-gray-soft: var(--dvp-c-gray-soft);
+
+  --vp-c-indigo-1: var(--dvp-c-indigo-1);
+  --vp-c-indigo-2: var(--dvp-c-indigo-2);
+  --vp-c-indigo-3: var(--dvp-c-indigo-3);
+  --vp-c-indigo-soft: var(--dvp-c-indigo-soft);
+
+  --vp-c-purple-1: var(--dvp-c-purple-1);
+  --vp-c-purple-2: var(--dvp-c-purple-2);
+  --vp-c-purple-3: var(--dvp-c-purple-3);
+  --vp-c-purple-soft: var(--dvp-c-purple-soft);
+
+  --vp-c-green-1: var(--dvp-c-green-1);
+  --vp-c-green-2: var(--dvp-c-green-2);
+  --vp-c-green-3: var(--dvp-c-green-3);
+  --vp-c-green-soft: var(--dvp-c-green-soft);
+
+  --vp-c-yellow-1: var(--dvp-c-yellow-1);
+  --vp-c-yellow-2: var(--dvp-c-yellow-2);
+  --vp-c-yellow-3: var(--dvp-c-yellow-3);
+  --vp-c-yellow-soft: var(--dvp-c-yellow-soft);
+
+  --vp-c-red-1: var(--dvp-c-red-1);
+  --vp-c-red-2: var(--dvp-c-red-2);
+  --vp-c-red-3: var(--dvp-c-red-3);
+  --vp-c-red-soft: var(--dvp-c-red-soft);
 
   --vp-c-orange-1: var(--dvp-c-orange-1);
-  --vp-c-indigo-1: var(--dvp-c-indigo-1);
+  --vp-c-sponsor: var(--dvp-c-sponsor);
 
   --vp-nav-bg-color: var(--dvp-nav-bg-color);
   --vp-local-nav-bg-color: var(--dvp-local-nav-bg-color);
+  --vp-input-switch-bg-color: #242424;
 
-  --vp-button-brand-bg: var(--dvp-button-brand-bg);
+  --vp-button-brand-border: var(--dvp-button-brand-border);
   --vp-button-brand-text: var(--dvp-button-brand-text);
+  --vp-button-brand-bg: var(--dvp-button-brand-bg);
+  --vp-button-brand-hover-border: var(--dvp-button-brand-border);
+  --vp-button-brand-hover-text: var(--dvp-button-brand-text);
   --vp-button-brand-hover-bg: var(--dvp-button-brand-hover-bg);
+  --vp-button-brand-active-border: var(--dvp-button-brand-border);
+  --vp-button-brand-active-text: var(--dvp-button-brand-text);
   --vp-button-brand-active-bg: var(--dvp-button-brand-active-bg);
 }
 
 /*************************************************** GLOBAL & BASE STYLES ****************************************************/
 
 ::selection {
-  background-color: color-mix(in srgb, var(--vp-c-brand-2) 40%, transparent);
+  background-color: color-mix(in srgb, var(--vp-c-indigo-2) 32%, transparent);
 }
 
 /* Custom Scrollbars */
@@ -236,13 +374,65 @@ body:has(.release-card) .vp-doc > div > h2,
   pointer-events: none;
 }
 
-/**************************************************** HEADER & NAVIGATION ****************************************************/
+/**************************************************** HEADER, NAV & FOOTER ***************************************************/
 
 .VPNavBar:not(.home.top),
 .VPNavBar:not(.home.top) .content-body,
 .VPLocalNav {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+}
+
+/* Crisp Search Button & Theme Switch Borders (svg-api) */
+.DocSearch-Button {
+  border: 1px solid var(--vp-c-divider) !important;
+  border-radius: var(--radius-md) !important;
+  background-color: var(--vp-c-bg-soft) !important;
+}
+.DocSearch-Button:hover {
+  border-color: var(--c-border-strong) !important;
+}
+
+.VPSwitch {
+  border-color: var(--vp-c-divider) !important;
+}
+.VPSwitch:hover {
+  border-color: var(--vp-c-text-3) !important;
+}
+
+/* Soft Surface Footer & Crisp Pager Cards (svg-api) */
+.VPFooter {
+  border-top: 1px solid var(--vp-c-divider) !important;
+  background-color: var(--vp-c-bg-soft) !important;
+}
+.VPFooter a {
+  text-decoration-color: color-mix(in srgb, currentColor 38%, transparent) !important;
+  text-decoration-thickness: 1px !important;
+  text-underline-offset: 3px !important;
+  transition:
+    color 200ms ease,
+    text-decoration-color 200ms ease !important;
+}
+.VPFooter a:hover {
+  text-decoration-color: currentColor !important;
+}
+
+.VPDocFooter .pager-link {
+  border: 1px solid var(--vp-c-divider) !important;
+  border-radius: var(--radius-md) !important;
+  background-color: var(--vp-c-bg-soft) !important;
+}
+.VPDocFooter .pager-link:hover {
+  border-color: var(--c-border-strong) !important;
+}
+
+/* Action Buttons (svg-api rounding & press state) */
+.VPButton.medium,
+.VPButton.big {
+  border-radius: var(--radius-md) !important;
+}
+.VPButton:active {
+  scale: 0.98;
 }
 
 /********************************************************* HOME HERO *********************************************************/
@@ -266,14 +456,16 @@ body:has(.release-card) .vp-doc > div > h2,
   filter: blur(12px) brightness(0);
 }
 .dark .VPHomeHero .image-bg {
-  opacity: 0.2;
-  filter: blur(80px);
+  opacity: 0.25;
+  filter: blur(64px);
 }
 
 /******************************************************* HOME FEATURES *******************************************************/
 
 .VPFeature {
-  border: 1px solid var(--vp-c-border) !important;
+  border: 1px solid var(--vp-c-divider) !important;
+  border-radius: var(--radius-lg) !important;
+  background-color: var(--vp-c-bg-soft) !important;
 }
 
 .VPFeature .icon {
@@ -289,23 +481,89 @@ body:has(.release-card) .vp-doc > div > h2,
 }
 
 .VPFeature .icon svg {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
 }
 
 /************************************************** TYPOGRAPHY & INLINE CODE *************************************************/
 
-/* Custom Inline Code Colors */
+.vp-doc :is(h1, h2, h3) {
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.vp-doc :is(p, li) {
+  text-wrap: pretty;
+}
+
+/* Subtle Semi-Transparent Underlines on Prose Links (svg-api) */
+.vp-doc a:not(.header-anchor, .api-link, .VPButton) {
+  text-decoration-color: color-mix(in srgb, currentColor 38%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition:
+    color 200ms ease,
+    text-decoration-color 200ms ease;
+}
+.vp-doc a:not(.header-anchor, .api-link, .VPButton):hover {
+  text-decoration-color: currentColor;
+}
+
+/* Custom Inline Code Pills (svg-api) */
 .vp-doc :not(pre, h1, h2, h3, h4, h5, h6, a) > code {
+  padding: 2px 6px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 5px;
   color: color-mix(in srgb, var(--vp-c-text-2), var(--vp-c-text-1) 50%) !important;
+  background-color: var(--vp-code-bg);
+}
+.vp-doc a > code {
+  padding: 2px 6px;
+  border: 1px solid color-mix(in srgb, var(--vp-c-brand-1) 28%, transparent);
+  border-radius: 5px;
+  color: var(--vp-c-brand-1) !important;
+  background-color: var(--vp-c-brand-soft);
 }
 .vp-doc :is(h1, h2, h3, h4, h5, h6) > code {
+  border-radius: var(--radius-sm);
   color: var(--vp-c-brand-1) !important;
 }
 
 /* Faded List Markers */
 .vp-doc li::marker {
   color: color-mix(in srgb, currentColor 48%, transparent);
+}
+
+/* Custom Callout Blocks & Tables (svg-api rounding & 2-tier borders) */
+.vp-doc .custom-block {
+  border-radius: 10px;
+}
+
+.vp-doc table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: var(--table-bg, var(--vp-c-bg-soft));
+}
+.vp-doc thead tr {
+  background-color: var(--vp-c-bg-elv) !important;
+}
+.vp-doc tbody tr {
+  background-color: transparent !important;
+}
+.vp-doc th,
+.vp-doc td {
+  border: none;
+  border-bottom: 1px solid var(--vp-c-border);
+}
+.vp-doc th + th,
+.vp-doc td + td {
+  border-left: 1px solid var(--vp-c-border);
+}
+.vp-doc tbody tr:last-child td {
+  border-bottom: none;
 }
 
 /* API Cross-Reference Links */
@@ -335,7 +593,8 @@ body:has(.release-card) .vp-doc > div > h2,
 .vp-doc div[class*='language-'] {
   position: relative;
   overflow: hidden !important;
-  border: 1px solid var(--vp-c-border);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--code-border, var(--vp-c-divider));
 }
 
 .vp-doc div[class*='language-'] > pre {
@@ -378,6 +637,15 @@ body:has(.release-card) .vp-doc > div > h2,
 }
 .vp-doc div[class*='language-'] > button.copy {
   z-index: 4 !important;
+  border-radius: var(--radius-sm) !important;
+}
+.vp-doc div[class*='language-'] > button.copy.copied,
+.vp-doc div[class*='language-'] > button.copy:hover.copied {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+}
+.vp-doc div[class*='language-'] > button.copy.copied::before,
+.vp-doc div[class*='language-'] > button.copy:hover.copied::before {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm) !important;
 }
 
 /* Custom Scroll Buttons */
@@ -387,7 +655,7 @@ body:has(.release-card) .vp-doc > div > h2,
   width: 20px;
   height: 20px;
   opacity: 0;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
   display: flex;
   position: absolute;
@@ -400,6 +668,7 @@ body:has(.release-card) .vp-doc > div > h2,
   transition:
     opacity 200ms,
     color 200ms,
+    border-color 200ms,
     background-color 200ms;
 }
 
@@ -409,7 +678,8 @@ body:has(.release-card) .vp-doc > div > h2,
 }
 .vp-doc div[class*='language-'] > .scroll-btn.visible:hover {
   opacity: 1 !important;
-  border-color: var(--vp-code-copy-code-hover-border-color);
+  color: var(--vp-c-text-1);
+  border-color: var(--c-border-strong);
   background-color: var(--vp-code-copy-code-hover-bg);
 }
 
@@ -448,9 +718,9 @@ body:has(.release-card) .vp-doc > div > h2,
 .vp-doc .vp-code-group {
   margin-top: 16px;
   margin-bottom: 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid var(--vp-c-border);
+  border: 1px solid var(--vp-c-divider);
   background-color: var(--vp-code-block-bg);
 }
 
@@ -523,7 +793,7 @@ body:has(.release-card) .vp-doc > div > h2,
   background-color: var(--vp-code-block-bg);
 }
 
-/* Custom brighter background for terminal blocks (always dark). */
+/* Custom brighter background for terminal blocks (always Isolux Pro Dark). */
 .vp-doc .ext-terminal {
   --vp-code-lang-color: var(--dvp-c-text-3);
   --vp-code-copy-code-active-text: var(--dvp-c-text-2);
@@ -533,11 +803,7 @@ body:has(.release-card) .vp-doc > div > h2,
     var(--dvp-c-bg-elv) 72%
   );
   --vp-code-copy-code-bg: var(--dvp-c-divider);
-  --vp-code-copy-code-hover-border-color: color-mix(
-    in srgb,
-    var(--dvp-c-text-3),
-    var(--dvp-c-bg-elv) 72%
-  );
+  --vp-code-copy-code-hover-border-color: var(--dvp-c-border-strong);
   --vp-code-copy-code-hover-bg: color-mix(in srgb, var(--dvp-c-divider), var(--dvp-c-bg-elv) 72%);
   border-color: var(--dvp-c-divider) !important;
   border-top-color: var(--dvp-c-border) !important;
@@ -716,12 +982,12 @@ body:has(.release-card) .vp-doc > div > h2,
   }
 
   .\#000 {
-    --term-base-fg: #000;
+    --term-base-fg: #080808;
     --term-fg: var(--term-base-fg);
     color: var(--term-fg) !important;
   }
   .\#FFF {
-    --term-base-fg: #fff;
+    --term-base-fg: #fafafa;
     --term-fg: var(--term-base-fg);
     color: var(--term-fg) !important;
   }
@@ -827,8 +1093,8 @@ body:has(.release-card) .vp-doc > div > h2,
 @keyframes target-flash {
   0%,
   20% {
-    color: var(--vp-button-brand-text) !important;
-    background-color: var(--vp-button-brand-hover-bg) !important;
+    color: #fafafa !important;
+    background-color: var(--vp-c-brand-3) !important;
   }
   100% {
     background-color: transparent;
@@ -837,8 +1103,8 @@ body:has(.release-card) .vp-doc > div > h2,
 
 .vp-doc :is(h1, h2, h3, h4, h5, h6).target-highlight > code,
 .vp-doc :is(h1, h2, h3, h4, h5, h6).target-highlight > code * {
-  color: var(--vp-button-brand-text) !important;
-  background-color: var(--vp-button-brand-hover-bg) !important;
+  color: #fafafa !important;
+  background-color: var(--vp-c-brand-3) !important;
   transition:
     background-color 200ms,
     color 200ms;
@@ -852,11 +1118,13 @@ body:has(.release-card) .vp-doc > div > h2,
 /**************************************************** CHANGELOG & RELEASES ***************************************************/
 
 .release-card {
-  /* Make fenced code blocks inside match the website background: */
+  /* Inner code blocks & tables step back to the page canvas (2-tier svg-api hierarchy): */
   --vp-code-block-bg: var(--vp-c-bg);
+  --code-border: var(--vp-c-border);
+  --table-bg: var(--vp-c-bg);
   margin: 28px 0;
   padding: 24px 28px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   position: relative;
   border: 1px solid var(--vp-c-divider);
   background-color: var(--vp-c-bg-soft);
@@ -872,7 +1140,7 @@ body:has(.release-card) .vp-doc > div > h2,
   border-left: 4px solid var(--vp-c-orange-1);
 }
 .release-card.is-hotfix {
-  border-left: 4px solid var(--vp-c-indigo-1);
+  border-left: 4px solid var(--vp-c-purple-1);
 }
 
 .release-anchor-alias {
@@ -927,7 +1195,7 @@ body:has(.release-card) .vp-doc > div > h2,
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.2;
-  border-radius: calc(infinity * 1px);
+  border-radius: var(--radius-pill);
   display: inline-flex;
   align-items: center;
 }
@@ -947,9 +1215,9 @@ body:has(.release-card) .vp-doc > div > h2,
   background-color: color-mix(in srgb, var(--vp-c-orange-1) 12%, transparent);
 }
 .badge-hotfix {
-  color: var(--vp-c-indigo-1);
-  border: 1px solid color-mix(in srgb, var(--vp-c-indigo-1) 36%, transparent);
-  background-color: color-mix(in srgb, var(--vp-c-indigo-1) 12%, transparent);
+  color: var(--vp-c-purple-1);
+  border: 1px solid color-mix(in srgb, var(--vp-c-purple-1) 36%, transparent);
+  background-color: color-mix(in srgb, var(--vp-c-purple-1) 12%, transparent);
 }
 
 .release-date {
@@ -1009,9 +1277,9 @@ body:has(.release-card) .vp-doc > div > h2,
 }
 
 .outline-link.status-hotfix {
-  color: color-mix(in srgb, var(--vp-c-indigo-1) 72%, transparent) !important;
+  color: color-mix(in srgb, var(--vp-c-purple-1) 72%, transparent) !important;
 }
 .outline-link.status-hotfix:hover,
 .outline-link.status-hotfix.active {
-  color: var(--vp-c-indigo-1) !important;
+  color: var(--vp-c-purple-1) !important;
 }
