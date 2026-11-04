@@ -67,10 +67,10 @@ export function syncPlugin(dirname: string) {
         const dest = filePath.replace(srcDir, path.resolve(dirname, '../'));
         if (eventName === 'add' || eventName === 'change') {
           fs.mkdirSync(path.dirname(dest), { recursive: true });
-          if (filePath.endsWith('.md')) {
+          if (filePath.endsWith('.md') || filePath.endsWith('style.css')) {
             runPythonCommand(
               ['website/build.py', '--process-file', `"${filePath}"`],
-              'Processed MD',
+              filePath.endsWith('.md') ? 'Processed MD' : 'Processed CSS',
               filePath
             );
           } else {

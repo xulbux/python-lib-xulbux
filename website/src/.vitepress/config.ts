@@ -12,6 +12,8 @@ const base = '/python-lib-xulbux/';
 const siteUrl = 'https://xulbux.github.io/python-lib-xulbux/';
 const siteTitle = 'XulbuX Python Library';
 const siteDescription = 'A modern, high-performance Python library to simplify common tasks.';
+const sparkleIcon =
+  '<svg class="footer-sparkle" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>';
 
 function loadShikiTheme(fileName: string, fallback: string) {
   const themePath = path.resolve(dirname, 'themes', fileName);
@@ -44,8 +46,7 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     footer: {
-      copyright:
-        '✨ From <a href="https://xulbux.com" target="_blank" rel="noopener"><b>XulbuX</b></a> ✨',
+      copyright: `${sparkleIcon}From <a href="https://xulbux.com" target="_blank" rel="noopener"><b>XulbuX</b></a>${sparkleIcon}`,
       message:
         'Released under the <a href="https://github.com/xulbux/python-lib-xulbux/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>&numsp;·&numsp;Syntax highlighted with <a href="https://github.com/xulbux/vscode-theme-isolux" target="_blank" rel="noopener">Isolux</a>',
     },

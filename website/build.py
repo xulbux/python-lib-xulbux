@@ -33,6 +33,137 @@ DIR_LOCAL_ISOLUX_DIST = DIR_ROOT.parent / "vscode-theme-isolux" / "dist"
 ISOLUX_THEME_FILES = ("isolux-pro-dark.json", "isolux-pro-light.json")
 URL_ISOLUX_OPENVSX = "https://open-vsx.org/api/xulbux/theme-isolux/latest"
 URL_ISOLUX_GITHUB = "https://api.github.com/repos/xulbux/vscode-theme-isolux/releases/latest"
+PATH_STYLE_CSS_BUILD = DIR_WEBSITE_BUILD / ".vitepress" / "theme" / "style.css"
+ISOLUX_ROOT_VARS: tuple[tuple[str, str, str], ...] = (
+    # Terminal ANSI Colors (always Isolux Pro Dark):
+    ("--term-black", "dark", "terminal.ansiBlack"),
+    ("--term-br-black", "dark", "terminal.ansiBrightBlack"),
+    ("--term-red", "dark", "terminal.ansiRed"),
+    ("--term-br-red", "dark", "terminal.ansiBrightRed"),
+    ("--term-green", "dark", "terminal.ansiGreen"),
+    ("--term-br-green", "dark", "terminal.ansiBrightGreen"),
+    ("--term-yellow", "dark", "terminal.ansiYellow"),
+    ("--term-br-yellow", "dark", "terminal.ansiBrightYellow"),
+    ("--term-blue", "dark", "terminal.ansiBlue"),
+    ("--term-br-blue", "dark", "terminal.ansiBrightBlue"),
+    ("--term-magenta", "dark", "terminal.ansiMagenta"),
+    ("--term-br-magenta", "dark", "terminal.ansiBrightMagenta"),
+    ("--term-cyan", "dark", "terminal.ansiCyan"),
+    ("--term-br-cyan", "dark", "terminal.ansiBrightCyan"),
+    ("--term-white", "dark", "terminal.ansiWhite"),
+    ("--term-br-white", "dark", "terminal.ansiBrightWhite"),
+    # Isolux Pro Light Surfaces, Borders & Text:
+    ("--vp-c-white", "light", "editor.background"),
+    ("--vp-c-black", "light", "badge.foreground"),
+    ("--vp-c-bg", "light", "editor.background"),
+    ("--vp-c-bg-soft", "light", "sideBar.background"),
+    ("--vp-c-bg-alt", "light", "sideBar.background"),
+    ("--vp-c-bg-elv", "light", "chat.requestBackground"),
+    ("--vp-c-divider", "light", "panel.border"),
+    ("--vp-c-gutter", "light", "panel.border"),
+    ("--c-border-strong", "light", "checkbox.border"),
+    ("--c-focus", "light", "focusBorder"),
+    ("--vp-code-block-selection", "light", "editor.selectionBackground"),
+    ("--vp-c-text-1", "light", "editor.foreground"),
+    ("--vp-c-text-2", "light", "sideBar.foreground"),
+    ("--vp-c-text-3", "light", "breadcrumb.foreground"),
+    # Isolux Pro Light Scales & Roles:
+    ("--vp-c-gray-1", "light", "checkbox.border"),
+    ("--vp-c-gray-2", "light", "terminal.ansiBrightWhite"),
+    ("--vp-c-gray-3", "light", "chat.requestBubbleBackground"),
+    ("--vp-c-gray-soft", "light", "editor.lineHighlightBackground"),
+    ("--vp-c-indigo-1", "light", "textLink.foreground"),
+    ("--vp-c-indigo-2", "light", "textLink.activeForeground"),
+    ("--vp-c-indigo-3", "light", "textLink.foreground"),
+    ("--vp-c-indigo-soft", "raw", "color-mix(in srgb, var(--vp-c-indigo-1) 12%, transparent)"),
+    ("--vp-c-purple-1", "light", "symbolIcon.booleanForeground"),
+    ("--vp-c-purple-2", "light", "markdownAlert.important.foreground"),
+    ("--vp-c-purple-3", "light", "charts.purple"),
+    ("--vp-c-purple-soft", "raw", "color-mix(in srgb, var(--vp-c-purple-3) 12%, transparent)"),
+    ("--vp-c-green-1", "light", "terminal.ansiGreen"),
+    ("--vp-c-green-2", "light", "terminal.ansiBrightGreen"),
+    ("--vp-c-green-3", "light", "markdownAlert.tip.foreground"),
+    ("--vp-c-green-soft", "raw", "color-mix(in srgb, var(--vp-c-green-3) 12%, transparent)"),
+    ("--vp-c-yellow-1", "light", "scope:log.warning"),
+    ("--vp-c-yellow-2", "light", "charts.yellow"),
+    ("--vp-c-yellow-3", "light", "terminal.ansiYellow"),
+    ("--vp-c-yellow-soft", "raw", "color-mix(in srgb, var(--vp-c-yellow-1) 12%, transparent)"),
+    ("--vp-c-red-1", "light", "markdownAlert.caution.foreground"),
+    ("--vp-c-red-2", "light", "charts.red"),
+    ("--vp-c-red-3", "light", "terminal.ansiRed"),
+    ("--vp-c-red-soft", "raw", "color-mix(in srgb, var(--vp-c-red-1) 12%, transparent)"),
+    ("--vp-c-sponsor", "light", "gitDecoration.modifiedResourceForeground"),
+    # Isolux Pro Light Controls & Primary Buttons:
+    ("--vp-input-switch-bg-color", "light", "chat.requestBubbleBackground"),
+    ("--vp-button-brand-border", "light", "button.border"),
+    ("--vp-button-brand-text", "light", "button.foreground"),
+    ("--vp-button-brand-bg", "light", "button.background"),
+    ("--vp-button-brand-hover-border", "light", "button.border"),
+    ("--vp-button-brand-hover-text", "light", "button.foreground"),
+    ("--vp-button-brand-hover-bg", "light", "button.hoverBackground"),
+    ("--vp-button-brand-active-border", "light", "button.border"),
+    ("--vp-button-brand-active-text", "light", "button.foreground"),
+    ("--vp-button-brand-active-bg", "light", "button.background"),
+    # Always-Dark Terminal Surface Tokens on :root:
+    ("--dvp-c-bg", "dark", "sideBar.background"),
+    ("--dvp-c-bg-elv", "dark", "chat.requestBackground"),
+    ("--dvp-c-divider", "dark", "panel.border"),
+    ("--dvp-c-border-strong", "dark", "checkbox.border"),
+    ("--dvp-c-text-2", "dark", "sideBar.foreground"),
+    ("--dvp-c-text-3", "dark", "breadcrumb.foreground"),
+)
+ISOLUX_DARK_VARS: tuple[tuple[str, str, str], ...] = (
+    # Isolux Pro Dark Surfaces, Borders & Text:
+    ("--vp-c-bg", "dark", "sideBar.background"),
+    ("--vp-c-bg-soft", "dark", "editor.background"),
+    ("--vp-c-bg-alt", "dark", "editor.background"),
+    ("--vp-c-bg-elv", "dark", "chat.requestBackground"),
+    ("--vp-c-divider", "dark", "panel.border"),
+    ("--vp-c-gutter", "dark", "panel.border"),
+    ("--c-border-strong", "dark", "checkbox.border"),
+    ("--c-focus", "dark", "focusBorder"),
+    ("--vp-code-block-selection", "dark", "editor.selectionHighlightBackground"),
+    ("--vp-c-text-1", "dark", "editor.foreground"),
+    ("--vp-c-text-2", "dark", "sideBar.foreground"),
+    ("--vp-c-text-3", "dark", "breadcrumb.foreground"),
+    # Isolux Pro Dark Scales & Roles:
+    ("--vp-c-gray-1", "dark", "checkbox.border"),
+    ("--vp-c-gray-2", "dark", "panel.border"),
+    ("--vp-c-gray-3", "dark", "chat.requestBubbleBackground"),
+    ("--vp-c-gray-soft", "dark", "editor.lineHighlightBackground"),
+    ("--vp-c-indigo-1", "dark", "textLink.foreground"),
+    ("--vp-c-indigo-2", "dark", "textLink.activeForeground"),
+    ("--vp-c-indigo-3", "dark", "badge.background"),
+    ("--vp-c-indigo-soft", "raw", "color-mix(in srgb, var(--vp-c-indigo-1) 14%, transparent)"),
+    ("--vp-c-purple-1", "dark", "charts.purple"),
+    ("--vp-c-purple-2", "dark", "markdownAlert.important.foreground"),
+    ("--vp-c-purple-3", "light", "charts.purple"),
+    ("--vp-c-purple-soft", "raw", "color-mix(in srgb, var(--vp-c-purple-1) 14%, transparent)"),
+    ("--vp-c-green-1", "dark", "terminal.ansiGreen"),
+    ("--vp-c-green-2", "dark", "editorBracketHighlight.foreground5"),
+    ("--vp-c-green-3", "light", "markdownAlert.tip.foreground"),
+    ("--vp-c-green-soft", "raw", "color-mix(in srgb, var(--vp-c-green-1) 14%, transparent)"),
+    ("--vp-c-yellow-1", "dark", "scope:log.warning"),
+    ("--vp-c-yellow-2", "dark", "statusBarItem.warningHoverForeground"),
+    ("--vp-c-yellow-3", "light", "scope:log.warning"),
+    ("--vp-c-yellow-soft", "raw", "color-mix(in srgb, var(--vp-c-yellow-1) 14%, transparent)"),
+    ("--vp-c-red-1", "dark", "markdownAlert.caution.foreground"),
+    ("--vp-c-red-2", "dark", "terminal.ansiBrightRed"),
+    ("--vp-c-red-3", "light", "markdownAlert.caution.foreground"),
+    ("--vp-c-red-soft", "raw", "color-mix(in srgb, var(--vp-c-red-1) 14%, transparent)"),
+    ("--vp-c-sponsor", "dark", "gitDecoration.modifiedResourceForeground"),
+    # Isolux Pro Dark Controls & Primary Buttons:
+    ("--vp-input-switch-bg-color", "dark", "chat.requestBubbleBackground"),
+    ("--vp-button-brand-border", "dark", "button.border"),
+    ("--vp-button-brand-text", "dark", "button.foreground"),
+    ("--vp-button-brand-bg", "dark", "button.background"),
+    ("--vp-button-brand-hover-border", "dark", "button.border"),
+    ("--vp-button-brand-hover-text", "dark", "button.foreground"),
+    ("--vp-button-brand-hover-bg", "dark", "button.hoverBackground"),
+    ("--vp-button-brand-active-border", "dark", "button.border"),
+    ("--vp-button-brand-active-text", "dark", "button.foreground"),
+    ("--vp-button-brand-active-bg", "dark", "button.background"),
+)
 PATH_CHANGELOG = DIR_ROOT / "CHANGELOG.md"
 PATH_WEBSITE_CHANGELOG = DIR_WEBSITE_BUILD / "changelog.md"
 PATH_ICON = DIR_ROOT / "assets" / "icon.png"
@@ -766,8 +897,82 @@ def _process_single_file(file_path: Path) -> None:
             dest_path.write_text(transform_special_docs_components(resolved.read_text("utf-8")), encoding="utf-8")
         else:
             shutil.copy2(resolved, dest_path)
+            if dest_path == PATH_STYLE_CSS_BUILD:
+                _apply_isolux_theme_colors()
 
         print(f"  copied {dest_path.name}")
+
+
+def _format_css_var_lines(
+    var_specs: tuple[tuple[str, str, str], ...],
+    palettes: dict[str, dict[str, Any]],
+) -> list[str]:
+    """Formats a sequence of `(css_var, source, key_or_expr)` specs into CSS declaration lines."""
+
+    lines: list[str] = []
+    for css_var, source, key_or_expr in var_specs:
+        if source == "raw":
+            lines.append(f"  {css_var}: {key_or_expr};")
+        elif isinstance(hex_val := palettes.get(source, {}).get(key_or_expr), str) and hex_val.startswith("#"):
+            lines.append(f"  {css_var}: {hex_val.lower()};")
+    return lines
+
+
+def _load_theme_palette(theme_path: Path) -> dict[str, str] | None:
+    """Loads workbench `colors` and `tokenColors` (`scope:<name>`) from an Isolux theme JSON file."""
+
+    if not isinstance(raw_colors := (theme_data := json.loads(theme_path.read_text(encoding="utf-8"))).get("colors"), dict):
+        return None
+
+    palette: dict[str, str] = {
+        str(key): str(val) for key, val in cast("dict[str, Any]", raw_colors).items() if isinstance(val, str)
+    }
+    if isinstance(token_colors := theme_data.get("tokenColors"), list):
+        for entry in cast("list[Any]", token_colors):
+            if (
+                isinstance(entry, dict)
+                and isinstance(settings := cast("dict[str, Any]", entry).get("settings"), dict)
+                and isinstance(fg := cast("dict[str, Any]", settings).get("foreground"), str)
+            ):
+                scopes = cast("dict[str, Any]", entry).get("scope")
+                scope_list: list[Any] = (
+                    [scopes] if isinstance(scopes, str) else cast("list[Any]", scopes) if isinstance(scopes, list) else []
+                )
+                for scope in scope_list:
+                    if isinstance(scope, str):
+                        palette[f"scope:{scope}"] = fg
+
+    return palette
+
+
+def _apply_isolux_theme_colors() -> None:
+    """Injects the Isolux Pro light, dark, and ANSI terminal colors into `:root` and `.dark` of the built `style.css`."""
+
+    dark_theme_path = DIR_THEMES_BUILD / "isolux-pro-dark.json"
+    light_theme_path = DIR_THEMES_BUILD / "isolux-pro-light.json"
+    if not dark_theme_path.is_file() or not light_theme_path.is_file() or not PATH_STYLE_CSS_BUILD.is_file():
+        return
+
+    with suppress(Exception):
+        if (dark_palette := _load_theme_palette(dark_theme_path)) is None or (
+            light_palette := _load_theme_palette(light_theme_path)
+        ) is None:
+            return
+
+        palettes: dict[str, dict[str, Any]] = {"dark": dark_palette, "light": light_palette}
+        root_lines = _format_css_var_lines(ISOLUX_ROOT_VARS, palettes)
+        dark_lines = _format_css_var_lines(ISOLUX_DARK_VARS, palettes)
+        if not root_lines or not dark_lines:
+            return
+
+        css_content = PATH_STYLE_CSS_BUILD.read_text(encoding="utf-8")
+        if "--term-black:" not in css_content and ":root {" in css_content and ".dark {" in css_content:
+            root_block = "\n".join(root_lines)
+            dark_block = "\n".join(dark_lines)
+            updated_css = css_content.replace(":root {", f":root {{\n{root_block}\n", 1).replace(
+                ".dark {", f".dark {{\n{dark_block}\n", 1
+            )
+            PATH_STYLE_CSS_BUILD.write_text(updated_css, encoding="utf-8")
 
 
 def _download_bytes(url: str, headers: dict[str, str] | None = None, timeout: int = 10) -> bytes:
@@ -827,6 +1032,7 @@ def _sync_isolux_themes() -> None:
     """Downloads the latest published Isolux Pro syntax themes, falling back to local `../vscode-theme-isolux/dist`."""
 
     if (fetched := _fetch_isolux_vsix_openvsx() or _fetch_isolux_vsix_github()) and _extract_themes_from_vsix(fetched[0]):
+        _apply_isolux_theme_colors()
         print(f"  synced Isolux theme ({fetched[1]})")
         return
 
@@ -835,6 +1041,7 @@ def _sync_isolux_themes() -> None:
         DIR_THEMES_BUILD.mkdir(parents=True, exist_ok=True)
         for src_file in local_files:
             (DIR_THEMES_BUILD / src_file.name).write_bytes(src_file.read_bytes().replace(b"\r\n", b"\n"))
+        _apply_isolux_theme_colors()
         print("  copied Isolux theme from local ../vscode-theme-isolux/dist")
         return
 

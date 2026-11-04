@@ -14,77 +14,10 @@
   --radius-lg: 12px;
   --radius-pill: calc(infinity * 1px);
 
-  /* Isolux Pro Dark Terminal Theme (always dark) */
-  --term-black: #2c2c2c;
-  --term-br-black: #646464;
-  --term-red: #ff7680;
-  --term-br-red: #ffa4aa;
-  --term-green: #93f0b0;
-  --term-br-green: #c3f7d1;
-  --term-yellow: #f0b27b;
-  --term-br-yellow: #f4d0ad;
-  --term-blue: #909fff;
-  --term-br-blue: #adbdff;
-  --term-magenta: #af91ff;
-  --term-br-magenta: #c5b3ff;
-  --term-cyan: #7ceee3;
-  --term-br-cyan: #acf9f0;
-  --term-white: #e6e6e6;
-  --term-br-white: #fafafa;
-
-  /* Isolux Pro Light Theme */
-  --vp-c-white: #ffffff;
-  --vp-c-black: #080808;
-
-  --vp-c-bg: #ffffff;
-  --vp-c-bg-soft: #fafafa;
-  --vp-c-bg-alt: #fafafa;
-  --vp-c-bg-elv: #f6f6f6;
-  --vp-c-divider: #ebebeb;
-  --vp-c-gutter: #ebebeb;
-  --c-border-strong: #dcdcdc;
-  --c-focus: #8e8e8e;
+  /* Derived Theme Tokens (base palette & terminal colors injected from Isolux JSON at build time) */
   --vp-c-border: color-mix(in srgb, var(--vp-c-bg), var(--vp-c-divider) 72%);
   --vp-code-bg: color-mix(in srgb, var(--vp-c-bg), var(--vp-c-divider) 65%);
   --vp-code-block-bg: var(--vp-c-bg-soft);
-  --vp-code-block-selection: #0808081a;
-
-  --vp-c-text-1: #181818;
-  --vp-c-text-2: #3d3d3d;
-  --vp-c-text-3: #646464;
-
-  --vp-c-gray-1: #dcdcdc;
-  --vp-c-gray-2: #e6e6e6;
-  --vp-c-gray-3: #f4f4f4;
-  --vp-c-gray-soft: #0808080d;
-
-  --vp-c-indigo-1: #4f48ec;
-  --vp-c-indigo-2: #463ade;
-  --vp-c-indigo-3: #4f48ec;
-  --vp-c-indigo-soft: color-mix(in srgb, #4f48ec 12%, transparent);
-
-  --vp-c-purple-1: #7119b3;
-  --vp-c-purple-2: #8a0be5;
-  --vp-c-purple-3: #8b4ff9;
-  --vp-c-purple-soft: color-mix(in srgb, #8b4ff9 12%, transparent);
-
-  --vp-c-green-1: #1d6533;
-  --vp-c-green-2: #1d7e38;
-  --vp-c-green-3: #367a44;
-  --vp-c-green-soft: color-mix(in srgb, #367a44 12%, transparent);
-
-  --vp-c-yellow-1: #b34826;
-  --vp-c-yellow-2: #ac4220;
-  --vp-c-yellow-3: #8b371f;
-  --vp-c-yellow-soft: color-mix(in srgb, #b34826 12%, transparent);
-
-  --vp-c-red-1: #d01a34;
-  --vp-c-red-2: #e90034;
-  --vp-c-red-3: #9f102a;
-  --vp-c-red-soft: color-mix(in srgb, #d01a34 12%, transparent);
-
-  --vp-c-orange-1: #e12d00;
-  --vp-c-sponsor: #a21faf;
 
   --vp-c-brand-1: var(--vp-c-indigo-1);
   --vp-c-brand-2: var(--vp-c-indigo-2);
@@ -94,78 +27,8 @@
   --vp-nav-bg-color: color-mix(in srgb, var(--vp-c-bg) 75%, transparent);
   --vp-local-nav-bg-color: var(--vp-nav-bg-color);
   --vp-sidebar-bg-color: var(--vp-c-bg-soft);
-  --vp-input-switch-bg-color: #f4f4f4;
 
-  /* Neutral Primary Buttons (Isolux keeps primary buttons neutral) */
-  --vp-button-brand-border: #0808080d;
-  --vp-button-brand-text: #fafafa;
-  --vp-button-brand-bg: #242424;
-  --vp-button-brand-hover-border: #0808080d;
-  --vp-button-brand-hover-text: #fafafa;
-  --vp-button-brand-hover-bg: #2f2f2f;
-  --vp-button-brand-active-border: #0808080d;
-  --vp-button-brand-active-text: #fafafa;
-  --vp-button-brand-active-bg: #242424;
-
-  /* Isolux Pro Dark Tokens (stored on :root so always-dark terminal blocks can read them) */
-  --dvp-c-bg: #141414;
-  --dvp-c-bg-soft: #080808;
-  --dvp-c-bg-alt: #080808;
-  --dvp-c-bg-elv: #181818;
-  --dvp-c-divider: #2c2c2c;
-  --dvp-c-gutter: #2c2c2c;
-  --dvp-c-border-strong: #3d3d3d;
-  --dvp-c-focus: #646464;
   --dvp-c-border: color-mix(in srgb, var(--dvp-c-bg), var(--dvp-c-divider) 72%);
-  --dvp-code-bg: color-mix(in srgb, var(--dvp-c-bg), var(--dvp-c-divider) 65%);
-  --dvp-code-block-bg: var(--dvp-c-bg-soft);
-  --dvp-code-block-selection: #fafafa26;
-
-  --dvp-c-text-1: #e6e6e6;
-  --dvp-c-text-2: #c2c2c2;
-  --dvp-c-text-3: #8a8a8a;
-
-  --dvp-c-gray-1: #3d3d3d;
-  --dvp-c-gray-2: #2c2c2c;
-  --dvp-c-gray-3: #242424;
-  --dvp-c-gray-soft: #fafafa1a;
-
-  --dvp-c-indigo-1: #909fff;
-  --dvp-c-indigo-2: #a7b5ff;
-  --dvp-c-indigo-3: #4f48ec;
-  --dvp-c-indigo-soft: color-mix(in srgb, #909fff 14%, transparent);
-
-  --dvp-c-purple-1: #af91ff;
-  --dvp-c-purple-2: #d5acff;
-  --dvp-c-purple-3: #8b4ff9;
-  --dvp-c-purple-soft: color-mix(in srgb, #af91ff 14%, transparent);
-
-  --dvp-c-green-1: #93f0b0;
-  --dvp-c-green-2: #60c077;
-  --dvp-c-green-3: #367a44;
-  --dvp-c-green-soft: color-mix(in srgb, #93f0b0 14%, transparent);
-
-  --dvp-c-yellow-1: #f0b27b;
-  --dvp-c-yellow-2: #ec8c49;
-  --dvp-c-yellow-3: #b34826;
-  --dvp-c-yellow-soft: color-mix(in srgb, #f0b27b 14%, transparent);
-
-  --dvp-c-red-1: #ff7680;
-  --dvp-c-red-2: #ffa4aa;
-  --dvp-c-red-3: #d01a34;
-  --dvp-c-red-soft: color-mix(in srgb, #ff7680 14%, transparent);
-
-  --dvp-c-orange-1: #ff7a57;
-  --dvp-c-sponsor: #eba1f9;
-
-  --dvp-nav-bg-color: color-mix(in srgb, var(--dvp-c-bg) 64%, transparent);
-  --dvp-local-nav-bg-color: var(--dvp-nav-bg-color);
-
-  --dvp-button-brand-border: #fafafa26;
-  --dvp-button-brand-text: #080808;
-  --dvp-button-brand-bg: #dcdcdc;
-  --dvp-button-brand-hover-bg: #d1d1d1;
-  --dvp-button-brand-active-bg: #dcdcdc;
 
   /* Secondary / Alt Buttons & Custom Block Borders */
   --vp-button-alt-border: var(--vp-c-divider);
@@ -210,75 +73,44 @@
 }
 
 .dark {
-  --vp-c-bg: var(--dvp-c-bg);
-  --vp-c-bg-soft: var(--dvp-c-bg-soft);
-  --vp-c-bg-alt: var(--dvp-c-bg-alt);
-  --vp-c-bg-elv: var(--dvp-c-bg-elv);
-  --vp-c-border: var(--dvp-c-border);
-  --vp-c-divider: var(--dvp-c-divider);
-  --vp-c-gutter: var(--dvp-c-gutter);
-  --c-border-strong: var(--dvp-c-border-strong);
-  --c-focus: var(--dvp-c-focus);
-  --vp-code-bg: var(--dvp-code-bg);
-  --vp-code-block-bg: var(--dvp-code-block-bg);
-  --vp-code-block-selection: var(--dvp-code-block-selection);
+  --vp-c-border: color-mix(in srgb, var(--vp-c-bg), var(--vp-c-divider) 72%);
+  --vp-code-bg: color-mix(in srgb, var(--vp-c-bg), var(--vp-c-divider) 65%);
+  --vp-code-block-bg: var(--vp-c-bg-soft);
 
-  --vp-c-text-1: var(--dvp-c-text-1);
-  --vp-c-text-2: var(--dvp-c-text-2);
-  --vp-c-text-3: var(--dvp-c-text-3);
-
-  --vp-c-gray-1: var(--dvp-c-gray-1);
-  --vp-c-gray-2: var(--dvp-c-gray-2);
-  --vp-c-gray-3: var(--dvp-c-gray-3);
-  --vp-c-gray-soft: var(--dvp-c-gray-soft);
-
-  --vp-c-indigo-1: var(--dvp-c-indigo-1);
-  --vp-c-indigo-2: var(--dvp-c-indigo-2);
-  --vp-c-indigo-3: var(--dvp-c-indigo-3);
-  --vp-c-indigo-soft: var(--dvp-c-indigo-soft);
-
-  --vp-c-purple-1: var(--dvp-c-purple-1);
-  --vp-c-purple-2: var(--dvp-c-purple-2);
-  --vp-c-purple-3: var(--dvp-c-purple-3);
-  --vp-c-purple-soft: var(--dvp-c-purple-soft);
-
-  --vp-c-green-1: var(--dvp-c-green-1);
-  --vp-c-green-2: var(--dvp-c-green-2);
-  --vp-c-green-3: var(--dvp-c-green-3);
-  --vp-c-green-soft: var(--dvp-c-green-soft);
-
-  --vp-c-yellow-1: var(--dvp-c-yellow-1);
-  --vp-c-yellow-2: var(--dvp-c-yellow-2);
-  --vp-c-yellow-3: var(--dvp-c-yellow-3);
-  --vp-c-yellow-soft: var(--dvp-c-yellow-soft);
-
-  --vp-c-red-1: var(--dvp-c-red-1);
-  --vp-c-red-2: var(--dvp-c-red-2);
-  --vp-c-red-3: var(--dvp-c-red-3);
-  --vp-c-red-soft: var(--dvp-c-red-soft);
-
-  --vp-c-orange-1: var(--dvp-c-orange-1);
-  --vp-c-sponsor: var(--dvp-c-sponsor);
-
-  --vp-nav-bg-color: var(--dvp-nav-bg-color);
-  --vp-local-nav-bg-color: var(--dvp-local-nav-bg-color);
-  --vp-input-switch-bg-color: #242424;
-
-  --vp-button-brand-border: var(--dvp-button-brand-border);
-  --vp-button-brand-text: var(--dvp-button-brand-text);
-  --vp-button-brand-bg: var(--dvp-button-brand-bg);
-  --vp-button-brand-hover-border: var(--dvp-button-brand-border);
-  --vp-button-brand-hover-text: var(--dvp-button-brand-text);
-  --vp-button-brand-hover-bg: var(--dvp-button-brand-hover-bg);
-  --vp-button-brand-active-border: var(--dvp-button-brand-border);
-  --vp-button-brand-active-text: var(--dvp-button-brand-text);
-  --vp-button-brand-active-bg: var(--dvp-button-brand-active-bg);
+  --vp-nav-bg-color: color-mix(in srgb, var(--vp-c-bg) 64%, transparent);
+  --vp-local-nav-bg-color: var(--vp-nav-bg-color);
 }
 
 /*************************************************** GLOBAL & BASE STYLES ****************************************************/
 
 ::selection {
   background-color: color-mix(in srgb, var(--vp-c-indigo-2) 32%, transparent);
+}
+
+/* Non-Interactive Images & Icons (svg-api) */
+img,
+svg {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* Non-Selectable UI Chrome (svg-api) */
+button,
+.VPNav,
+.VPLocalNav,
+.VPSidebar,
+.VPDocAside,
+.VPDocFooter,
+.VPButton,
+.VPBadge,
+.VPHomeHero .actions,
+.vp-code-group .tabs,
+.custom-block-title,
+.release-badge {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Custom Scrollbars */
@@ -405,15 +237,25 @@ body:has(.release-card) .vp-doc > div > h2,
   border-top: 1px solid var(--vp-c-divider) !important;
   background-color: var(--vp-c-bg-soft) !important;
 }
+.VPFooter .copyright {
+  gap: 6px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.VPFooter .footer-sparkle {
+  color: var(--vp-c-brand-1);
+}
 .VPFooter a {
+  color: inherit !important;
   text-decoration-color: color-mix(in srgb, currentColor 38%, transparent) !important;
   text-decoration-thickness: 1px !important;
   text-underline-offset: 3px !important;
-  transition:
-    color 200ms ease,
-    text-decoration-color 200ms ease !important;
+  transition: text-decoration-color 200ms ease !important;
 }
 .VPFooter a:hover {
+  color: inherit !important;
   text-decoration-color: currentColor !important;
 }
 
@@ -440,7 +282,6 @@ body:has(.release-card) .vp-doc > div > h2,
 .VPHomeHero .VPImage {
   max-width: 220px !important;
   max-height: 220px !important;
-  user-select: none;
 }
 
 .VPHomeHero .image-bg {
@@ -449,6 +290,7 @@ body:has(.release-card) .vp-doc > div > h2,
   opacity: 0.1;
   border-radius: 0;
   user-select: none;
+  pointer-events: none;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -498,14 +340,15 @@ body:has(.release-card) .vp-doc > div > h2,
 
 /* Subtle Semi-Transparent Underlines on Prose Links (svg-api) */
 .vp-doc a:not(.header-anchor, .api-link, .VPButton) {
+  color: inherit !important;
   text-decoration-color: color-mix(in srgb, currentColor 38%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
-  transition:
-    color 200ms ease,
-    text-decoration-color 200ms ease;
+  transition: text-decoration-color 200ms ease;
 }
 .vp-doc a:not(.header-anchor, .api-link, .VPButton):hover {
+  color: inherit !important;
+  opacity: 1 !important;
   text-decoration-color: currentColor;
 }
 
@@ -517,16 +360,36 @@ body:has(.release-card) .vp-doc > div > h2,
   color: color-mix(in srgb, var(--vp-c-text-2), var(--vp-c-text-1) 50%) !important;
   background-color: var(--vp-code-bg);
 }
-.vp-doc a > code {
-  padding: 2px 6px;
+.vp-doc a:has(> code) {
+  padding: 3px 6px;
   border: 1px solid color-mix(in srgb, var(--vp-c-brand-1) 28%, transparent);
   border-radius: 5px;
+  text-decoration: none !important;
   color: var(--vp-c-brand-1) !important;
   background-color: var(--vp-c-brand-soft);
+}
+.vp-doc a > code {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  color: var(--vp-c-brand-1) !important;
+  background-color: transparent;
+  border-bottom: 0.1rem dashed color-mix(in srgb, currentColor 64%, transparent);
+  transition: border-color 200ms;
+}
+.vp-doc a:hover > code {
+  border-bottom: 0.1rem solid currentColor;
 }
 .vp-doc :is(h1, h2, h3, h4, h5, h6) > code {
   border-radius: var(--radius-sm);
   color: var(--vp-c-brand-1) !important;
+}
+.vp-doc :is(h1, h2, h3, h4, h5, h6) > a:has(> code) {
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+.vp-doc :is(h1, h2, h3, h4) > a > code {
+  font-size: 0.9em;
 }
 
 /* Faded List Markers */
@@ -1136,8 +999,7 @@ body:has(.release-card) .vp-doc > div > h2,
   border-left: 4px solid var(--vp-c-brand-1);
 }
 .release-card.is-broken {
-  border-color: color-mix(in srgb, var(--vp-c-orange-1) 40%, transparent);
-  border-left: 4px solid var(--vp-c-orange-1);
+  border-left: 4px solid var(--vp-c-red-1);
 }
 .release-card.is-hotfix {
   border-left: 4px solid var(--vp-c-purple-1);
@@ -1210,9 +1072,9 @@ body:has(.release-card) .vp-doc > div > h2,
   background-color: color-mix(in srgb, var(--vp-c-brand-1) 12%, transparent);
 }
 .badge-broken {
-  color: var(--vp-c-orange-1);
-  border: 1px solid color-mix(in srgb, var(--vp-c-orange-1) 36%, transparent);
-  background-color: color-mix(in srgb, var(--vp-c-orange-1) 12%, transparent);
+  color: var(--vp-c-red-1);
+  border: 1px solid color-mix(in srgb, var(--vp-c-red-1) 36%, transparent);
+  background-color: color-mix(in srgb, var(--vp-c-red-1) 12%, transparent);
 }
 .badge-hotfix {
   color: var(--vp-c-purple-1);
@@ -1247,7 +1109,7 @@ body:has(.release-card) .vp-doc > div > h2,
   color: var(--vp-c-text-1);
 }
 .release-content h4[id^='breaking-changes'] {
-  color: var(--vp-c-orange-1);
+  color: var(--vp-c-yellow-1);
 }
 .release-content h4 .header-anchor {
   display: none;
@@ -1264,22 +1126,5 @@ body:has(.release-card) .vp-doc > div > h2,
   line-height: 1.6;
 }
 .release-content h4[id^='breaking-changes'] + :is(ul, ol) li::marker {
-  color: color-mix(in srgb, var(--vp-c-orange-1) 72%, transparent);
-}
-
-/* Sidebar Outline Status Classes */
-.outline-link.status-broken {
-  color: color-mix(in srgb, var(--vp-c-orange-1) 72%, transparent) !important;
-}
-.outline-link.status-broken:hover,
-.outline-link.status-broken.active {
-  color: var(--vp-c-orange-1) !important;
-}
-
-.outline-link.status-hotfix {
-  color: color-mix(in srgb, var(--vp-c-purple-1) 72%, transparent) !important;
-}
-.outline-link.status-hotfix:hover,
-.outline-link.status-hotfix.active {
-  color: var(--vp-c-purple-1) !important;
+  color: color-mix(in srgb, var(--vp-c-yellow-1) 72%, transparent);
 }
