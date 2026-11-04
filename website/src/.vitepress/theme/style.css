@@ -303,6 +303,11 @@ body:has(.release-card) .vp-doc > div > h2,
   color: var(--vp-c-brand-1) !important;
 }
 
+/* Faded List Markers */
+.vp-doc li::marker {
+  color: color-mix(in srgb, currentColor 48%, transparent);
+}
+
 /* API Cross-Reference Links */
 .vp-doc .api-link {
   text-decoration: none;
@@ -965,12 +970,33 @@ body:has(.release-card) .vp-doc > div > h2,
 .release-content > :last-child {
   margin-bottom: 0 !important;
 }
+.release-content h4 {
+  margin: 22px 0 8px;
+  font-size: 0.96rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  color: var(--vp-c-text-1);
+}
+.release-content h4[id^='breaking-changes'] {
+  color: var(--vp-c-orange-1);
+}
+.release-content h4 .header-anchor {
+  display: none;
+}
+.release-content h4 + ul,
+.release-content h4 + ol {
+  margin-top: 8px;
+}
 .release-content ul {
   padding-left: 20px;
 }
 .release-content li {
   margin: 6px 0;
   line-height: 1.6;
+}
+.release-content h4[id^='breaking-changes'] + :is(ul, ol) li::marker {
+  color: color-mix(in srgb, var(--vp-c-orange-1) 72%, transparent);
 }
 
 /* Sidebar Outline Status Classes */

@@ -7,15 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <Release version="2.0.1" date="">
 
-*   **Feature Enhancements:**
-    -   Added `console.banner()` for rendering styled banners with customizable background colors, alignment, width modes, `{hr}` rules, and optional inline subtitles (now also used internally by `ArgumentParser`).
-    -   Added `compact: bool = False` and `indent: int = 0` to `console.log()` and all log presets (`debug()`, `info()`, `success()`, `warn()`, `error()`, `exit()`), enabling single-character icon logging (`✓`, `⚠`, `✗`, …) and indented log output.
-    -   Added `ParsedArgData.name` and updated `ParsedArgData.val()` / `ParsedArgData.vals()` cast failure `ValueError` messages to be CLI end-user facing (e.g., `"Option '-b' must be an integer, got 'f'"`).
-    -   Updated `ArgumentParser.print_help()` to style `Examples:` descriptions consistently with `Arguments:`, `Options:`, and `Controls:` instead of dimmed italic `#` comments, aligning short examples to `max_col_width` while expanding independently for longer example commands.
-*   **Bug Fixes:**
-    -   Fixed `console.log()` title foreground color resolution to use `.as_text_fg()`, ensuring high-contrast white text on dark standard and 256-color backgrounds (such as `S.BG.BLACK` and `S.BG.BR.BLACK`).
+#### Added
 
-**BREAKING CHANGES:**
+*   Added `console.banner()` for rendering styled banners with customizable background colors, alignment, width modes, `{hr}` rules, and optional inline subtitles (now also used internally by `ArgumentParser`).
+*   Added `compact: bool = False` and `indent: int = 0` to `console.log()` and all log presets (`debug()`, `info()`, `success()`, `warn()`, `error()`, `exit()`), enabling single-character icon logging (`✓`, `⚠`, `✗`, …) and indented log output.
+*   Added `ParsedArgData.name` to expose the argument or option display name on parsed argument results.
+
+#### Changed
+
+*   Updated `ParsedArgData.val()` and `ParsedArgData.vals()` cast failure `ValueError` messages to be CLI end-user facing (e.g., `"Option '-b' must be an integer, got 'f'"`).
+*   Updated `ArgumentParser.print_help()` to style `Examples:` descriptions consistently with `Arguments:`, `Options:`, and `Controls:` instead of dimmed italic `#` comments, aligning short examples to `max_col_width` while expanding independently for longer example commands.
+
+#### Fixed
+
+*   Fixed `console.log()` title foreground color resolution to use `.as_text_fg()`, ensuring high-contrast white text on dark standard and 256-color backgrounds (such as `S.BG.BLACK` and `S.BG.BR.BLACK`).
+
+#### Breaking Changes
 
 *   Renamed `console.done()` to `console.success()` and changed its badge title from `"DONE"` to `"OKAY"`.
 *   Renamed `console.fail()` to `console.error()` and changed its badge title from `"FAIL"` to `"ERROR"`.
@@ -24,53 +31,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="2.0.0" date="2026-09-20">
 
-*   **Quality & Consistency:**
-    -   Unified all error messages throughout the whole library to always pass the given value if the error is caused by that value being invalid.
-    -   Reformatted all docstrings across the library to be consistent in style and structure and to use proper sentences.
-    -   Corrected and refined static type hints across the entire library for strict MyPyC compatibility.
-    -   Rewrote existing tests and added comprehensive new tests to achieve 100% test coverage with consistent structure.
-*   **Performance Optimizations:**
-    -   Improved the performance of `console.log()` by restructuring formatting and output pipelines.
-    -   Improved the performance of `string.normalize_spaces()` by using `str.translate()` instead of multiple `str.replace()` calls.
-    -   Improved the performance of `data.remove_duplicates()` for lists and tuples:<br>
-        Hashable items now deduplicate in $O(n)$ using `dict.fromkeys()`, with an $O(n^2)$ equality-check fallback only for unhashable items (lists, dicts, sets).
-*   **Feature Enhancements:**
-    -   Added a `@deprecated` decorator to `xulbux.base.decorators` that conditionally imports from `warnings` on Python 3.13+ and `typing_extensions` on older versions.
-    -   Added two new public constants `FRAMES_STANDARD` and `FRAMES_WINDMILL` to the `console` module, usable as `frames` presets for the `Throbber` class.
-    -   `console.log()` no longer forces the title to be uppercase, allowing customizable capitalization.
-    -   Added support for fixed `width` and automatic content wrapping in `console.box()`, wrapping text lines that exceed the box width while preserving ANSI styles and `{hr}` rules.
-    -   Added support for content alignment in `console.box()` via `align: Literal["left", "center", "right"] = "left"`.
-    -   Added `KEYS` constants in `xulbux.base.consts` exposing standardized sequences and sets for directional arrows, navigation, actions, and function keys.
-    -   Added `console.raw_mode()` context manager for terminal unbuffered raw mode with enhanced key protocols.
-    -   Added `console.read_key()` for reading single key presses and ANSI escape sequences in the terminal with cross-platform support.
-    -   Implemented a custom stub generator for improved `.pyi` type stub generation during the build process.
-    -   Added color space interpolation and multi-stop scale generators in `color`: `interpolate_color()` and `create_gradient()`, supporting RGB, HSL (shortest and long arc), Linear RGB, and Oklab color spaces.
-    -   Added `allow_strings: bool = True` parameter to `is_valid_rgba()` and `is_valid_hsla()`, supporting overloaded type guards to validate either `Rgba | str` or strictly non-string `Rgba`/`Hsla` types.
-    -   Added `Seq[T]`, `is_seq()`, and `is_dict()` type definitions and type guard helpers to `xulbux.base.types`.
+#### Added
 
-**BREAKING CHANGES:**
+*   Added the `ansi` module with a new operator-based styling engine:
+    -   The `S` class exposes every ANSI style/color attribute and uses `|` to combine styles and `()` to apply them to text, e.g., `(S.BOLD | S.RED)("hi")` and `S.hex("#A8F")("hi")`.
+    -   The `S(*segments, sep="")` class also directly builds the ANSI string on construction and exposes `.ansi`, `.raw`, `.code_positions`, `.raw_code_positions`, `.print()`, and `.input()`.
+    -   A companion `Term` class provides commonly used cursor- and screen-control sequences (`Term.HIDE_CURSOR`, `Term.up(n)`, `Term.move(row, col)`, `Term.title(text)`, …).
+*   Added a `@deprecated` decorator to `xulbux.base.decorators` that conditionally imports from `warnings` on Python 3.13+ and `typing_extensions` on older versions.
+*   Added two new public constants `FRAMES_STANDARD` and `FRAMES_WINDMILL` to the `console` module, usable as `frames` presets for the `Throbber` class.
+*   Added support for fixed `width` and automatic content wrapping in `console.box()`, wrapping text lines that exceed the box width while preserving ANSI styles and `{hr}` rules.
+*   Added support for content alignment in `console.box()` via `align: Literal["left", "center", "right"] = "left"`.
+*   Added `KEYS` constants in `xulbux.base.consts` exposing standardized sequences and sets for directional arrows, navigation, actions, and function keys.
+*   Added `console.raw_mode()` context manager for terminal unbuffered raw mode with enhanced key protocols.
+*   Added `console.read_key()` for reading single key presses and ANSI escape sequences in the terminal with cross-platform support.
+*   Implemented a custom stub generator for improved `.pyi` type stub generation during the build process.
+*   Added color space interpolation and multi-stop scale generators in `color`: `interpolate_color()` and `create_gradient()`, supporting RGB, HSL (shortest and long arc), Linear RGB, and Oklab color spaces.
+*   Added `allow_strings: bool = True` parameter to `is_valid_rgba()` and `is_valid_hsla()`, supporting overloaded type guards to validate either `Rgba | str` or strictly non-string `Rgba`/`Hsla` types.
+*   Added `Seq[T]`, `is_seq()`, and `is_dict()` type definitions and type guard helpers to `xulbux.base.types`.
+
+#### Changed
+
+*   `console.log()` no longer forces the title to be uppercase, allowing customizable capitalization.
+*   Improved the performance of `console.log()` by restructuring formatting and output pipelines.
+*   Improved the performance of `string.normalize_spaces()` by using `str.translate()` instead of multiple `str.replace()` calls.
+*   Improved the performance of `data.remove_duplicates()` for lists and tuples:<br>
+    Hashable items now deduplicate in $O(n)$ using `dict.fromkeys()`, with an $O(n^2)$ equality-check fallback only for unhashable items (lists, dicts, sets).
+*   Unified all error messages throughout the whole library to always pass the given value if the error is caused by that value being invalid.
+*   Reformatted all docstrings across the library to be consistent in style and structure and to use proper sentences.
+*   Corrected and refined static type hints across the entire library for strict MyPyC compatibility.
+*   Rewrote existing tests and added comprehensive new tests to achieve 100% test coverage with consistent structure.
+
+#### Breaking Changes
 
 *   **Python Version Support:**
-    *   Dropped support for Python 3.10 and 3.11. **The library now requires Python 3.12 or higher.**
+    -   Dropped support for Python 3.10 and 3.11. **The library now requires Python 3.12 or higher.**
 *   **Architectural & Namespace Refactor:**
-    *   Renamed the `file_sys` module to `fs` for more concise and standard file system operations.
-    *   Removed default module classes (`Console`, `System`, `FileSys`, `Data`, `String`, `Code`, `EnvPath`, `Json`, `Regex`, `File`) that acted as namespaces; all methods are now accessible directly as module-level functions (e.g., `xulbux.console.log`).
-    *   Properties like `console.w` and `system.is_elevated` have been converted into standard getter functions like `get_width()` and `is_elevated()` to circumvent a MyPyC segmentation fault.
-    *   Consolidated module structure:
-        -   Moved `code` functions into `string` (`add_indent()`, `get_tab_spaces()`, `change_tab_spaces()`, `extract_func_calls()`, `is_js()`) and deleted the `code` module.
-        -   Moved `env_path` functions into `system` (`get_env_path()`, `has_env_path()`, `add_env_path()`, `remove_env_path()`) and deleted the `env_path` module.
-        -   Moved `file` functions into `fs` (`create_file()`, `rename_file_ext()`) and deleted the `file` module.
-        -   Moved `json` functions into `fs` (`read_json()`, `create_json()`, `update_json()`) and deleted the `json` module.
-*   **New Operator-Based Styling Engine (`ansi` module):**
-    *   Removed the `format_codes` module and bracket syntax in favor of the new operator-based styling engine in the `ansi` module (including the removal of legacy format-code constants from `xulbux.base.consts`):
-        -   The new `S` class exposes every ANSI style/color attribute and uses `|` to combine styles and `()` to apply them to text, e.g., `(S.BOLD | S.RED)("hi")` and `S.hex("#A8F")("hi")`.
-        -   The `S(*segments, sep="")` class also directly builds the ANSI string on construction and exposes `.ansi`, `.raw`, `.code_positions`, `.raw_code_positions`, `.print()` and `.input()`.
-        -   A companion `Term` class provides commonly used cursor- and screen-control sequences (`Term.HIDE_CURSOR`, `Term.up(n)`, `Term.move(row, col)`, `Term.title(text)`, …).
-    *   Migrated the entire `console` module to the new styling API:
-        -   All prompts, messages, and content now accept `Renderable` and `TextRenderable` types.
-        -   All color parameters now accept `ColorStyle` types instead of strings, `rgba`, or `hexa` objects.
-    *   `data.render()` now returns an `S` object, and its `syntax_highlighting` dictionary takes `S` styles.
-    *   Removed the `xulbux-lib fc` CLI command, since the new styling API doesn't support the old format string syntax.
+    -   Renamed the `file_sys` module to `fs` for more concise and standard file system operations.
+    -   Removed default module classes (`Console`, `System`, `FileSys`, `Data`, `String`, `Code`, `EnvPath`, `Json`, `Regex`, `File`) that acted as namespaces; all methods are now accessible directly as module-level functions (e.g., `xulbux.console.log`).
+    -   Properties like `console.w` and `system.is_elevated` have been converted into standard getter functions like `get_width()` and `is_elevated()` to circumvent a MyPyC segmentation fault.
+    -   Consolidated module structure:
+        *   Moved `code` functions into `string` (`add_indent()`, `get_tab_spaces()`, `change_tab_spaces()`, `extract_func_calls()`, `is_js()`) and deleted the `code` module.
+        *   Moved `env_path` functions into `system` (`get_env_path()`, `has_env_path()`, `add_env_path()`, `remove_env_path()`) and deleted the `env_path` module.
+        *   Moved `file` functions into `fs` (`create_file()`, `rename_file_ext()`) and deleted the `file` module.
+        *   Moved `json` functions into `fs` (`read_json()`, `create_json()`, `update_json()`) and deleted the `json` module.
+*   **Styling Engine Migration (`ansi` module):**
+    -   Removed the `format_codes` module and bracket syntax in favor of the new operator-based styling engine in the `ansi` module (including the removal of legacy format-code constants from `xulbux.base.consts`).
+    -   Migrated the entire `console` module to the new styling API:
+        *   All prompts, messages, and content now accept `Renderable` and `TextRenderable` types.
+        *   All color parameters now accept `ColorStyle` types instead of strings, `rgba`, or `hexa` objects.
+    -   `data.render()` now returns an `S` object, and its `syntax_highlighting` dictionary takes `S` styles.
+    -   Removed the `xulbux-lib fc` CLI command, since the new styling API doesn't support the old format string syntax.
 *   **Data & Type Modernization:**
     -   Replaced `get_args` and `_ConsoleArgsParseHelper` with fully typed `ArgumentParser` and `ParsedArgData` classes.
     -   `data.render(as_json=True)` now natively converts special Python objects into valid JSON strings without proprietary representations.
@@ -82,30 +92,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   `rgba.blend()` and `hsla.blend()` no longer accept color strings directly (raising `TypeError`); color strings must be converted beforehand via `to_rgba()` or `to_hsla()`.
     -   `is_valid_rgba()` and `is_valid_hsla()` now reject 4-element sequences with `None` as the fourth element and dictionaries with `alpha: None`.
 *   **Renamed Functions & Methods:**
-    *   **`color`:**
-        -   `text_color_for_on_bg()` (and `fg_for_on_bg()`) → `get_text_fg()`.
-        -   `luminance()` → `get_luminance()`.
-        -   `str_to_rgba()` and `str_to_hsla()` → `extract_rgba()` and `extract_hsla()`.
-        -   `.values()`, `.dict()`, `.to_rgba()`, `.to_hsla()`, `.to_hexa()` → `.as_tuple()`, `.as_dict()`, `.as_rgba()`, `.as_hsla()`, `.as_hexa()`.
-    *   **`console`:**
-        -   `cls()` → `clear()` (with fixed cross-platform terminal clearing on Windows and Unix).
-        -   `log_box_filled()` and `log_box_bordered()` → unified into `box()`.
-        -   `supports_color()` → `has_color_support()`.
-        -   `ProgressBar`: `bar_format`, `limited_bar_format`, `set_bar_format()` → `format`, `limited_format`, `set_format()`.
-        -   `Throbber`: `throbber_format` → `format`.
-    *   **`data` & `string`:**
-        -   `data.chars_count()` → `data.count_chars()`.
-        -   `string.single_char_repeats()` → `string.count_char_repeats()`.
-        -   `string.split_count()` → `string.chunk()`.
-        -   `string.change_tab_size()` → `string.change_tab_spaces()`.
-    *   **Parameters & Constants:**
-        -   Single-letter color channel parameters `r`, `g`, `b`, `h`, `s`, `l`, `a` → `red`, `green`, `blue`, `hue`, `sat`, `light`, `alpha`.
-        -   `string.decompose()`: parameter `case_string` → `string`.
-        -   `data.is_equal()`: parameters `data1, data2` → `data_a, data_b`.
-        -   `console.log_box_bordered()`: parameter `border_chars` now takes a string of 11 characters instead of a tuple of 11 characters.
-        -   `console.box()`: parameter `w_full` → `width: int | Literal["full"] | None = None`.
-        -   `console.pause_exit()` and log presets (`debug()`, `info()`, `done()`, `warn()`, `fail()`): Replaced `exit: bool` and `exit_code: int` with `exit_code: int | None = None` (`None` to not exit, or an integer exit code).
-        -   `console.exit()`: Removed redundant `exit` boolean toggle parameter in favor of always exiting with `exit_code: int`, typed as `NoReturn`.
+    -   **`color`:**
+        *   `text_color_for_on_bg()` (and `fg_for_on_bg()`) → `get_text_fg()`.
+        *   `luminance()` → `get_luminance()`.
+        *   `str_to_rgba()` and `str_to_hsla()` → `extract_rgba()` and `extract_hsla()`.
+        *   `.values()`, `.dict()`, `.to_rgba()`, `.to_hsla()`, `.to_hexa()` → `.as_tuple()`, `.as_dict()`, `.as_rgba()`, `.as_hsla()`, `.as_hexa()`.
+    -   **`console`:**
+        *   `cls()` → `clear()` (with fixed cross-platform terminal clearing on Windows and Unix).
+        *   `log_box_filled()` and `log_box_bordered()` → unified into `box()`.
+        *   `supports_color()` → `has_color_support()`.
+        *   `ProgressBar`: `bar_format`, `limited_bar_format`, `set_bar_format()` → `format`, `limited_format`, `set_format()`.
+        *   `Throbber`: `throbber_format` → `format`.
+    -   **`data` & `string`:**
+        *   `data.chars_count()` → `data.count_chars()`.
+        *   `string.single_char_repeats()` → `string.count_char_repeats()`.
+        *   `string.split_count()` → `string.chunk()`.
+        *   `string.change_tab_size()` → `string.change_tab_spaces()`.
+    -   **Parameters & Constants:**
+        *   Single-letter color channel parameters `r`, `g`, `b`, `h`, `s`, `l`, `a` → `red`, `green`, `blue`, `hue`, `sat`, `light`, `alpha`.
+        *   `string.decompose()`: parameter `case_string` → `string`.
+        *   `data.is_equal()`: parameters `data1, data2` → `data_a, data_b`.
+        *   `console.log_box_bordered()`: parameter `border_chars` now takes a string of 11 characters instead of a tuple of 11 characters.
+        *   `console.box()`: parameter `w_full` → `width: int | Literal["full"] | None = None`.
+        *   `console.pause_exit()` and log presets (`debug()`, `info()`, `done()`, `warn()`, `fail()`): Replaced `exit: bool` and `exit_code: int` with `exit_code: int | None = None` (`None` to not exit, or an integer exit code).
+        *   `console.exit()`: Removed redundant `exit` boolean toggle parameter in favor of always exiting with `exit_code: int`, typed as `NoReturn`.
 *   **Removals:**
     -   Removed `w_padding` parameter from `console.box()` in favor of automatic contextual padding.
     -   Removed `data.print()` (use `data.render(…).print()`).
@@ -119,19 +129,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.9.7" date="2026-04-26">
 
-*   Restructured CLI commands under a single `xulbux-lib` entry point:
-    -   `xulbux-lib` – Shows library info.
-    -   `xulbux-lib fc` (new) – Parses and renders a string's format codes as ANSI console output.
+#### Added
+
 *   Added a `.get()` method to `ParsedArgData` for safe index access on parsed argument values.
 *   Added missing `__init__.py` files to the `base` and `cli` subpackages.
-*   Fixed `ModuleNotFoundError` caused by `mypyc` compiling `__init__.py` files, which broke subpackage imports.
-*   Simplified CI workflows to use `pip`'s build isolation instead of manually specifying build dependencies.
-*   Fixed a small bug in `ProgressBar`, where it would only overwrite and not actually clear the previous line.
 *   Added a new constant `ANSI.COLOR_VARIANTS_MAP`, which contains all possible color variants that can be used in formatting.
 *   Made it possible to also pass console default colors to `title_bg_color` in `Console.log()`, instead of only custom RGBA or hex colors.
 *   Added a new format key `link:…` to `FormatCodes`, which allows you to create hyperlinks in the console output with the syntax `[link:URL](display text)`.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Restructured CLI commands under a single `xulbux-lib` entry point:
+    -   `xulbux-lib` – Shows library info.
+    -   `xulbux-lib fc` (new) – Parses and renders a string's format codes as ANSI console output.
+*   Simplified CI workflows to use `pip`'s build isolation instead of manually specifying build dependencies.
+
+#### Fixed
+
+*   Fixed `ModuleNotFoundError` caused by `mypyc` compiling `__init__.py` files, which broke subpackage imports.
+*   Fixed a small bug in `ProgressBar`, where it would only overwrite and not actually clear the previous line.
+
+#### Breaking Changes
 
 *   The `ANSI.COLOR_MAP` constant is now a set for better lookup performance, as the color order doesn't matter there.
 *   All `Console` methods that allow console default colors as input for their color parameters now actually validate the given color, raising an error if it's not valid.
@@ -140,11 +158,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.9.6" date="2026-04-13">
 
+#### Added
+
 *   The compiled version of the library now includes the type stub files (`.pyi`), so type checkers can thoroughly check types.
+
+#### Changed
+
 *   Made all type hints in the whole library way more strict and accurate.
+
+#### Removed
+
 *   Removed leftover unnecessary runtime type checks in several functions throughout the whole library.
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   All signatures that should use positional-only and keyword-only parameters now actually enforce that by using the `/` and `*` syntax.
 *   Renamed the `Spinner` class from the `console` module to `Throbber`, since that name is closer to what it's actually used for.
@@ -154,6 +180,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 </Release>
 <Release version="1.9.5" date="2026-01-25">
+
+#### Added
 
 *   Added a new class property `Console.encoding`, which returns the encoding used by the console (e.g., `utf-8`, `cp1252`, …).
 *   Added multiple new class properties to the `System` class:
@@ -172,7 +200,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   `ArgParseConfigs` – Matches the command-line-parsing configurations of multiple arguments, packed in a dictionary.
 *   Added a new attribute `flag` to the `ArgData` TypedDict and the `ArgResult` class, which contains the specific flag that was found or `None` for positional args.
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Rewrote `Console.get_args()` for different parsing functionality:
     -   Flagged values are now also saved to lists, so only the `values` attribute is used for all argument types.
@@ -186,12 +214,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.9.4" date="2026-01-06">
 
+#### Added
+
 *   Added a new base module `base.decorators` which contains custom decorators used throughout the library.
-*   Made `mypy_extensions` an optional dependency by wrapping all uses of `mypy_extensions.mypyc_attr` in a custom decorator that acts as a no-op if `mypy_extensions` is not installed.
-*   The methods from the `env_path` module that modify the PATH environment variable no longer sort all paths alphabetically but keep the original order to not mess with the user's intended PATH order.
 *   Added a new TypeAlias `PathsList` to the `base.types` module, which matches a list of paths as strings or `pathlib.Path` objects.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Made `mypy_extensions` an optional dependency by wrapping all uses of `mypy_extensions.mypyc_attr` in a custom decorator that acts as a no-op if `mypy_extensions` is not installed.
+*   The methods from the `env_path` module that modify the PATH environment variable no longer sort all paths alphabetically but keep the original order to not mess with the user's intended PATH order.
+
+#### Breaking Changes
 
 *   Renamed the module `path` to `fs` and its main class `Path` to `FileSys`, so you can better use it alongside the built-in `pathlib.Path` class without always needing to import one of them under an alias.
 *   Renamed most `FileSys` methods to better describe their functionality:
@@ -204,8 +237,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.9.3" date="2026-01-01">
 
+#### Added
+
 *   Added a new method `Color.str_to_hsla()` to parse HSLA colors from strings.
-*   Changed the default syntax highlighting for `Data.to_str()` and therefore also `Data.print()` to use console default colors.
 *   Added the missing but needed dunder methods to the `Args` and `ArgResult` classes and the `rgba`, `hsla` and `hexa` color objects for better usability and type checking.
 *   Added three new methods to `Args`:
     -   `get()` – Returns the argument result for a given alias or a default value if not found.
@@ -215,6 +249,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 *   The `ArgResult` class now also has a `dict()` method, which returns the argument result as a dictionary.
 *   Added new properties `is_tty` and `supports_color` to the `Console` class, `home` to the `Path` class, and `is_win` to the `System` class.
 *   Added the option to add format specifiers to the `{current}`, `{total}` and `{percentage}` placeholders in the `bar_format` and `limited_bar_format` of `ProgressBar`.
+*   The library is now compiled using `mypyc` when installing, which makes it run significantly faster. Benchmarking results:
+    -   Simple methods like data and color operations had a speed improvement of around 50%.
+    -   Complex methods like console logging had a speed improvement of up to 230%!
+
+#### Changed
+
+*   Changed the default syntax highlighting for `Data.to_str()` and therefore also `Data.print()` to use console default colors.
 *   Finally fixed the `C901 'Console.get_args' is too complex (39)` linting error by refactoring the method into its helper class.
 *   Changed the string- and repr-representations of the `rgba` and `hsla` color objects and newly implemented it for the `Args` and `ArgResult` classes.
 *   Made internal, global constants, whose values never change, into `Final` constants for better type checking.
@@ -223,11 +264,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 *   Adjusted the whole library's type hints to be way more strict and accurate, using `mypy` as a static type checker.
 *   Changed the class-property definitions to be defined via `metaclass` and use `@property` decorators to make them compatible with `mypyc`.
 *   Unnest all the nested methods in the whole library for compatibility with `mypyc`.
-*   The library is now compiled using `mypyc` when installing, which makes it run significantly faster. Benchmarking results:
-    -   Simple methods like data and color operations had a speed improvement of around 50%.
-    -   Complex methods like console logging had a speed improvement of up to 230%!
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Renamed `Data.to_str()` to `Data.render()`, since that describes its functionality better (especially with the syntax highlighting option).
 *   Renamed the constant `ANSI.ESCAPED_CHAR` to `ANSI.CHAR_ESCAPED` for better consistency with the other constant names.
@@ -237,13 +275,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.9.2" date="2025-12-16">
 
+#### Added
+
 *   Added a new class `LazyRegex` to the `regex` module, which is used to define regex patterns that are only compiled when they are used for the first time.
+
+#### Changed
+
+*   Renamed the internal class method `FormatCodes.__config_console()` to `FormatCodes._config_console()` to make it callable but still indicate that it's internal.
+
+#### Removed
+
 *   Removed unnecessary character escaping in the precompiled regex patterns in the `console` module.
 *   Removed all the runtime type checks that can also be checked using static type-checking tools, since you're supposed to use type checkers in modern Python anyway, and to improve performance.
-*   Renamed the internal class method `FormatCodes.__config_console()` to `FormatCodes._config_console()` to make it callable but still indicate that it's internal.
+
+#### Fixed
+
 *   Fixed a small bug where `Console.log_box_…()` would crash when calling it without providing any `*values` (content for inside the box).
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   The arguments when calling `Console.get_args()` are no longer specified in a single dictionary, but now each argument is passed as a separate keyword argument.<br>
     You can still use a dictionary just fine by simply unpacking it with `**`, like this:
@@ -261,12 +310,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.9.1" date="2025-11-26">
 
-*   Unified the module and class docstring styles throughout the whole library.
-*   Moved the protocol `ProgressUpdater` from the `console` module to the `types` module.
+#### Added
+
 *   Added throttling to the `ProgressBar` update methods to impact the actual process' performance as little as possible.
 *   Added a new class `Spinner` to the `console` module, which is used to display a spinner animation in the console during an ongoing process.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Unified the module and class docstring styles throughout the whole library.
+*   Moved the protocol `ProgressUpdater` from the `console` module to the `types` module.
+
+#### Breaking Changes
 
 *   Made the value input into the parameters `bar_format` and `limited_bar_format` of `ProgressBar` be a list/tuple of strings instead of a single string so the user can define multiple formats for different console widths.
 *   Added a new parameter `sep: str = " "` to the `ProgressBar` class, which is used to join multiple bar-format strings.
@@ -277,19 +331,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.9.0" date="2025-11-21">
 
-*   Standardized the docstrings for all public methods in the whole library to use the same style and structure.
-*   Replaced left over single quotes with double quotes for consistency.
-*   Fixed a bug inside `Data.remove_empty_items()`, where types apart from strings were passed to `String.is_empty()`, which caused an exception.
-*   Refactored/reformatted the code of the whole library to introduce clearer code structure with more room to breathe.
-*   Made the really complex regex patterns in the `Regex` class all multiline for better readability.
+#### Added
+
 *   Added a new internal method `Regex._clean()`, which is used to clean up the regex patterns defined as multiline strings.
-*   Moved custom exception classes to their file `base/exceptions.py` so the user can easily import them all from the same place.
-*   Moved custom types to their file `base/types.py` so the user can easily import them all from the same place.
-*   Removed unnecessary duplicate code in several methods throughout the library.
-*   Introduced some minor performance improvements in a few methods that might be called very frequently in a short time span.
 *   Added a small description to the docstrings of all modules and their main classes.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Standardized the docstrings for all public methods in the whole library to use the same style and structure.
+*   Replaced left over single quotes with double quotes for consistency.
+*   Refactored/reformatted the code of the whole library to introduce clearer code structure with more room to breathe.
+*   Made the really complex regex patterns in the `Regex` class all multiline for better readability.
+*   Moved custom exception classes to their file `base/exceptions.py` so the user can easily import them all from the same place.
+*   Moved custom types to their file `base/types.py` so the user can easily import them all from the same place.
+*   Introduced some minor performance improvements in a few methods that might be called very frequently in a short time span.
+
+#### Removed
+
+*   Removed unnecessary duplicate code in several methods throughout the library.
+
+#### Fixed
+
+*   Fixed a bug inside `Data.remove_empty_items()`, where types apart from strings were passed to `String.is_empty()`, which caused an exception.
+
+#### Breaking Changes
 
 *   The `find_args` parameter from the method `Console.get_args()` now only accepts sets for the flags instead of lists/tuples since the order of flags doesn't matter and sets have better performance for lookups.
 *   Added missing type checking to all public methods in the whole library, so now they will all throw errors if the parameters aren't of the expected type.
@@ -298,13 +363,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.8.5" date="2025-11-14">
 
+#### Added
+
+*   Added a new method `FormatCodes.escape()` which will escape all valid formatting codes in a string.
+
+#### Changed
+
 *   Made the help command `xulbux-help` use console default colors so it fits the user's console theme.
 *   Changed the default `box_bg_color` in `Console.log_box_filled()` from `green` to `br:green`.
-*   Fixed a bug in all methods of `FormatCodes`, where as soon as you used more than a single modifier format code (e.g., `[ll]` or `[++]`), it was treated as invalid and ignored.
-*   Added a new method `FormatCodes.escape()` which will escape all valid formatting codes in a string.
 *   Again refactored the whole `CHANGELOG.md` to use actual sentences and added a `BREAKING CHANGES` section to more clearly highlight breaking changes.
 
-**BREAKING CHANGES:**
+#### Fixed
+
+*   Fixed a bug in all methods of `FormatCodes`, where as soon as you used more than a single modifier format code (e.g., `[ll]` or `[++]`), it was treated as invalid and ignored.
+
+#### Breaking Changes
 
 *   Removed the `*c` and `*color` formatting codes, since the user should just use the code `default` to achieve the same instead.
 *   Renamed the method `FormatCodes.remove_formatting()` to `FormatCodes.remove()`.
@@ -312,11 +385,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.8.4" date="2025-11-11">
 
-*   Adjusted `Regex.hsla_str()` to not include optional degree (`°`) and percent (`%`) symbols in the captured groups.
-*   Fixed that `Regex.hexa_str()` couldn't match hex colors anywhere inside a string, but only if the whole string was just the hex color.
+#### Added
+
 *   Added `_ArgResultRegular` and `_ArgResultPositional` TypedDict classes for better type hints in `Args.dict()` and `Args.items()` methods.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Adjusted `Regex.hsla_str()` to not include optional degree (`°`) and percent (`%`) symbols in the captured groups.
+
+#### Fixed
+
+*   Fixed that `Regex.hexa_str()` couldn't match hex colors anywhere inside a string, but only if the whole string was just the hex color.
+
+#### Breaking Changes
 
 *   The method `Console.get_args()` no longer tries to convert found arg values to their respective types since that caused too many unwanted wrong type conversions.
 *   `ArgResult` now has separate properties for different argument types to improve type safety and eliminate the need for type casting when accessing argument values:
@@ -326,65 +407,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.8.3" date="2025-10-08">
 
-*   Adjusted the look of the prompts and inputs of the `System.check_libs()` method.
+#### Added
+
 *   Added a new parameter to `System.check_libs()`:<br>
     `missing_libs_msgs: tuple[str, str] = (…)` – Two messages:<br>
     The first one is displayed when missing libraries are found.<br>
     The second one is the confirmation message before installing missing libraries.
-*   Adjusted error messages throughout the whole library to all be structured about the same.
-*   Fixed a small bug in `FormatCodes.__config_console()`, where it would cause an exception because it tried to configure Windows-specific console settings on non-Windows systems.
-*   The `Console.get_args()` method will now treat everything as values (even if it starts with `-` or `--`) unless it's specified in the `find_args` parameter.
 *   Added two new parameters to all the `Console.log()` presets:<br>
     -   `exit_code: int = 0` – The exit code to use if `exit` is true.
     -   `reset_ansi: bool = True` – Whether to reset all ANSI formatting after pausing/exiting or not.
-*   Made the type hints and value checks for `Console.get_args()` more strict.
 *   You can now insert horizontal rules inside a `Console.log_box_bordered()` by putting `{hr}` in the text.
 *   Made it possible to also update the title within a `ProgressBar.progress_context()` using the returned callable with the new kwarg `label`.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Adjusted the look of the prompts and inputs of the `System.check_libs()` method.
+*   Adjusted error messages throughout the whole library to all be structured about the same.
+*   The `Console.get_args()` method will now treat everything as values (even if it starts with `-` or `--`) unless it's specified in the `find_args` parameter.
+*   Made the type hints and value checks for `Console.get_args()` more strict.
+
+#### Fixed
+
+*   Fixed a small bug in `FormatCodes.__config_console()`, where it would cause an exception because it tried to configure Windows-specific console settings on non-Windows systems.
+
+#### Breaking Changes
 
 *   Reordered the parameters of `Console.pause_exit()` to be more logical.
 
 </Release>
 <Release version="1.8.2" date="2025-09-11">
 
+#### Added
+
 *   The client command `xulbux-help` now tells you that there's a newer version of the library available if you're not using the latest version.
 *   Added two new parameters to `Console.input()`:
     -   `default_val: Optional[T] = None` – The default value to return if the input is empty.
     -   `output_type: type[T] = str` – The type (class) to convert the input to before returning it.
 *   Added a new class `ProgressBar` to the `console` module.
-*   Made a small performance improvement in `FormatCodes.to_ansi()`.
 *   Added missing docstrings to several public class variables.
 *   Added the missing tests for methods in the `console` module.
 *   Added a test for the last two modules that didn't have tests until now: `regex` and `system`.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Made a small performance improvement in `FormatCodes.to_ansi()`.
+
+#### Breaking Changes
 
 *   Spaces between a format code and the auto-reset brackets are no longer allowed, so `[red]␣(text)` will not be automatically reset and output as `␣(text)`.
 
 </Release>
 <Release version="1.8.1" date="2025-08-20" status="hotfix">
 
-*   Fixed a critical bug that caused the package to not install properly and make the whole library not work.
-*   Fixed several small bugs regarding the tabs and text wrapping inside `Console.log()`.
+#### Added
+
 *   Added two new parameters to `Console.log()`:
     -   `title_px: int = 1` – The horizontal padding (in chars) to the title (if `title_bg_color` is set).
     -   `title_mx: int = 2` – The horizontal margin (in chars) to the title.
 
-**BREAKING CHANGES:**
+#### Fixed
+
+*   Fixed a critical bug that caused the package to not install properly and make the whole library not work.
+*   Fixed several small bugs regarding the tabs and text wrapping inside `Console.log()`.
+
+#### Breaking Changes
 
 *   Renamed the parameter `_console_tabsize` from the method `Console.log()` to `tab_size`, and it will now just set the size for the log directly instead of specifying what the console's tab size is.
 
 </Release>
 <Release version="1.8.0" date="2025-08-28" status="broken">
 
+#### Added
+
 *   New options for the parameter `find_args` from the method `Console.get_args()`:<br>
     Previously, you could only input a dictionary with items like `"alias_name": ["-f", "--flag"]` that specify an arg's alias and the flags that correspond to it.<br>
     New, instead of flags, you can also once use the literal `"before"` and once `"after"`, which corresponds to all non-flagged values before or after all flagged values.
-*   Changed the default `default_color` for all `Console` class input methods to `None`.
 *   Now `prompt` from `Console.pause_exit()` also supports custom formatting codes and the method new pauses per default (without exiting).
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Changed the default `default_color` for all `Console` class input methods to `None`.
+
+#### Breaking Changes
 
 *   The method `Console.restricted_input()` now returns an empty string instead of `None` if the user didn't input anything.
 *   Completely rewrote `Console.restricted_input()`, so now it's actually usable, and renamed it to just `Console.input()`.
@@ -398,47 +502,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.7.3" date="2025-07-29">
 
+#### Added
+
 *   Added a new parameter to the methods `Console.log_box_filled()` and `Console.log_box_bordered()`:<br>
     `indent: int = 0` – The indentation of the box (in chars).
+
+#### Fixed
+
 *   Fixed a bug in `Console.log_box_filled()` where the box background color would sometimes not stop at the box's edge but would continue to the end of the console line.
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Removed the parameter `title_bg_color` from the `Console.log()` preset methods since that is part of the preset and doesn't need to be changed by the user.
 
 </Release>
 <Release version="1.7.2" date="2025-06-17">
 
+#### Changed
+
 *   The `Console.w`, `Console.h` and `Console.wh` class properties now return a default size if there is no console, instead of throwing an error.
-*   It wasn't actually possible to use default console colors (e.g., `"red"`, `"green"`, …) for the color parameters in `Console.log()` so that option was completely removed again.
 *   Upgraded the speed of `FormatCodes.to_ansi()` by adding the internal ability to skip the `default_color` validation.
+
+#### Removed
+
+*   It wasn't actually possible to use default console colors (e.g., `"red"`, `"green"`, …) for the color parameters in `Console.log()` so that option was completely removed again.
+
+#### Fixed
+
 *   Fixed type hints for the whole library.
 *   Fixed a small bug in `Console.pause_exit()`, where the key pressed to unpause wasn't suppressed, so it was written into the next console input after unpausing.
 
 </Release>
 <Release version="1.7.1" date="2025-06-11">
 
-*   Resolved an issue with the `Color.is_valid_…()` and `Color.is_valid()` methods, where you were unable to input any color without a type mismatch.
+#### Added
+
 *   Added a new method `Console.log_box_bordered()`, which does the same as `Console.log_box_filled()`, but with a border instead of a background color.
-*   The module `xx_format_codes` now treats the `[*]` to-default-color-reset as a normal full reset when no `default_color` is set instead of just counting it as an invalid format code.
-*   Fixed a bug where entering a color as a hex integer in the color parameters of the methods `Console.log()`, `Console.log_box_filled()` and `Console.log_box_bordered()` would not work, because it was not properly converted to a format code.
 *   You can now use default console colors (e.g., `"red"`, `"green"`, …) for the color parameters in `Console.log()`.
+
+#### Changed
+
+*   The module `xx_format_codes` now treats the `[*]` to-default-color-reset as a normal full reset when no `default_color` is set instead of just counting it as an invalid format code.
 *   The methods `Console.log_box_filled()` and `Console.log_box_bordered()` no longer right-strip spaces, so you can make multiple log boxes the same width by adding spaces to the end of the text.
 
-**BREAKING CHANGES:**
+#### Fixed
+
+*   Resolved an issue with the `Color.is_valid_…()` and `Color.is_valid()` methods, where you were unable to input any color without a type mismatch.
+*   Fixed a bug where entering a color as a hex integer in the color parameters of the methods `Console.log()`, `Console.log_box_filled()` and `Console.log_box_bordered()` would not work, because it was not properly converted to a format code.
+
+#### Breaking Changes
 
 *   Renamed the method `Console.log_box()` to `Console.log_box_filled()`.
 
 </Release>
 <Release version="1.7.0" date="2025-05-28">
 
+#### Changed
+
+*   Updated the client command `xulbux-help`.
+
+#### Fixed
+
 *   Fixed a small bug in `Console.log()` where empty line breaks were removed.
 *   Corrected and added missing type hints for the whole library.
 *   Fixed possibly unbound variables for the whole library.
-*   Updated the client command `xulbux-help`.
 
 </Release>
 <Release version="1.6.9" date="2025-04-30">
+
+#### Added
 
 *   Added a new parameter to the methods `FormatCodes.remove_ansi()` and `FormatCodes.remove_formatting()`:<br>
     `_ignore_linebreaks: bool = False` – Whether to include line breaks in the removal positions or not.
@@ -446,10 +578,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `method: str = "wcag2"` – The luminance calculation method to use.
 *   Added a new parameter to the method `File.rename_extension()`:
     `full_extension: bool = False` – Whether to treat everything behind the first `.` as the extension or everything behind the last `.`.
-*   Fixed a small bug in `Console.log_box()` where the leading spaces were removed from the box content.
 *   You can now assign default values to args in `Console.get_args()`.
 
-**BREAKING CHANGES:**
+#### Fixed
+
+*   Fixed a small bug in `Console.log_box()` where the leading spaces were removed from the box content.
+
+#### Breaking Changes
 
 *   Changed the parameters in `Json.create()`:
     -   `new_file: str = "config"` is now the first parameter and `content: dict` the second one.
@@ -461,6 +596,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.6.8" date="2025-03-18">
 
+#### Added
+
 *   Made it possible to escape formatting codes by putting a slash (`/` or `\\`) at the beginning inside the brackets (e.g., `[/red]`).
 *   New methods for `Args` (the returned object from `Console.get_args()`):
     -   The `len()` function can now be used on `Args` (the returned object from `Console.get_args()`).
@@ -471,18 +608,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   You can now use the `bool()` function on `ArgResult` to directly see if the arg exists.
 *   The methods `FormatCodes.remove_ansi()` and `FormatCodes.remove_formatting()` now have a second parameter `get_removals: bool = False`:<br>
     If this parameter is true, in addition to the cleaned string, a list of tuples will be returned, where a tuple contains the position of the removed formatting/ANSI code and the removed code.
-*   Fixed a bug in the line wrapping in all logging methods from the `xx_console` module.
 *   Added a new parameter to the method `Console.get_args()`:<br>
     `allow_spaces: bool = False` – Whether to take spaces as separators of arg values or as part of an arg value.
+
+#### Fixed
+
+*   Fixed a bug in the line wrapping in all logging methods from the `xx_console` module.
 
 </Release>
 <Release version="1.6.7" date="2025-02-26">
 
-*   Made the static method `System.is_elevated()` into a class property, which now can be accessed as `System.is_elevated`.
+#### Added
+
 *   The method `File.create()` now throws a custom `SameContentFileExistsError` exception if a file with the same name and content already exists.
 *   Added a bunch more docstrings to class properties and library constants.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Made the static method `System.is_elevated()` into a class property, which now can be accessed as `System.is_elevated`.
+
+#### Breaking Changes
 
 *   Restructured the object returned from `Console.get_args()`:<br>
     Before, you accessed an arg's result with `args["<arg_alias>"]["value"]` and `args["<arg_alias>"]["exists"]`.<br>
@@ -492,21 +637,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.6.6" date="2025-02-17">
 
+#### Added
+
 *   Added a new method `Console.multiline_input()`.
 *   Added two new parameters to the method `Console.log_box()`:<br>
     -   `w_padding: int = 2` – The horizontal padding (in chars) to the box content.<br>
     -   `w_full: bool = False` – Whether to make the box be the full console width or not.
-*   Fixed a small bug in `Data.print()` where two parameters passed to `Data.to_str()` were swapped, which caused an error.
 *   The method `Data.print()` now per default syntax highlights the console output:<br>
     The syntax highlighting colors and styles can now be customized via the new parameter `syntax_highlighting: dict[str, str] = {…}`.
 *   Added two new methods, `Data.serialize_bytes()` and `Data.deserialize_bytes()`.
-*   Made the method `String.to_type()` be able to also interpret and convert large, complex structures.
 *   Added the new parameter `strip_spaces: bool = True` to the method `Regex.brackets()` which makes it possible to not ignore spaces around the content inside the brackets.
-*   Adjusted the `Console.log_box()` method so the box background can't be reset to nothing anymore.
 *   Added a new parameter to `Console.log()` (and therefore also to every `Console.log()` preset):<br>
     `format_linebreaks: bool = True` – When true, indents the text after every line break to the level of the previous text.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Made the method `String.to_type()` be able to also interpret and convert large, complex structures.
+*   Adjusted the `Console.log_box()` method so the box background can't be reset to nothing anymore.
+
+#### Fixed
+
+*   Fixed a small bug in `Data.print()` where two parameters passed to `Data.to_str()` were swapped, which caused an error.
+
+#### Breaking Changes
 
 *   Restructured the `_consts_` library constants to use `@dataclass` classes (and simpler structured classes) as much as possible.
 *   Renamed the `DEFAULT` class from the `_consts_` to `COLOR`, whose colors are now directly accessible as variables (e.g., `COLOR.red`) and not through dictionary keys.
@@ -519,43 +672,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.6.5" date="2025-01-29">
 
-*   Now the method `FormatCodes.to_ansi()` automatically converts the parameter `string` to a *`str`* if it isn't one already.
+#### Added
+
 *   Added a new method `FormatCodes.remove_codes()`.
 *   Added a new method `FormatCodes.remove_ansi()`.
 *   Added a new method `Console.log_box()`.
+*   Added the parameters `start: str = ""`, `end: str = "\n"` and `default_color: rgba | hexa = DEFAULT.color["cyan"]` to `Console.restricted_input()` and `Console.pwd_input()`.
+
+#### Changed
+
+*   Now the method `FormatCodes.to_ansi()` automatically converts the parameter `string` to a *`str`* if it isn't one already.
 *   Changed the default values of two parameters in the `Console.log()` method and every log preset:<br>
     -   `start: str = "\n"` changed to `start: str = ""`<br>
     -   `end: str = "\n\n"` changed to `end: str = "\n"`
-*   Added the parameters `start: str = ""`, `end: str = "\n"` and `default_color: rgba | hexa = DEFAULT.color["cyan"]` to `Console.restricted_input()` and `Console.pwd_input()`.
 
 </Release>
 <Release version="1.6.4" date="2025-01-22" status="hotfix">
+
+#### Fixed
 
 *   Fixed a critical bug where the library could not be imported after the last update due to an issue in `xx_format_codes`.
 
 </Release>
 <Release version="1.6.3" date="2025-01-22" status="broken">
 
+#### Added
+
+*   Added a new parameter `ignore_in_strings: bool = True` to `Regex.brackets()`:<br>
+    If this parameter is true and a bracket is inside a string (e.g., `'…'` or `"…"`), it will not be counted as the matching closing bracket.
+
+#### Changed
+
+*   Adjusted `FormatCodes.__config_console()` so it can only be called once per process.
+
+#### Removed
+
+*   Removed `lru_cache` from the `xx_format_codes` module's internal methods since it was unnecessary.
+
+#### Fixed
+
 *   Fixed a small bug in `xx_format_codes`:<br>
     Inside print strings, if there was a `'` or `"` inside an auto-reset formatting (e.g., `[u](there's a quote)`), that caused it to not be recognized as valid and therefore not be automatically reset.<br>
     Now this is fixed, and auto-reset formatting works as expected.
-*   Added a new parameter `ignore_in_strings: bool = True` to `Regex.brackets()`:<br>
-    If this parameter is true and a bracket is inside a string (e.g., `'…'` or `"…"`), it will not be counted as the matching closing bracket.
-*   Removed `lru_cache` from the `xx_format_codes` module's internal methods since it was unnecessary.
-*   Adjusted `FormatCodes.__config_console()` so it can only be called once per process.
 
 </Release>
 <Release version="1.6.2" date="2025-01-20">
 
+#### Added
+
 *   Added a new method `elevate()` to `xx_system`, which is used to request elevated privileges.
-*   Fixed a bug in `rgba()`, `hsla()` and `hexa()`:<br>
-    Previously, when initializing a color with the alpha channel set to `0.0` (100% transparent), it was saved correctly, but when converted to a different color type or when returned, the alpha channel got ignored, just like if it was `None` or `1.0` (opaque).<br>
-    Now when initializing a color with the alpha channel set to `0.0`, this doesn't happen, and when converted or returned, the alpha channel is still `0.0`.
-*   Huge speed and efficiency improvements in `xx_color`, due to the newly added option to initialize a color without validation, which saves time when initializing colors when we know that the values are valid.
 *   Added a new parameter `reset_ansi: bool = False` to `FormatCodes.input()`:<br>
     If this parameter is true, all formatting will be reset after the user confirms the input and the program continues.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Huge speed and efficiency improvements in `xx_color`, due to the newly added option to initialize a color without validation, which saves time when initializing colors when we know that the values are valid.
+
+#### Fixed
+
+*   Fixed a bug in `rgba()`, `hsla()` and `hexa()`:<br>
+    Previously, when initializing a color with the alpha channel set to `0.0` (100% transparent), it was saved correctly, but when converted to a different color type or when returned, the alpha channel got ignored, just like if it was `None` or `1.0` (opaque).<br>
+    Now when initializing a color with the alpha channel set to `0.0`, this doesn't happen, and when converted or returned, the alpha channel is still `0.0`.
+
+#### Breaking Changes
 
 *   Moved the method `is_admin()` from `xx_console` to `xx_system`.
 *   Method `hex_int_to_rgba()` from `xx_color` now returns an `rgba()` object instead of the separate values `r`, `g`, `b` and `a`.
@@ -563,12 +742,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.6.1" date="2025-01-15">
 
+#### Changed
+
 *   Changed the parameters in `File.make_path()`:<br>
     Previously there were the parameters `filename: str` and `filetype: str = ""` where `filename` didn't have to have the file extension included, as long as the `filetype` was set.<br>
     Now these parameters have become one parameter `file: str` which is the file with the file extension.
+
+#### Removed
+
 *   Removed all line breaks and other Markdown formatting from docstrings, since not all IDEs support them.
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Changed the order of the parameters in `File.create()`:<br>
     Until now the parameter `content: str = ""` was the first parameter and `file: str = ""`.<br>
@@ -578,6 +762,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.6.0" date="2025-01-07">
 
+#### Fixed
+
 *   Fixed a small bug in `to_camel_case()` in the `xx_string` module:<br>
     Previously, it would return only the first part of the decomposed string.<br>
     Now it correctly returns all decomposed string parts, joined in CamelCase.
@@ -585,29 +771,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.5.9" date="2024-12-21">
 
+#### Added
+
+*   Introduced a new test for the `xx_format_codes` module.
+
+#### Fixed
+
 *   Fixed bugs in method `to_ansi()` in module `xx_format_codes`:<br>
     1.  The method always returned an empty string because the color validation was broken, and it would identify all colors as invalid.<br>
         Now the validation `Color.is_valid_rgba()` and `Color.is_valid_hexa()` are fixed, and now, if a color is identified as invalid, the method returns the original string instead of an empty string.
     2.  Previously the method `to_ansi()` couldn't handle formats inside `[]` because everything inside the brackets was recognized as an invalid format.<br>
         Now you can use formats inside `[]` (e.g., `"[[red](Red text [b](inside) square brackets!)]"`).
-*   Introduced a new test for the `xx_format_codes` module.
 *   Fixed a small bug in the help client command:<br>
     Added back the default text color.
 
 </Release>
 <Release version="1.5.8" date="2024-11-21">
 
+#### Added
+
 *   Added method `String.is_empty()` to check if the string is empty.
 *   Added method `String.escape()` to escape special characters in a string.
 *   Introduced a new test for `xx_data` (all methods).
 *   Added docstrings to all the methods in `xx_data`.
-*   Made all the methods from `xx_data` work with all the types of data structures (lists, tuples, sets, frozensets, and dicts).
 *   Added method `EnvPath.remove_path()`.
 *   Introduced a new test for `xx_env_vars` (all methods).
 *   Added a `hexa_str()` preset to the `xx_regex` module.
 *   Introduced a new test for the methods from the `Color` class in `xx_color`.
 
-**BREAKING CHANGES:**
+#### Changed
+
+*   Made all the methods from `xx_data` work with all the types of data structures (lists, tuples, sets, frozensets, and dicts).
+
+#### Breaking Changes
 
 *   Renamed the library from `XulbuX` to `xulbux` for better naming conventions.
 *   Renamed the module `xx_cmd` and its class `Cmd` to `xx_console` and `Console`.
@@ -616,15 +812,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.5.7" date="2024-11-15">
 
-*   Change the testing modules to be able to run together with the library `pytest`.
+#### Added
+
 *   Added formatting checks, using `black`, `isort` and `flake8`.
 *   Added the script (command) `xx-help` or `xulbux-help`.
+*   Added additional tests for the custom color types.
+
+#### Changed
+
+*   Change the testing modules to be able to run together with the library `pytest`.
 *   Structured `Cmd.restricted_input()` a bit nicer so it appears less complex.
 *   Corrected code after `Lint with flake8` formatting suggestions.
-*   Added additional tests for the custom color types.
 *   Updated the whole `xx_format_codes` module for more efficiency and speed.
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Moved the `help()` function to the file `_cli_.py`, because that's where all the scripts are located (and renamed it to `help_command()`).
 *   Moved the method `normalize_spaces()` to `xx_string`.
@@ -632,11 +833,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.5.6" date="2024-11-11">
 
+#### Changed
+
 *   Moved the whole library to a separate repository: **[python-lib-xulbux](https://github.com/xulbux/python-lib-xulbux)**
 *   Updated all connections and links correspondingly.
 
 </Release>
 <Release version="1.5.5" date="2024-11-11">
+
+#### Added
 
 *   Added methods to get the width and height of the console (in characters and lines):<br>
     -   `Cmd.w() -> int` – How many text characters the console is wide.<br>
@@ -644,56 +849,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   `Cmd.wh() -> tuple[int, int]` – A tuple with width and height.
 *   Added the method `split_count(string, count) -> list[str]` to `xx_string`.
 *   Added docstrings to every method in `xx_string`.
+*   Added required non-standard libraries to the project file.
+*   Added more metadata to the project file.
+
+#### Changed
+
 *   Updated the `Cmd.restricted_input()` method to be able to:
     -   paste text from the clipboard,
     -   select all text to delete everything at once,
     -   write and backspace over multiple lines and
     -   support custom formatting codes in the prompt.
-*   Added required non-standard libraries to the project file.
-*   Added more metadata to the project file.
 
 </Release>
 <Release version="1.5.4" date="2024-11-06">
+
+#### Added
 
 *   Added a new method `normalize_spaces(code) -> str` to `Code`.
 *   Added new docstrings to `xx_code` and `xx_cmd`.
 *   Added a custom `input()` method to `Cmd`, which lets you specify the allowed text characters the user can type, as well as the minimum and maximum length of the input.
 *   Added the method `pwd_input()` to `Cmd`, which works just like the `Cmd.restricted_input()` but masks the input characters with `*`.
+
+#### Changed
+
 *   Restructured the whole library's imports so the custom types won't get displayed as `Any` when hovering over a method/function.
+
+#### Fixed
+
 *   Fixed a bug when trying to get the base directory from a compiled script (EXE):<br>
     Would previously get the path to the temporary extracted directory, which is created when running the EXE file.<br>
     Now it gets the actual base directory of the currently running file.
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Made the `blend()` method from all the color types modify the *`self`* object in addition to returning the result.
 
 </Release>
 <Release version="1.5.3" date="2024-10-30">
 
+#### Added
+
 *   Added the default text color to the `_consts_.py` so it's easier to change it (and used it in the library).
 *   Added several other default colors to the `_consts_.py` (and used them in the library).
-*   Refactored the whole library's code after the **[PEPs](https://peps.python.org)** and **[The Zen of Python](https://peps.python.org/pep-0020/#the-zen-of-python)** 🫡:
-    -   Changed the indent to 4 spaces.
-    -   No more inline control statements.
 *   Added new methods to `Color`:<br>
     -   `rgba_to_hex(r, g, b, a) -> int`<br>
     -   `hex_to_rgba(hex_int) -> tuple`<br>
     -   `luminance(r, g, b, precision, round_to) -> float | int`
+*   All the methods in the `xx_color` module now support hex integers (e.g., `0x8085FF` instead of only strings: `"#8085FF"` `"0x8085FF"`).
+
+#### Changed
+
+*   Refactored the whole library's code after the **[PEPs](https://peps.python.org)** and **[The Zen of Python](https://peps.python.org/pep-0020/#the-zen-of-python)** 🫡:
+    -   Changed the indent to 4 spaces.
+    -   No more inline control statements.
+
+#### Fixed
+
 *   Fixed the `grayscale()` method of `rgba()`, `hsla()` and `hexa()`:<br>
     The method would previously just return the color, fully desaturated (not grayscale).<br>
     Now this is fixed, and the method uses the luminance formula to get the actual grayscale value.
-*   All the methods in the `xx_color` module now support hex integers (e.g., `0x8085FF` instead of only strings: `"#8085FF"` `"0x8085FF"`).
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Restructured the values in `_consts_.py`.
 
 </Release>
 <Release version="1.5.2" date="2024-10-28">
 
+#### Added
+
 *   New parameter `correct_path: bool` in `Path.extend()`:
     This makes sure that typos in the path will only be corrected if this parameter is true.
+
+#### Fixed
+
 *   Fixed a bug in `Path.extend()`, where an empty string was taken as a valid path for the current directory `./`.
 *   Fixed color validation bug:<br>
     `Color.is_valid_rgba()` and `Color.is_valid_hsla()` would not accept an alpha channel of `None`.<br>
@@ -705,17 +934,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.5.1" date="2024-10-28">
 
+#### Added
+
 *   Now all methods in `xx_color` support both hex prefixes (`#` and `0x`).
 *   Added the default hex prefix to `_consts_.py`.
+
+#### Fixed
+
 *   Fixed a bug when initializing a `hexa()` object:<br>
     Would throw an error, even if the color was valid.
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Renamed all library files for a better naming convention.
 
 </Release>
 <Release version="1.5.0" date="2024-10-27">
+
+#### Added
 
 *   Added a `__help__.py` file, which will show some information about the library and how to use it when it's run as a script or when the `help()` function is called.
 *   Added a lot more metadata to the library:<br>
@@ -728,30 +964,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `__description__`<br>
     `__all__`
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Split all classes into separate files so users can download only parts of the library more easily.
 
 </Release>
 <Release version="1.4.2 - 1.4.3" date="2024-10-27">
 
+#### Added
+
 *   `Path.extend(rel_path) -> abs_path` now also extends system variables like `%USERPROFILE%` and `%APPDATA%`.
-*   Removed unnecessary parts when checking for missing required libraries.
 *   You can now get the library's current version by accessing the attribute `XulbuX.__version__`.
+
+#### Removed
+
+*   Removed unnecessary parts when checking for missing required libraries.
 
 </Release>
 <Release version="1.4.1" date="2024-10-26">
+
+#### Added
 
 *   Added methods to each color type:<br>
     -   `is_grayscale() -> self`<br>
     -   `is_opaque() -> self`
 *   Added additional error checking to the color types.
+
+#### Changed
+
 *   Made error messages for the color types clearer.
 *   Updated the `blend(other, ratio)` method of all color types to use additive blending except for the alpha channel.
+
+#### Fixed
+
 *   Fixed problem with method chaining for all color types.
 
 </Release>
 <Release version="1.4.0" date="2024-10-25">
+
+#### Added
 
 *   Massive update to the custom color types:
     -   Now all type methods support chaining.
@@ -772,10 +1023,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.3.1" date="2024-10-23">
 
+#### Changed
+
 *   Now the alpha channel will be rounded to a maximum of 2 decimals if converting from `hexa()` to `rgba()` or `hsla()`.
 
 </Release>
 <Release version="1.3.0" date="2024-10-21">
+
+#### Changed
+
+*   Set default value for parameter `allow_alpha: bool` to `True` for methods:<br>
+    `Color.is_valid_rgba()`<br>
+    `Color.is_valid_hsla()`<br>
+    `Color.is_valid_hexa()`<br>
+    `Color.is_valid()`
+
+#### Fixed
 
 *   Fixed the custom types `rgba()`, `hsla()` and `hexa()`:<br>
     -   `rgba()`:<br>
@@ -789,19 +1052,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `Color.to_rgba()`<br>
     `Color.to_hsla()`<br>
     `Color.to_hexa()`
-*   Set default value for parameter `allow_alpha: bool` to `True` for methods:<br>
-    `Color.is_valid_rgba()`<br>
-    `Color.is_valid_hsla()`<br>
-    `Color.is_valid_hexa()`<br>
-    `Color.is_valid()`
 
 </Release>
 <Release version="1.2.4 - 1.2.5" date="2024-10-18">
 
+#### Changed
+
 *   Added more info to the `README.md` as well as additional links.
 *   Adjusted the structure inside `CHANGELOG.md` for a better overview and readability.
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Renamed the class `rgb()` to `rgba()` to communicate more clearly that it supports an alpha channel.
 *   Renamed the class `hsl()` to `hsla()` to communicate more clearly that it supports an alpha channel.
@@ -809,12 +1069,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.2.3" date="2024-10-18">
 
+#### Added
+
 *   Added project links to the Python-project-file.
+
+#### Changed
+
 *   Made some `CHANGELOG.md` improvements.
 *   Improved `README.md`.
 
 </Release>
 <Release version="1.2.1 - 1.2.2" date="2024-10-18">
+
+#### Fixed
 
 *   Fixed a bug in the method `Path.get(base_dir=True)`:<br>
     Previously, setting `base_dir` to `True` would not return the actual base directory or even cause an error.<br>
@@ -823,23 +1090,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.2.0" date="2024-10-17">
 
+#### Added
+
 *   New method in the `Path` class:<br>
     `Path.remove()`
 
 </Release>
 <Release version="1.1.9" date="2024-10-17">
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Corrected the naming of classes to comply with Python naming standards.
 
 </Release>
 <Release version="1.1.8" date="2024-10-17">
 
+#### Added
+
 *   Added support for all OSes to the OS-dependent methods.
 
 </Release>
 <Release version="1.1.6 - 1.1.7" date="2024-10-17">
+
+#### Fixed
 
 *   Fixed the `Cmd.cls()` method:<br>
     There was a bug where only on Windows 10, the ANSI formats weren't cleared.
@@ -847,25 +1120,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.1.4 - 1.1.5" date="2024-10-17">
 
+#### Added
+
 *   Added links to the `CHANGELOG.md` and `README.md` files.
 
 </Release>
 <Release version="1.1.3" date="2024-10-17">
+
+#### Changed
 
 *   Changed the default value of the parameter `compactness: int` in the method `Data.print()` to `1` instead of `0`.
 
 </Release>
 <Release version="1.1.1 - 1.1.2" date="2024-10-17">
 
+#### Changed
+
 *   Adjusted the library's description.
 
 </Release>
 <Release version="1.1.0" date="2024-10-16">
 
+#### Added
+
 *   Made it possible to also auto-reset the color and not only the predefined formats, using the [auto-reset format](#auto-reset-format) (`[format](Automatically resetting)`).
 
 </Release>
 <Release version="1.0.9" date="2024-10-16">
+
+#### Added
 
 *   Added a library description, which gets shown if the library base import is run directly.
 *   Made it possible to escape an <span id="auto-reset-format">auto-reset format</span> (`[format](Automatically resetting)`) with a slash, so you can still have `()` brackets behind a `[format]`:
@@ -885,22 +1168,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </Release>
 <Release version="1.0.7 - 1.0.8" date="2024-10-16">
 
+#### Added
+
 *   Added an `input()` method to the `FormatCodes` class so you can make pretty-looking input prompts.
 *   Added a warning for no network connection when trying to [install missing libraries](#improved-lib-importing).
 
 </Release>
 <Release version="1.0.6" date="2024-10-15">
 
+#### Added
+
 *   <span id="improved-lib-importing">Improved XulbuX library importing:</span><br>
     Checks for missing required libraries and gives you the option to directly install them, if there are any.
+
+#### Fixed
+
 *   Fixed issue where configuration file wasn't created and loaded correctly.
 
-**BREAKING CHANGES:**
+#### Breaking Changes
 
 *   Moved constant variables into a separate file.
 
 </Release>
 <Release version="1.0.1 - 1.0.5" date="2024-10-15">
+
+#### Fixed
 
 *   Fixed `f-string` issues for Python 3.10:
     1.  Not making use of the same quotes inside f-strings anymore.
