@@ -38,7 +38,7 @@ jobs:
             echo "Valid PR target branch: '$BASE_REF'."
             exit 0
           fi
-          if [[ "$ACTOR" == "dependabot[bot]" ]]; then
+          if [[ "$ACTOR" == "dependabot[bot]" || ( "$HEAD_REPO" == "$REPO" && "$HEAD_REF" == dependabot/* ) ]]; then
             echo "Allowed Dependabot PR into 'main'."
             exit 0
           fi

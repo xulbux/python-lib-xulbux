@@ -14,6 +14,12 @@ updates:
       website-dependencies:
         patterns:
           - '*'
+    ignore:
+      # `vue-tsc` (`@volar/typescript`) requires `typescript <7`, and `vitepress` requires `markdown-it-mathjax3 ^4`:
+      - dependency-name: 'typescript'
+        versions: ['>= 7.0.0']
+      - dependency-name: 'markdown-it-mathjax3'
+        versions: ['>= 5.0.0']
 
   - package-ecosystem: 'github-actions'
     directory: '/'

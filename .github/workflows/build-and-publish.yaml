@@ -31,10 +31,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Ensure release version does not already exist
+      - name: Check if release version already exists
         id: check
         env:
-          EVENT_NAME: ${{ github.event_name }}
+          GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
           PYTHONPATH: src
           REF: ${{ github.ref }}
@@ -42,11 +42,7 @@ jobs:
           VERSION=$(python3 -c "from xulbux import __version__; print(__version__)")
           TAG="v${VERSION}"
           if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1 || gh release view "${TAG}" >/dev/null 2>&1; then
-            if [[ "$EVENT_NAME" != "workflow_dispatch" ]]; then
-              echo "::error::Release '${TAG}' already exists. Bump the version before pushing to 'main'."
-              exit 1
-            fi
-            echo "::warning::Release '${TAG}' already exists; running build-only check for workflow_dispatch."
+            echo "Release '${TAG}' already exists; skipping release publish."
             SHOULD_RELEASE="false"
           elif [[ "$REF" == "refs/heads/main" ]]; then
             SHOULD_RELEASE="true"
@@ -66,19 +62,34 @@ jobs:
           from xulbux import __version__
 
           changelog = pathlib.Path("CHANGELOG.md").read_text("utf-8")
-          pattern = rf'<Release\s+version="{re.escape(__version__)}"[^>]*>\s*(.*?)\s*</Release>'
-          match = re.search(pattern, changelog, flags=re.DOTALL)
-          body = match.group(1).strip() if match else f"Release `v{__version__}`."
+          releases = re.findall(r'<Release\s+version="([^"]+)"[^>]*>\s*(.*?)\s*</Release>', changelog, flags=re.DOTALL)
+
+          body = f"Release `v{__version__}`."
+          prev_ver = ""
+          for idx, (ver, content) in enumerate(releases):
+              if ver.strip().lstrip("v") == __version__:
+                  body = content.strip()
+                  if idx + 1 < len(releases):
+                      prev_ver = releases[idx + 1][0].split("-")[-1].strip().lstrip("v")
+                  break
 
           anchor = f"v{__version__.replace('.', '-')}"
           url = f"https://xulbux.github.io/python-lib-xulbux/changelog#{anchor}"
-          footer = (
-              f"\n\n---\n\n⚠️ This release contains breaking changes. See [`v{__version__}` in the changelog]({url}) on the website."
+          compare_line = (
+              f"**Full Changelog**: https://github.com/xulbux/python-lib-xulbux/compare/v{prev_ver}...v{__version__}\n\n"
+              if prev_ver
+              else ""
+          )
+          changelog_line = (
+              f"⚠️ This release contains breaking changes. See [`v{__version__}` in the changelog]({url}) on the website."
               if "#### Breaking Changes" in body
-              else f"\n\n---\n\nSee [`v{__version__}` in the changelog]({url}) on the website."
+              else f"See [`v{__version__}` in the changelog]({url}) on the website."
           )
 
-          pathlib.Path("release-notes.md").write_text(body + footer + "\n", encoding="utf-8")
+          pathlib.Path("release-notes.md").write_text(
+              f"{body}\n\n---\n\n{compare_line}{changelog_line}\n",
+              encoding="utf-8",
+          )
           PY
 
       - uses: actions/upload-artifact@v7
@@ -90,6 +101,7 @@ jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
     needs: check_release
+    if: needs.check_release.outputs.should_release == 'true' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
@@ -128,6 +140,7 @@ jobs:
   build_sdist:
     name: Build source distribution
     needs: check_release
+    if: needs.check_release.outputs.should_release == 'true' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -170,9 +183,12 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
 
       - name: Create GitHub Release
         env:
+          GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.check_release.outputs.tag }}
           TARGET_SHA: ${{ github.sha }}
