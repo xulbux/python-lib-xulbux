@@ -498,7 +498,7 @@ body:has(.release-card) .vp-doc > div > h2,
 }
 
 /* Subtle Semi-Transparent Underlines on Prose Links (svg-api) */
-.vp-doc a:not(.header-anchor, .api-link, .VPButton) {
+.vp-doc a:not(.header-anchor, .api-link, .class-prefix, .VPButton) {
   border-radius: 4px;
   color: inherit !important;
   text-decoration-color: color-mix(in srgb, currentColor 38%, transparent);
@@ -506,7 +506,7 @@ body:has(.release-card) .vp-doc > div > h2,
   text-underline-offset: 3px;
   transition: text-decoration-color 200ms ease;
 }
-.vp-doc a:not(.header-anchor, .api-link, .VPButton):hover {
+.vp-doc a:not(.header-anchor, .api-link, .class-prefix, .VPButton):hover {
   color: inherit !important;
   opacity: 1 !important;
   text-decoration-color: currentColor;
@@ -591,16 +591,26 @@ body:has(.release-card) .vp-doc > div > h2,
 
 /* API Cross-Reference Links */
 .vp-doc .api-link {
+  position: relative;
   border-radius: 3px;
   text-decoration: none;
   color: inherit;
+  transition: color 200ms;
+}
+.vp-doc .api-link::after {
+  content: '';
+  left: 0;
+  right: 0;
+  bottom: -0.1rem;
+  position: absolute;
+  pointer-events: none;
   border-bottom: 0.1rem dashed color-mix(in srgb, currentColor 40%, transparent);
-  transition:
-    color 200ms,
-    border-color 200ms;
+  transition: border-color 200ms;
 }
 .vp-doc .api-link:hover {
   color: inherit !important;
+}
+.vp-doc .api-link:hover::after {
   border-bottom: 0.1rem solid currentColor;
 }
 
@@ -619,7 +629,7 @@ body:has(.release-card) .vp-doc > div > h2,
   margin-right: 0;
   position: relative;
   overflow: hidden !important;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md) !important;
   border: 1px solid var(--code-border, var(--vp-c-divider));
 }
 
@@ -745,7 +755,6 @@ body:has(.release-card) .vp-doc > div > h2,
 
 .vp-doc div[class*='language-']:has(> pre:focus-visible),
 .vp-doc .vp-code-group:has(div[class*='language-'].active > pre:focus-visible) {
-  border-radius: var(--radius-md) !important;
   outline: 2px solid var(--c-focus) !important;
   outline-offset: 2px !important;
 }
@@ -1116,6 +1125,8 @@ body:has(.release-card) .vp-doc > div > h2,
 /* API Class Prefix Badges */
 .api-item h4 code a.class-prefix::before {
   content: attr(data-class-prefix);
+  border-bottom: 0.1rem dashed color-mix(in srgb, currentColor 64%, transparent);
+  transition: border-color 200ms;
 }
 .api-item h4 code a.class-prefix {
   z-index: 0;
@@ -1124,16 +1135,17 @@ body:has(.release-card) .vp-doc > div > h2,
   border-radius: 3px;
   position: relative;
   text-decoration: none;
-  border-bottom: 0.1rem dashed color-mix(in srgb, currentColor 64%, transparent);
   transition:
     opacity 200ms,
-    color 200ms,
-    border-color 200ms;
+    color 200ms;
 }
 .api-item h4 code a.class-prefix:hover,
 .api-item h4 code a.class-prefix:active {
   opacity: 1;
   color: inherit !important;
+}
+.api-item h4 code a.class-prefix:hover::before,
+.api-item h4 code a.class-prefix:active::before {
   border-bottom: 0.1rem solid currentColor;
 }
 

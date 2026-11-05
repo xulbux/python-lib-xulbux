@@ -51,7 +51,8 @@ poetry update xulbux
 The library's modules can be accessed by importing the `xulbux` package.
 
 ::: tip Why alias as `xx`?
-It is highly recommended to alias the package as `xx` (`import xulbux as xx`). This prevents naming collisions with common variable names like `data` (`xx.data`), `fs` (`xx.fs`), or `system` (`xx.system`), while keeping module calls concise.
+It is highly recommended to import the package under the `xx` alias (`import xulbux as xx`) instead of importing its modules directly.
+This prevents naming collisions with common variable names like `data` (`xx.data`), `fs` (`xx.fs`), or `system` (`xx.system`), while keeping module calls concise.
 :::
 
 ```python
