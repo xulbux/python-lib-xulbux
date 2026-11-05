@@ -1,2 +1,12 @@
 allowBuilds:
   esbuild: true
+
+overrides:
+  '@vue/server-renderer': '>=3.5.42'
+  '@xmldom/xmldom': '>=0.9.12'
+  esbuild: '>=0.24.3'
+  katex: '>=0.18.2'
+  re2js: '>=2.9.1'
+  source-map-js: '>=1.2.2'
+  tinypool: '>=2.1.2'
+  vite: '>=6.4.4'
