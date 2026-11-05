@@ -6,6 +6,7 @@
       :class="{ copied: copied }"
       title="Copy Code"
       aria-label="Copy Code"
+      data-copied="Copied"
       @click.stop="copyText"></button>
     <span class="lang">terminal</span>
     <slot />

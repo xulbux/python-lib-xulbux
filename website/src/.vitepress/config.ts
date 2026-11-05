@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitepress';
-import { apiLinkTransformer } from './plugins/apiLinkTransformer';
-import { syncPlugin } from './plugins/syncPlugin';
+import { apiLinkTransformer } from './plugins/apiLinkTransformer.ts';
+import { syncPlugin } from './plugins/syncPlugin.ts';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const sidebar = JSON.parse(fs.readFileSync(path.resolve(dirname, 'sidebar.json'), 'utf8'));
