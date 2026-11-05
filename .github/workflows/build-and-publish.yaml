@@ -1,26 +1,97 @@
-# This workflow will build wheels for all major platforms and upload them to PyPI.
-
-# To build and install locally for testing, run the following command:
+# Automatically builds wheels + sdist, publishes to PyPI, and creates a GitHub Release
+# whenever a new version in `pyproject.toml` is merged/pushed to `main`:
+#
+# To build and install locally for testing, run:
 # py -m pip install "/path/to/python-lib-xulbux" --no-deps --no-cache-dir --force-reinstall -vv
 
-# To create a new release after merging the PR into main:
-# [1] On GitHub, go to `Releases` > `Draft a new release`.
-# [2] Create a new tag `vX.Y.Z` targeting the `main` branch.
-# [3] Set the release title (e.g., `vX.Y.Z`) and add a short description.
-# [4] Click `Publish release` – this triggers the workflow automatically.
-
 name: Build and Publish
-permissions:
-  contents: read
+permissions: {}
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch: # Allow manual trigger.
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  check_release:
+    name: Check Release Version
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.check.outputs.tag }}
+      should_release: ${{ steps.check.outputs.should_release }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Ensure release version does not already exist
+        id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
+          PYTHONPATH: src
+          REF: ${{ github.ref }}
+        run: |
+          VERSION=$(python3 -c "from xulbux import __version__; print(__version__)")
+          TAG="v${VERSION}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1 || gh release view "${TAG}" >/dev/null 2>&1; then
+            if [[ "$EVENT_NAME" != "workflow_dispatch" ]]; then
+              echo "::error::Release '${TAG}' already exists. Bump the version before pushing to 'main'."
+              exit 1
+            fi
+            echo "::warning::Release '${TAG}' already exists; running build-only check for workflow_dispatch."
+            SHOULD_RELEASE="false"
+          elif [[ "$REF" == "refs/heads/main" ]]; then
+            SHOULD_RELEASE="true"
+          else
+            SHOULD_RELEASE="false"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "should_release=${SHOULD_RELEASE}" >> "$GITHUB_OUTPUT"
+
+      - name: Extract release notes from `CHANGELOG.md`
+        if: steps.check.outputs.should_release == 'true'
+        env:
+          PYTHONPATH: src
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          from xulbux import __version__
+
+          changelog = pathlib.Path("CHANGELOG.md").read_text("utf-8")
+          pattern = rf'<Release\s+version="{re.escape(__version__)}"[^>]*>\s*(.*?)\s*</Release>'
+          match = re.search(pattern, changelog, flags=re.DOTALL)
+          body = match.group(1).strip() if match else f"Release `v{__version__}`."
+
+          anchor = f"v{__version__.replace('.', '-')}"
+          url = f"https://xulbux.github.io/python-lib-xulbux/changelog#{anchor}"
+          footer = (
+              f"\n\n---\n\n⚠️ This release contains breaking changes. See [`v{__version__}` in the changelog]({url}) on the website."
+              if "#### Breaking Changes" in body
+              else f"\n\n---\n\nSee [`v{__version__}` in the changelog]({url}) on the website."
+          )
+
+          pathlib.Path("release-notes.md").write_text(body + footer + "\n", encoding="utf-8")
+          PY
+
+      - uses: actions/upload-artifact@v7
+        if: steps.check.outputs.should_release == 'true'
+        with:
+          name: release-notes
+          path: release-notes.md
+
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
+    needs: check_release
+    permissions:
+      contents: read
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -56,6 +127,9 @@ jobs:
 
   build_sdist:
     name: Build source distribution
+    needs: check_release
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -70,18 +144,41 @@ jobs:
           name: sdist
           path: dist/*.tar.gz
 
-  upload_pypi:
-    name: Upload to PyPI
-    needs: [build_wheels, build_sdist]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+  publish:
+    name: Publish to PyPI & GitHub Releases
+    needs: [check_release, build_wheels, build_sdist]
+    if: needs.check_release.outputs.should_release == 'true' && github.repository == 'xulbux/python-lib-xulbux'
     permissions:
+      contents: write
       id-token: write
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v8
         with:
-          pattern: '*'
+          pattern: 'wheels-*'
           merge-multiple: true
           path: dist
 
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: actions/download-artifact@v8
+        with:
+          name: sdist
+          path: dist
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-notes
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.check_release.outputs.tag }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          gh release create "$TAG" \
+            dist/* \
+            --target "$TARGET_SHA" \
+            --title "$TAG" \
+            --notes-file release-notes.md
