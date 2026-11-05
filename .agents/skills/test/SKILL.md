@@ -13,7 +13,7 @@ In accordance with the 100% test coverage policy in `AGENTS.md` Section 2, use t
 
 Tests are structured cleanly to mirror the `src/xulbux/` layout:
 
-1.  **Module Folder Mapping:** Every module in `src/xulbux/` corresponds to a matching directory in `tests/test_<module>/` (e.g., `tests/test_ansi/`, `tests/test_color/`, `tests/test_console/`, `tests/test_data/`, `tests/test_system/`, `tests/test_file_sys/`).
+1.  **Module Folder Mapping:** Every module in `src/xulbux/` corresponds to a matching directory in `tests/test_<module>/` (e.g., `tests/test_ansi/`, `tests/test_base/`, `tests/test_fs/`).
 2.  **Domain-Driven Separation:** Split tests by core responsibility, class, or feature domain rather than artificial "normal vs edge-case" splits.
     *   *Example:* In `tests/test_color/`: `test_rgba.py`, `test_hsla.py`, `test_hexa.py`, `test_conversions.py`, `test_color_utils.py`.
     *   *Example:* In `tests/test_console/`: `test_progress.py`, `test_throbber.py`, `test_arg_parser.py`, `test_log_box.py`, `test_terminal_and_prompts.py`.

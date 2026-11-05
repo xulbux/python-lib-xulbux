@@ -1,0 +1,29 @@
+# Weekly grouped dependency updates (with 3-day supply-chain cooldown) for `website` `pnpm` packages
+# and GitHub Actions workflows (`pyproject.toml` minimum version bounds are managed manually):
+
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/website'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    cooldown:
+      default-days: 3
+    groups:
+      website-dependencies:
+        patterns:
+          - '*'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    cooldown:
+      default-days: 3
+    groups:
+      actions:
+        patterns:
+          - '*'
+

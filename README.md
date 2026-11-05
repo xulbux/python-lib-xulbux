@@ -63,12 +63,18 @@ xx.console.box("Ready to build something great.")
 For full usage guides, visit the [**Getting Started Guide**](https://xulbux.github.io/python-lib-xulbux/docs/guide/get-started) and [**CLI Tools Guide**](https://xulbux.github.io/python-lib-xulbux/docs/guide/cli-tools).
 
 <br>
+
+## <a href="#contributing"><img src="https://svg.xul.is/icon/handshake?size=32&stroke=2" align="left" /></a>Contributing
+
+Contributions, bug reports, and feature ideas are welcome! See the [**Contributing Guide**](CONTRIBUTING.md) to get started.
+
+<br>
 <br>
 <br>
 
 ## Enjoying this library?&numsp;Have suggestions?
 
-Please consider giving a [![star](https://svg.xul.is/icon/star?size=20&anim=shake)](https://github.com/xulbux/python-lib-xulbux) on [**GitHub**](https://github.com/xulbux/python-lib-xulbux) or suggesting improvements in the [**Discussions**](https://github.com/xulbux/python-lib-xulbux/discussions).
+Please consider giving a [![star](https://svg.xul.is/icon/star?size=20&anim=shake)](https://github.com/xulbux/python-lib-xulbux) on [**GitHub**](https://github.com/xulbux/python-lib-xulbux) or opening an [**Issue**](https://github.com/xulbux/python-lib-xulbux/issues) for bugs and feature ideas.
 
 <br>
 <br>

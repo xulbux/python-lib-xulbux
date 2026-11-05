@@ -9,16 +9,19 @@
   "main": "index.js",
   "scripts": {
     "build": "vitepress build .build",
+    "check": "pnpm run fmt:check && pnpm run lint:check && pnpm run lint:md && pnpm run type-check",
     "dev": "vitepress dev .build",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "lint": "oxlint --fix",
-    "lint:check": "oxlint",
+    "lint": "oxlint --fix --deny-warnings",
+    "lint:check": "oxlint --deny-warnings",
+    "lint:md": "markdownlint-cli2 --config ../.markdownlint.json \"../**/*.md\" \"#../**/node_modules\" \"#../website/.build\" \"#../build\" \"#../.venv\" \"#../mutants\"",
     "type-check": "vue-tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
     "markdown-it-mathjax3": "^4.3.2",
+    "markdownlint-cli2": "^0.24.0",
     "oxfmt": "^0.63.0",
     "oxlint": "^1.78.0",
     "typescript": "~6.0.3",

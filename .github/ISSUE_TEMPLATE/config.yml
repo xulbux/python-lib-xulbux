@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation & API Reference
+    url: https://xulbux.github.io/python-lib-xulbux/docs
+    about: Check module guides, function signatures, and CLI usage first.
