@@ -172,7 +172,7 @@ function splitSpanText(
 
     newChildren.push({
       children: [{ type: 'text', value: matchedStr }],
-      properties: { class: 'api-link', href },
+      properties: { class: 'api-link', href, tabindex: '0' },
       tagName: 'a',
       type: 'element',
     });

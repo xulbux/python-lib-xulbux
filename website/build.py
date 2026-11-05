@@ -4,12 +4,16 @@ import importlib
 import importlib.machinery
 import importlib.util
 import inspect
+import io
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 import textwrap
+import urllib.request
+import zipfile
 from contextlib import suppress
 from pathlib import Path
 from typing import Any, TypedDict, cast
@@ -24,6 +28,142 @@ DIR_WEBSITE_SRC = DIR_WEBSITE / "src"
 DIR_WEBSITE_BUILD = DIR_WEBSITE / ".build"
 
 DIR_API_OUT = DIR_WEBSITE_BUILD / "docs" / "api"
+DIR_THEMES_BUILD = DIR_WEBSITE_BUILD / ".vitepress" / "themes"
+DIR_LOCAL_ISOLUX_DIST = DIR_ROOT.parent / "vscode-theme-isolux" / "dist"
+ISOLUX_THEME_FILES = ("isolux-pro-dark.json", "isolux-pro-light.json")
+URL_ISOLUX_OPENVSX = "https://open-vsx.org/api/xulbux/theme-isolux/latest"
+URL_ISOLUX_GITHUB = "https://api.github.com/repos/xulbux/vscode-theme-isolux/releases/latest"
+PATH_STYLE_CSS_BUILD = DIR_WEBSITE_BUILD / ".vitepress" / "theme" / "style.css"
+ISOLUX_ROOT_VARS: tuple[tuple[str, str, str], ...] = (
+    # Terminal ANSI Colors (always Isolux Pro Dark):
+    ("--term-black", "dark", "terminal.ansiBlack"),
+    ("--term-br-black", "dark", "terminal.ansiBrightBlack"),
+    ("--term-red", "dark", "terminal.ansiRed"),
+    ("--term-br-red", "dark", "terminal.ansiBrightRed"),
+    ("--term-green", "dark", "terminal.ansiGreen"),
+    ("--term-br-green", "dark", "terminal.ansiBrightGreen"),
+    ("--term-yellow", "dark", "terminal.ansiYellow"),
+    ("--term-br-yellow", "dark", "terminal.ansiBrightYellow"),
+    ("--term-blue", "dark", "terminal.ansiBlue"),
+    ("--term-br-blue", "dark", "terminal.ansiBrightBlue"),
+    ("--term-magenta", "dark", "terminal.ansiMagenta"),
+    ("--term-br-magenta", "dark", "terminal.ansiBrightMagenta"),
+    ("--term-cyan", "dark", "terminal.ansiCyan"),
+    ("--term-br-cyan", "dark", "terminal.ansiBrightCyan"),
+    ("--term-white", "dark", "terminal.ansiWhite"),
+    ("--term-br-white", "dark", "terminal.ansiBrightWhite"),
+    # Isolux Pro Light Surfaces, Borders & Text:
+    ("--vp-c-white", "light", "editor.background"),
+    ("--vp-c-black", "light", "badge.foreground"),
+    ("--vp-c-bg", "light", "editor.background"),
+    ("--vp-c-bg-soft", "light", "sideBar.background"),
+    ("--vp-c-bg-alt", "light", "sideBar.background"),
+    ("--vp-c-bg-elv", "light", "chat.requestBackground"),
+    ("--vp-c-divider", "light", "panel.border"),
+    ("--vp-c-gutter", "light", "panel.border"),
+    ("--c-border-strong", "light", "checkbox.border"),
+    ("--c-focus", "light", "focusBorder"),
+    ("--vp-code-block-selection", "light", "editor.selectionBackground"),
+    ("--vp-c-text-1", "light", "editor.foreground"),
+    ("--vp-c-text-2", "light", "sideBar.foreground"),
+    ("--vp-c-text-3", "light", "breadcrumb.foreground"),
+    # Isolux Pro Light Scales & Roles:
+    ("--vp-c-gray-1", "light", "checkbox.border"),
+    ("--vp-c-gray-2", "light", "terminal.ansiBrightWhite"),
+    ("--vp-c-gray-3", "light", "chat.requestBubbleBackground"),
+    ("--vp-c-gray-soft", "light", "editor.lineHighlightBackground"),
+    ("--vp-c-indigo-1", "light", "textLink.foreground"),
+    ("--vp-c-indigo-2", "light", "textLink.activeForeground"),
+    ("--vp-c-indigo-3", "light", "textLink.foreground"),
+    ("--vp-c-indigo-soft", "raw", "color-mix(in srgb, var(--vp-c-indigo-1) 12%, transparent)"),
+    ("--vp-c-purple-1", "light", "symbolIcon.booleanForeground"),
+    ("--vp-c-purple-2", "light", "markdownAlert.important.foreground"),
+    ("--vp-c-purple-3", "light", "charts.purple"),
+    ("--vp-c-purple-soft", "raw", "color-mix(in srgb, var(--vp-c-purple-3) 12%, transparent)"),
+    ("--vp-c-green-1", "light", "terminal.ansiGreen"),
+    ("--vp-c-green-2", "light", "terminal.ansiBrightGreen"),
+    ("--vp-c-green-3", "light", "markdownAlert.tip.foreground"),
+    ("--vp-c-green-soft", "raw", "color-mix(in srgb, var(--vp-c-green-3) 12%, transparent)"),
+    ("--vp-c-yellow-1", "light", "scope:log.warning"),
+    ("--vp-c-yellow-2", "light", "charts.yellow"),
+    ("--vp-c-yellow-3", "light", "terminal.ansiYellow"),
+    ("--vp-c-yellow-soft", "raw", "color-mix(in srgb, var(--vp-c-yellow-1) 12%, transparent)"),
+    ("--vp-c-red-1", "light", "markdownAlert.caution.foreground"),
+    ("--vp-c-red-2", "light", "charts.red"),
+    ("--vp-c-red-3", "light", "terminal.ansiRed"),
+    ("--vp-c-red-soft", "raw", "color-mix(in srgb, var(--vp-c-red-1) 12%, transparent)"),
+    ("--vp-c-sponsor", "light", "gitDecoration.modifiedResourceForeground"),
+    # Isolux Pro Light Controls & Primary Buttons:
+    ("--vp-input-switch-bg-color", "light", "chat.requestBubbleBackground"),
+    ("--vp-button-brand-border", "light", "button.border"),
+    ("--vp-button-brand-text", "light", "button.foreground"),
+    ("--vp-button-brand-bg", "light", "button.background"),
+    ("--vp-button-brand-hover-border", "light", "button.border"),
+    ("--vp-button-brand-hover-text", "light", "button.foreground"),
+    ("--vp-button-brand-hover-bg", "light", "button.hoverBackground"),
+    ("--vp-button-brand-active-border", "light", "button.border"),
+    ("--vp-button-brand-active-text", "light", "button.foreground"),
+    ("--vp-button-brand-active-bg", "light", "button.background"),
+    # Always-Dark Terminal Surface Tokens on :root:
+    ("--dvp-c-bg", "dark", "sideBar.background"),
+    ("--dvp-c-bg-elv", "dark", "chat.requestBackground"),
+    ("--dvp-c-divider", "dark", "panel.border"),
+    ("--dvp-c-border-strong", "dark", "checkbox.border"),
+    ("--dvp-c-text-2", "dark", "sideBar.foreground"),
+    ("--dvp-c-text-3", "dark", "breadcrumb.foreground"),
+)
+ISOLUX_DARK_VARS: tuple[tuple[str, str, str], ...] = (
+    # Isolux Pro Dark Surfaces, Borders & Text:
+    ("--vp-c-bg", "dark", "sideBar.background"),
+    ("--vp-c-bg-soft", "dark", "editor.background"),
+    ("--vp-c-bg-alt", "dark", "editor.background"),
+    ("--vp-c-bg-elv", "dark", "chat.requestBackground"),
+    ("--vp-c-divider", "dark", "panel.border"),
+    ("--vp-c-gutter", "dark", "panel.border"),
+    ("--c-border-strong", "dark", "checkbox.border"),
+    ("--c-focus", "dark", "focusBorder"),
+    ("--vp-code-block-selection", "dark", "editor.selectionHighlightBackground"),
+    ("--vp-c-text-1", "dark", "editor.foreground"),
+    ("--vp-c-text-2", "dark", "sideBar.foreground"),
+    ("--vp-c-text-3", "dark", "breadcrumb.foreground"),
+    # Isolux Pro Dark Scales & Roles:
+    ("--vp-c-gray-1", "dark", "checkbox.border"),
+    ("--vp-c-gray-2", "dark", "panel.border"),
+    ("--vp-c-gray-3", "dark", "chat.requestBubbleBackground"),
+    ("--vp-c-gray-soft", "dark", "editor.lineHighlightBackground"),
+    ("--vp-c-indigo-1", "dark", "textLink.foreground"),
+    ("--vp-c-indigo-2", "dark", "textLink.activeForeground"),
+    ("--vp-c-indigo-3", "dark", "badge.background"),
+    ("--vp-c-indigo-soft", "raw", "color-mix(in srgb, var(--vp-c-indigo-1) 14%, transparent)"),
+    ("--vp-c-purple-1", "dark", "charts.purple"),
+    ("--vp-c-purple-2", "dark", "markdownAlert.important.foreground"),
+    ("--vp-c-purple-3", "light", "charts.purple"),
+    ("--vp-c-purple-soft", "raw", "color-mix(in srgb, var(--vp-c-purple-1) 14%, transparent)"),
+    ("--vp-c-green-1", "dark", "terminal.ansiGreen"),
+    ("--vp-c-green-2", "dark", "editorBracketHighlight.foreground5"),
+    ("--vp-c-green-3", "light", "markdownAlert.tip.foreground"),
+    ("--vp-c-green-soft", "raw", "color-mix(in srgb, var(--vp-c-green-1) 14%, transparent)"),
+    ("--vp-c-yellow-1", "dark", "scope:log.warning"),
+    ("--vp-c-yellow-2", "dark", "statusBarItem.warningHoverForeground"),
+    ("--vp-c-yellow-3", "light", "scope:log.warning"),
+    ("--vp-c-yellow-soft", "raw", "color-mix(in srgb, var(--vp-c-yellow-1) 14%, transparent)"),
+    ("--vp-c-red-1", "dark", "markdownAlert.caution.foreground"),
+    ("--vp-c-red-2", "dark", "terminal.ansiBrightRed"),
+    ("--vp-c-red-3", "light", "markdownAlert.caution.foreground"),
+    ("--vp-c-red-soft", "raw", "color-mix(in srgb, var(--vp-c-red-1) 14%, transparent)"),
+    ("--vp-c-sponsor", "dark", "gitDecoration.modifiedResourceForeground"),
+    # Isolux Pro Dark Controls & Primary Buttons:
+    ("--vp-input-switch-bg-color", "dark", "chat.requestBubbleBackground"),
+    ("--vp-button-brand-border", "dark", "button.border"),
+    ("--vp-button-brand-text", "dark", "button.foreground"),
+    ("--vp-button-brand-bg", "dark", "button.background"),
+    ("--vp-button-brand-hover-border", "dark", "button.border"),
+    ("--vp-button-brand-hover-text", "dark", "button.foreground"),
+    ("--vp-button-brand-hover-bg", "dark", "button.hoverBackground"),
+    ("--vp-button-brand-active-border", "dark", "button.border"),
+    ("--vp-button-brand-active-text", "dark", "button.foreground"),
+    ("--vp-button-brand-active-bg", "dark", "button.background"),
+)
 PATH_CHANGELOG = DIR_ROOT / "CHANGELOG.md"
 PATH_WEBSITE_CHANGELOG = DIR_WEBSITE_BUILD / "changelog.md"
 PATH_ICON = DIR_ROOT / "assets" / "icon.png"
@@ -32,6 +172,8 @@ PATH_SIDEBAR_REL = Path(".vitepress") / "sidebar.json"
 PATH_SIDEBAR = DIR_WEBSITE_BUILD / PATH_SIDEBAR_REL
 PATH_API_LINKS = DIR_WEBSITE_BUILD / ".vitepress" / "api-links.json"
 PATH_MODULES_BUILD = DIR_WEBSITE_BUILD / "docs" / "guide" / "modules.md"
+PATH_LLMS_TXT_BUILD = DIR_WEBSITE_BUILD / "public" / "llms.txt"
+SITE_URL = "https://xulbux.github.io/python-lib-xulbux"
 API_LINKS: dict[str, str] = {}
 
 RE_DEPRECATED_ANNOTATED = re.compile(
@@ -692,6 +834,70 @@ def generate_modules_overview() -> str:
     return "\n".join(lines)
 
 
+def generate_llms_txt() -> str:
+    """Generates `/llms.txt` documenting guides and all API modules for AI assistants."""
+
+    core_modules: list[tuple[str, str, str]] = []
+    subpackages = _discover_subpackages()
+
+    for py_file in sorted(DIR_SRC_XULBUX.rglob("*.py")):
+        if py_file.name.startswith("_"):
+            continue
+
+        rel_path = py_file.relative_to(DIR_SRC_XULBUX).with_suffix("")
+        parts = rel_path.parts
+        flat_name = ".".join(parts)
+        link = f"{SITE_URL}/docs/api/{flat_name}"
+        summary = " ".join(_extract_module_summary(py_file).replace("<br>", " ").split())
+
+        if len(parts) == 1:
+            core_modules.append((f"xulbux.{flat_name}", link, summary))
+        elif (top_pkg := parts[0]) in subpackages:
+            subpackages[top_pkg]["modules"].append((f"xulbux.{flat_name}", link, summary))
+
+    lines: list[str] = [
+        "# XulbuX Python Library",
+        "",
+        (
+            "> A modern, high-performance Python 3.12+ library compiled to C via MyPyC for terminal styling,"
+            " color manipulation, console UI, file system operations, data processing, regex building,"
+            " string utilities, and system introspection."
+        ),
+        "",
+        "## Guides",
+        "",
+        (
+            f"- [Getting Started]({SITE_URL}/docs/guide/get-started):"
+            " Installation, package aliasing (`import xulbux as xx`), and quickstart examples."
+        ),
+        (
+            f"- [Modules Overview]({SITE_URL}/docs/guide/modules):"
+            " High-level overview of all core modules, base utilities, and CLI tools."
+        ),
+        (
+            f"- [CLI Tools]({SITE_URL}/docs/guide/cli-tools):"
+            " Command-line previews (`xulbux-lib ansi`, `xulbux-lib c256`, `xulbux-lib tc`)."
+        ),
+        f"- [Changelog]({SITE_URL}/changelog): Release history and breaking changes.",
+        "",
+        "## Core Modules",
+        "",
+    ]
+
+    for name, link, summary in core_modules:
+        lines.append(f"- [`{name}`]({link}): {summary}")
+
+    for subpkg in subpackages.values():
+        lines.append("")
+        lines.append(f"## {subpkg['title']}")
+        lines.append("")
+        for name, link, summary in subpkg["modules"]:
+            lines.append(f"- [`{name}`]({link}): {summary}")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
 def get_base_sidebar(website_src_dir: Path) -> list[Any]:
     """Returns the base sidebar structure from the `.vitepress/sidebar.json` file in<br>
     the `website/src` directory, or an empty list if the file doesn't exist or is invalid."""
@@ -749,6 +955,15 @@ def _process_single_file(file_path: Path) -> None:
         PATH_MODULES_BUILD.write_text(modules_md, encoding="utf-8")
         print(f"  updated {PATH_MODULES_BUILD.name}")
 
+    # Handle local Isolux theme file:
+    elif DIR_LOCAL_ISOLUX_DIST in resolved.parents and resolved.name in ISOLUX_THEME_FILES:
+        DIR_THEMES_BUILD.mkdir(parents=True, exist_ok=True)
+        (DIR_THEMES_BUILD / resolved.name).write_bytes(resolved.read_bytes().replace(b"\r\n", b"\n"))
+        if (src_style := DIR_WEBSITE_SRC / ".vitepress" / "theme" / "style.css").is_file():
+            shutil.copy2(src_style, PATH_STYLE_CSS_BUILD)
+            _apply_isolux_theme_colors()
+        print(f"  synced local Isolux theme ({resolved.name})")
+
     # Handle manual docs source file:
     elif DIR_WEBSITE_SRC in resolved.parents:
         dest_path = DIR_WEBSITE_BUILD / resolved.relative_to(DIR_WEBSITE_SRC)
@@ -757,11 +972,169 @@ def _process_single_file(file_path: Path) -> None:
             dest_path.write_text(transform_special_docs_components(resolved.read_text("utf-8")), encoding="utf-8")
         else:
             shutil.copy2(resolved, dest_path)
+            if dest_path == PATH_STYLE_CSS_BUILD:
+                _apply_isolux_theme_colors()
 
         print(f"  copied {dest_path.name}")
 
 
-def _build_all_api_docs() -> None:
+def _format_css_var_lines(
+    var_specs: tuple[tuple[str, str, str], ...],
+    palettes: dict[str, dict[str, Any]],
+) -> list[str]:
+    """Formats a sequence of `(css_var, source, key_or_expr)` specs into CSS declaration lines."""
+
+    lines: list[str] = []
+    for css_var, source, key_or_expr in var_specs:
+        if source == "raw":
+            lines.append(f"  {css_var}: {key_or_expr};")
+        elif isinstance(hex_val := palettes.get(source, {}).get(key_or_expr), str) and hex_val.startswith("#"):
+            lines.append(f"  {css_var}: {hex_val.lower()};")
+    return lines
+
+
+def _load_theme_palette(theme_path: Path) -> dict[str, str] | None:
+    """Loads workbench `colors` and `tokenColors` (`scope:<name>`) from an Isolux theme JSON file."""
+
+    if not isinstance(raw_colors := (theme_data := json.loads(theme_path.read_text(encoding="utf-8"))).get("colors"), dict):
+        return None
+
+    palette: dict[str, str] = {
+        str(key): str(val) for key, val in cast("dict[str, Any]", raw_colors).items() if isinstance(val, str)
+    }
+    if isinstance(token_colors := theme_data.get("tokenColors"), list):
+        for entry in cast("list[Any]", token_colors):
+            if (
+                isinstance(entry, dict)
+                and isinstance(settings := cast("dict[str, Any]", entry).get("settings"), dict)
+                and isinstance(fg := cast("dict[str, Any]", settings).get("foreground"), str)
+            ):
+                scopes = cast("dict[str, Any]", entry).get("scope")
+                scope_list: list[Any] = (
+                    [scopes] if isinstance(scopes, str) else cast("list[Any]", scopes) if isinstance(scopes, list) else []
+                )
+                for scope in scope_list:
+                    if isinstance(scope, str):
+                        palette[f"scope:{scope}"] = fg
+
+    return palette
+
+
+def _apply_isolux_theme_colors() -> None:
+    """Injects the Isolux Pro light, dark, and ANSI terminal colors into `:root` and `.dark` of the built `style.css`."""
+
+    dark_theme_path = DIR_THEMES_BUILD / "isolux-pro-dark.json"
+    light_theme_path = DIR_THEMES_BUILD / "isolux-pro-light.json"
+    if not dark_theme_path.is_file() or not light_theme_path.is_file() or not PATH_STYLE_CSS_BUILD.is_file():
+        return
+
+    with suppress(Exception):
+        if (dark_palette := _load_theme_palette(dark_theme_path)) is None or (
+            light_palette := _load_theme_palette(light_theme_path)
+        ) is None:
+            return
+
+        palettes: dict[str, dict[str, Any]] = {"dark": dark_palette, "light": light_palette}
+        root_lines = _format_css_var_lines(ISOLUX_ROOT_VARS, palettes)
+        dark_lines = _format_css_var_lines(ISOLUX_DARK_VARS, palettes)
+        if not root_lines or not dark_lines:
+            return
+
+        css_content = PATH_STYLE_CSS_BUILD.read_text(encoding="utf-8")
+        if "--term-black:" not in css_content and ":root {" in css_content and ".dark {" in css_content:
+            root_block = "\n".join(root_lines)
+            dark_block = "\n".join(dark_lines)
+            updated_css = css_content.replace(":root {", f":root {{\n{root_block}\n", 1).replace(
+                ".dark {", f".dark {{\n{dark_block}\n", 1
+            )
+            PATH_STYLE_CSS_BUILD.write_text(updated_css, encoding="utf-8")
+
+
+def _download_bytes(url: str, headers: dict[str, str] | None = None, timeout: int = 10) -> bytes:
+    """Downloads raw bytes from a URL with a standard `User-Agent` header."""
+
+    req_headers = {"User-Agent": "xulbux-website-builder/1.0"}
+    if headers:
+        req_headers.update(headers)
+    req = urllib.request.Request(url, headers=req_headers)
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        return cast("bytes", response.read())
+
+
+def _fetch_isolux_vsix_openvsx() -> tuple[bytes, str] | None:
+    """Fetches the latest published Isolux VSIX from Open VSX, returning `(bytes, label)` or `None`."""
+
+    with suppress(Exception):
+        meta = json.loads(_download_bytes(URL_ISOLUX_OPENVSX))
+        if download_url := meta.get("files", {}).get("download"):
+            version = meta.get("version", "latest")
+            return _download_bytes(download_url, timeout=15), f"v{version} via Open VSX"
+    return None
+
+
+def _fetch_isolux_vsix_github() -> tuple[bytes, str] | None:
+    """Fetches the latest published Isolux VSIX from GitHub Releases, returning `(bytes, label)` or `None`."""
+
+    with suppress(Exception):
+        headers = {"Accept": "application/vnd.github+json"}
+        if gh_token := os.environ.get("GITHUB_TOKEN"):
+            headers["Authorization"] = f"Bearer {gh_token}"
+        meta = json.loads(_download_bytes(URL_ISOLUX_GITHUB, headers=headers))
+        tag_name = meta.get("tag_name", "latest")
+        for asset in meta.get("assets", []):
+            if str(asset.get("name", "")).endswith(".vsix") and (download_url := asset.get("browser_download_url")):
+                return _download_bytes(download_url, timeout=15), f"{tag_name} via GitHub Releases"
+    return None
+
+
+def _extract_themes_from_vsix(vsix_bytes: bytes) -> bool:
+    """Extracts the compiled Isolux Pro theme JSON files from a `.vsix` archive into `DIR_THEMES_BUILD`."""
+
+    with suppress(Exception), zipfile.ZipFile(io.BytesIO(vsix_bytes)) as archive:
+        names = set(archive.namelist())
+        entries = {file_name: f"extension/dist/{file_name}" for file_name in ISOLUX_THEME_FILES}
+        if not all(entry in names for entry in entries.values()):
+            return False
+
+        DIR_THEMES_BUILD.mkdir(parents=True, exist_ok=True)
+        for file_name, entry in entries.items():
+            (DIR_THEMES_BUILD / file_name).write_bytes(archive.read(entry).replace(b"\r\n", b"\n"))
+        return True
+    return False
+
+
+def _copy_local_isolux_themes() -> bool:
+    """Copies the compiled Isolux Pro theme JSON files from local `../vscode-theme-isolux/dist` if present."""
+
+    local_files = [DIR_LOCAL_ISOLUX_DIST / file_name for file_name in ISOLUX_THEME_FILES]
+    if all(path.is_file() for path in local_files):
+        DIR_THEMES_BUILD.mkdir(parents=True, exist_ok=True)
+        for src_file in local_files:
+            (DIR_THEMES_BUILD / src_file.name).write_bytes(src_file.read_bytes().replace(b"\r\n", b"\n"))
+        _apply_isolux_theme_colors()
+        print("  copied Isolux theme from local ../vscode-theme-isolux/dist")
+        return True
+    return False
+
+
+def _sync_isolux_themes(prefer_local: bool = False) -> None:
+    """Syncs the Isolux Pro syntax themes (preferring local `../vscode-theme-isolux/dist` when `prefer_local=True`)."""
+
+    if prefer_local and _copy_local_isolux_themes():
+        return
+
+    if (fetched := _fetch_isolux_vsix_openvsx() or _fetch_isolux_vsix_github()) and _extract_themes_from_vsix(fetched[0]):
+        _apply_isolux_theme_colors()
+        print(f"  synced Isolux theme ({fetched[1]})")
+        return
+
+    if not prefer_local and _copy_local_isolux_themes():
+        return
+
+    print("[WARN] Could not fetch Isolux theme; falling back to built-in syntax theme.")
+
+
+def _build_all_api_docs(prefer_local_theme: bool = False) -> None:
     """Discovers all Python modules, generates Markdown docs, and builds the sidebar structure."""
 
     # [1] Clean and recreate the build directory to ensure a fresh slate:
@@ -770,6 +1143,8 @@ def _build_all_api_docs() -> None:
 
     shutil.copytree(DIR_WEBSITE_SRC, DIR_WEBSITE_BUILD)
     print(f"\nCopied {DIR_WEBSITE_SRC.name} to {DIR_WEBSITE_BUILD.name}\n")
+
+    _sync_isolux_themes(prefer_local=prefer_local_theme)
 
     for md_file_path in DIR_WEBSITE_BUILD.rglob("*.md"):
         if (transformed := transform_special_docs_components(content := md_file_path.read_text(encoding="utf-8"))) != content:
@@ -789,11 +1164,15 @@ def _build_all_api_docs() -> None:
         shutil.copy2(PATH_ICON, PATH_WEBSITE_ICON)
         print(f"  copied {PATH_WEBSITE_ICON.name}")
 
-    # [2] Generate modules overview guide page:
+    # [2] Generate modules overview guide page and llms.txt:
     modules_md = generate_modules_overview()
     PATH_MODULES_BUILD.parent.mkdir(parents=True, exist_ok=True)
     PATH_MODULES_BUILD.write_text(modules_md, encoding="utf-8")
     print(f"  generated {PATH_MODULES_BUILD.name}")
+
+    PATH_LLMS_TXT_BUILD.parent.mkdir(parents=True, exist_ok=True)
+    PATH_LLMS_TXT_BUILD.write_text(generate_llms_txt(), encoding="utf-8")
+    print(f"  generated {PATH_LLMS_TXT_BUILD.name}")
 
     # [3] Auto-discover all Python modules and generate markdown files for them:
     sidebar_root_items: list[dict[str, Any]] = []
@@ -856,7 +1235,7 @@ def main() -> None:
         _process_single_file(Path(args.process_file))
         return
 
-    _build_all_api_docs()
+    _build_all_api_docs(prefer_local_theme=args.dev)
 
     # [3] Build or serve the final site using VitePress:
     if not (pnpm_exe := shutil.which("pnpm")):

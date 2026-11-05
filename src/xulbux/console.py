@@ -1,7 +1,7 @@
 """
 Provides comprehensive tools for terminal output and user interaction.
 <br>
-Includes styled logging, box rendering, progress bars, throbbers,
+Includes styled logging, banner and box rendering, progress bars, throbbers,
 interactive prompts, key reading, and command-line argument parsing.
 """
 
@@ -13,9 +13,6 @@ from .ansi import (
     Renderable,
     S,
     TextRenderable,
-    _ansi256_to_rgb,
-    _Color256Style,
-    _ColorStyle,
     is_any_style,
     is_bg_color_style,
     is_fg_color_style,
@@ -78,6 +75,14 @@ _TITLE_COLORS_CACHE: Final[dict[object, tuple[BgColorStyle, FgColorStyle]]] = {}
 
 _OPT_SEP_DEFAULT: Final[object] = object()
 """Sentinel object used as default for `opt_value_sep` in `ArgumentParser.parse()`."""
+
+_CAST_TYPE_NAMES: Final[dict[object, str]] = {
+    bool: "a boolean",
+    float: "a number",
+    int: "an integer",
+    Path: "a valid path",
+}
+"""Human-readable descriptions for common `ParsedArgData` cast types."""
 
 _DEFAULT_BAR_FORMAT: Final[list[TextRenderable]] = [
     "{l}",
@@ -158,15 +163,16 @@ class ParsedArgData:
     """Represents the result of a parsed command-line argument or option.\n
     ----------------------------------------------------------------------------------------------------
     *   `exists` – Whether the argument or option was found in the command-line input or not.
-    *   `is_arg` – Whether the value was provided as a positional argument.
     *   `values` – The tuple of values associated with the argument or option.
+    *   `is_arg` – Whether the value was provided as a positional argument.
     *   `opt` – The specific option that was found (e.g., `-v`, `-vv`, `-vvv`),
-        or `None` for arguments.\n
+        or `None` for arguments.
+    *   `name` – The registered argument name or option alias.\n
     ----------------------------------------------------------------------------------------------------
     When the `ParsedArgData` instance is accessed as a boolean
     it will correspond to the `exists` attribute."""
 
-    __slots__: tuple[str, ...] = ("exists", "is_arg", "opt", "values")
+    __slots__: tuple[str, ...] = ("exists", "is_arg", "name", "opt", "values")
 
     def __init__(
         self,
@@ -174,6 +180,7 @@ class ParsedArgData:
         values: tuple[str, ...] = (),
         is_arg: bool = False,
         opt: str | None = None,
+        name: str | None = None,
     ) -> None:
         self.exists: bool = exists
         """Whether the argument or option was found in the command-line input or not."""
@@ -183,12 +190,30 @@ class ParsedArgData:
         """Whether the value was provided as a positional argument."""
         self.opt: str | None = opt
         """The specific option string that was found (e.g., `-v`, `-vv`, `-vvv`), or `None` for arguments."""
+        self.name: str | None = name
+        """The registered argument name or option alias."""
 
     @property
     def is_opt(self) -> bool:
         """Whether the value was provided as a flagged option."""
 
         return not self.is_arg if self.exists else False
+
+    def _format_cast_error(self, raw_val: str, cast_type: object) -> str:
+        """Internal helper to format a user-facing `ValueError` message when casting fails."""
+
+        if self.opt is not None:
+            target = f"Option {self.opt!r}"
+        elif self.name is not None:
+            target = f"{'Argument' if self.is_arg else 'Option'} {self.name!r}"
+        else:
+            target = "Argument" if self.is_arg else "Option"
+
+        if (expected := _CAST_TYPE_NAMES.get(cast_type)) is None:
+            type_name = getattr(cast_type, "__name__", "")
+            expected = f"of type {type_name!r}" if type_name and type_name != "<lambda>" else "valid"
+
+        return f"{target} must be {expected}, got {raw_val!r}"
 
     @overload
     def val(self) -> str | None: ...
@@ -218,7 +243,7 @@ class ParsedArgData:
         try:
             return cast_type(self.values[0])
         except Exception as exc:
-            raise ValueError(f"Failed to cast value {self.values[0]!r} to type of {cast_type.__name__!r}") from exc
+            raise ValueError(self._format_cast_error(self.values[0], cast_type)) from exc
 
     @overload
     def vals(self) -> tuple[str, ...]: ...
@@ -245,12 +270,12 @@ class ParsedArgData:
         if not self.exists or not self.values:
             return default
 
-        current_val: Any = None
+        current_val: str = ""
 
         try:
             return tuple([cast_type(current_val := val) for val in self.values])
         except Exception as exc:
-            raise ValueError(f"Failed to cast value {current_val!r} to type of {cast_type.__name__!r}") from exc
+            raise ValueError(self._format_cast_error(current_val, cast_type)) from exc
 
     def __bool__(self) -> bool:
         return self.exists
@@ -261,7 +286,10 @@ class ParsedArgData:
         return " ".join(self.values)
 
     def __repr__(self) -> str:
-        return f"ParsedArgData(exists={self.exists}, values={self.values}, is_arg={self.is_arg}, opt={self.opt!r})"
+        return (
+            f"ParsedArgData(exists={self.exists}, values={self.values}, "
+            f"is_arg={self.is_arg}, opt={self.opt!r}, name={self.name!r})"
+        )
 
 
 class ParsedArgs:
@@ -303,9 +331,8 @@ class ArgumentParser:
         -   `{opts}` – The options placeholder (`[options]`).
     *   `controls` – A sequence of tuples `(control_key, help)`, where `control_key`
         can be a single key string or an iterable of strings (e.g., `("WASD", "⏶⏴⏷⏵")`).
-    *   `examples` – A list of tuples `(example_command, comment)`.
+    *   `examples` – A sequence of tuples `(example_command, help)`.
     *   `epilog` – Optional footer text to append to the help print.
-    *   `accent_color` – Optional accent color for the help print (e.g., `S.BR.MAGENTA`).
     *   `prefix_chars` – Characters that prefix options (default: `"-"`).
     *   `opt_value_sep` – String separating option from value (default: `"="`).
     *   `intermixed` – Whether options and positional arguments can be intermixed (default: `True`).
@@ -385,7 +412,7 @@ class ArgumentParser:
         self.controls: Sequence[tuple[str | SeqOrSet[str], TextRenderable]] | None = controls
         """A sequence of tuples `(control_key, help)`."""
         self.examples: Sequence[tuple[str, TextRenderable]] | None = examples
-        """A sequence of tuples `(example_command, comment)`."""
+        """A sequence of tuples `(example_command, help)`."""
         self.epilog: TextRenderable | object | None = epilog
         """Optional footer text to append to the help print."""
         self.prefix_chars: str = prefix_chars
@@ -566,38 +593,17 @@ class ArgumentParser:
         if not title_obj and not sub_obj:
             return
 
-        title_st = _to_styled_text(title_obj) if title_obj else None
-        sub_st = _to_styled_text(sub_obj) if sub_obj else None
-
-        inner_width = max(console_width - 4, 1)
-        single_line_len = (len(title_st.raw) if title_st else 0) + (len(sub_st.raw) + 3 if sub_st else 0)
-        has_newlines = ("\n" in title_st.raw if title_st else False) or ("\n" in sub_st.raw if sub_st else False)
-
-        box_bg_st: AnyStyle = (S.hex("000") | box_color.as_bg()) if is_fg_color_style(box_color) else (S.RESET | S.INVERSE)
-        box_fg_st: AnyStyle = box_color if is_fg_color_style(box_color) else S.RESET
-
-        if inline_subtitle and title_st and not has_newlines and ((single_line_len + 4) <= console_width):
-            title_renderable: Renderable = (S.BOLD(title_st), " — ", sub_st) if sub_st else S.BOLD(title_st)
-
-            output.extend([
-                box_fg_st("▄" * console_width),
-                box_bg_st("  ", title_renderable, " " * (console_width - 2 - single_line_len)),
-                box_fg_st("▀" * console_width),
-                "",
-            ])
-
-        else:
-            output.append(box_fg_st("▄" * console_width))
-
-            if title_st:
-                for title_line in _wrap_text(S.BOLD(title_st), inner_width):
-                    output.append(box_bg_st("  ", title_line, " " * max(0, inner_width - len(title_line)), "  "))
-
-            if sub_st:
-                for subtitle_line in _wrap_text(sub_st, inner_width):
-                    output.append(box_bg_st("  ", subtitle_line, " " * max(0, inner_width - len(subtitle_line)), "  "))
-
-            output.extend([box_fg_st("▀" * console_width), ""])
+        output.extend([
+            banner(
+                title_obj,
+                sub_obj,
+                bg=box_color.as_bg() if is_fg_color_style(box_color) else True,
+                inline_subtitle=inline_subtitle,
+                width=max(console_width, 5),
+                print=False,
+            ),
+            "",
+        ])
 
     def _add_usage_to_output(
         self,
@@ -802,6 +808,7 @@ class ArgumentParser:
         self,
         output: list[Renderable],
         cmd_name_ext: tuple[str, str],
+        max_col_width: int,
         console_width: int,
     ) -> None:
         """Internal method to add the examples section to the help output."""
@@ -809,27 +816,24 @@ class ArgumentParser:
         if not self.examples:
             return
 
-        output.append((S.RESET, S.BOLD("Examples:")))
-
         highlighted_examples: list[tuple[S, Renderable]] = [
-            (self._highlight_example(example_cmd, cmd_name_ext[0]), comment) for example_cmd, comment in self.examples
+            (self._highlight_example(example_cmd, cmd_name_ext[0]), help_text) for example_cmd, help_text in self.examples
         ]
-        max_example_len = max([len(cmd_st.raw) for cmd_st, _ in highlighted_examples], default=0)
+        example_col_width = max([max_col_width, *[len(cmd_st.raw) for cmd_st, _ in highlighted_examples]])
 
-        fits_wide = True
-        for _, comment in highlighted_examples:
-            if (8 + max_example_len + len(comment if isinstance(comment, str) else S(comment).raw)) > console_width:
-                fits_wide = False
-                break
+        if (console_width - (example_col_width + 6)) >= 20:
+            self._add_section_to_output(output, "Examples:", highlighted_examples, example_col_width, console_width)
+            return
 
-        if fits_wide:
-            for cmd_st, comment in highlighted_examples:
-                output.append(("  ", cmd_st, " " * (max_example_len - len(cmd_st.raw) + 4), S.DIM("# ", S.ITALIC(comment))))
+        output.append((S.RESET, S.BOLD("Examples:")))
+        wrap_width = max(console_width - 2, 10)
 
-        else:
-            for cmd_st, comment in highlighted_examples:
-                for desc_line in _wrap_text(comment, max(console_width - 4, 10)):
-                    output.append(("  ", S.DIM("# ", S.ITALIC(desc_line))))
+        for cmd_st, help_text in highlighted_examples:
+            if help_text:
+                for desc_line in _wrap_text(help_text, wrap_width):
+                    output.append(("  ", desc_line))
+                output.append(("    ", cmd_st))
+            else:
                 output.append(("  ", cmd_st))
 
         output.append("")
@@ -869,7 +873,7 @@ class ArgumentParser:
         self._add_section_to_output(output, "Arguments:", args_items, max_col_width, console_width)
         self._add_section_to_output(output, "Options:", opts_items, max_col_width, console_width)
         self._add_section_to_output(output, "Controls:", controls_items, max_col_width, console_width)
-        self._add_examples_to_output(output, cmd_name_ext, console_width)
+        self._add_examples_to_output(output, cmd_name_ext, max_col_width, console_width)
 
         if self.epilog is not None:
             output.append(_to_styled_text(self.epilog))
@@ -1178,7 +1182,13 @@ class ArgumentParser:
         for alias, data in parsed_data.items():
             result._add_arg(
                 alias,
-                ParsedArgData(exists=data["exists"], values=tuple(data["values"]), is_arg=data["is_arg"], opt=data["opt"]),
+                ParsedArgData(
+                    exists=data["exists"],
+                    values=tuple(data["values"]),
+                    is_arg=data["is_arg"],
+                    opt=data["opt"],
+                    name=alias,
+                ),
             )
 
         return result
@@ -1309,6 +1319,8 @@ def log(
     prompt: TextRenderable | object = "",
     /,
     *,
+    compact: bool = False,
+    indent: int = 0,
     start: str = "",
     end: str = "\n",
     title_bg_color: BgColorStyle | None = None,
@@ -1319,17 +1331,57 @@ def log(
 ) -> None:
     """Prints a nicely formatted log message.\n
     ----------------------------------------------------------------------------------------------------
-    *   `title` – The title of the log message (e.g., `DEBUG`, `WARN`, `FAIL`, …).
+    *   `title` – The title of the log message (e.g., `DEBUG`, `WARN`, `ERROR`, …).<br>
+        When `compact` is `True`, only the first character is used as the icon.
     *   `prompt` – The log message.
+    *   `compact` – Whether to render a compact single-character icon layout without background,
+        padding, or tab alignment, indenting continuation lines by two spaces.
+    *   `indent` – The indentation of the log (in chars).
     *   `start` – Something to print before the log is printed.
     *   `end` – Something to print after the log is printed (e.g., `\\n`).
-    *   `title_bg_color` – The background color of the `title` (an `S` background color style).
+    *   `title_bg_color` – The background color of the `title` (an `S` background color style).<br>
+        In `compact` mode, its foreground counterpart colors the icon.
     *   `default_color` – The default text color of the `prompt` (an `S` foreground style).
     *   `tab_size` – The tab size used for the log (default is 8 – matches terminal tabs).
     *   `title_px` – The horizontal padding (in chars) to the title (if `title_bg_color` is set).
-    *   `title_mx` – The horizontal margin (in chars) to the title."""
+    *   `title_mx` – The horizontal margin (in chars) to the title.\n
+    ----------------------------------------------------------------------------------------------------
+    Raises `ValueError` if `indent`, `tab_size`, `title_px`, `title_mx`,
+    `title_bg_color`, or `default_color` is invalid.\n
+    ----------------------------------------------------------------------------------------------------
+    #### Example Usage
 
-    if tab_size < 0:
+    **Standard badge layout:**
+
+    ```python
+    import xulbux as xx
+    from xulbux import S
+
+    xx.console.log("WARN", "Some warning\\nwith a second line", title_bg_color=S.BG.BR.YELLOW)
+    ```
+
+    <!-- DOCS: <TerminalOutput>
+      <span class="b #000 bg-br-yellow"> WARN </span>        Some warning
+                    with a second line
+    </TerminalOutput> -->
+
+    **Compact icon layout:**
+
+    ```python
+    import xulbux as xx
+    from xulbux import S
+
+    xx.console.log("⚠", "Some warning\\nwith a second line", compact=True, default_color=S.BR.YELLOW)
+    ```
+
+    <!-- DOCS: <TerminalOutput>
+    <span class="b br-yellow">⚠</span> <span class="br-yellow">Some warning</span>
+      <span class="br-yellow">with a second line</span>
+    </TerminalOutput> -->"""
+
+    if indent < 0:
+        raise ValueError(f"The 'indent' parameter must be a non-negative integer, got {indent!r}")
+    elif tab_size < 0:
         raise ValueError(f"The 'tab_size' parameter must be a non-negative integer, got {tab_size!r}")
     elif title_px < 0:
         raise ValueError(f"The 'title_px' parameter must be a non-negative integer, got {title_px!r}")
@@ -1337,6 +1389,27 @@ def log(
         raise ValueError(f"The 'title_mx' parameter must be a non-negative integer, got {title_mx!r}")
 
     title = "" if title is None else title.strip()
+    indent_spaces = " " * indent
+    fg_color = _to_fg_color_style(default_color, param_name="default_color") if default_color is not None else None
+
+    # Convert the prompt to styled text and apply the optional default color:
+    prompt_st: S = _to_styled_text(prompt)
+    if fg_color is not None:
+        prompt_st = fg_color(prompt_st)
+
+    if compact:
+        icon_color = (
+            _to_bg_color_style(title_bg_color, param_name="title_bg_color").as_fg() if title_bg_color is not None else fg_color
+        )
+        joined_compact = S(f"\n{indent_spaces}  ").join(prompt_st.wrap(max(get_width() - indent - 2, 1)))
+
+        if title == "":
+            S(f"{start}{indent_spaces}  ", joined_compact).print(end=end)
+        else:
+            icon_style: AnyStyle = (S.BOLD | icon_color) if icon_color is not None else S.BOLD
+            S(f"{start}{indent_spaces}", _render_log_title(title[0], icon_style), " ", joined_compact).print(end=end)
+
+        return
 
     title_style: AnyStyle
     if title_bg_color is not None:
@@ -1357,28 +1430,26 @@ def log(
     tab: str = " " * (-title_len % tab_size)
 
     # Position where prompt needs to wrap to next line:
-    wrap_len: int = get_width() - (title_len + len(tab))
-
-    # Convert the prompt to styled text and apply the optional default color:
-    prompt_st: S = _to_styled_text(prompt)
-    if default_color is not None:
-        prompt_st = _to_fg_color_style(default_color, param_name="default_color")(prompt_st)
+    wrap_len: int = max(get_width() - (indent + title_len + len(tab)), 1)
 
     # Wrap prompt text to the next line with proper indentation after the title and tab:
-    joined_prompt = S(f"\n{' ' * title_len + tab}").join(prompt_st.wrap(wrap_len))
+    joined_prompt = S(f"\n{indent_spaces}{' ' * title_len + tab}").join(prompt_st.wrap(wrap_len))
 
     if title == "":
-        S(f"{start}{mx}", joined_prompt).print(end=end)
+        S(f"{start}{indent_spaces}{mx}", joined_prompt).print(end=end)
     else:
         title_ansi = _render_log_title(f"{px}{title}{px}", title_style)
-        S(f"{start}{mx}", title_ansi, f"{mx}{tab}", joined_prompt).print(end=end)
+        S(f"{start}{indent_spaces}{mx}", title_ansi, f"{mx}{tab}", joined_prompt).print(end=end)
 
 
 @overload
 def _log_preset(
     title: str,
+    icon: str,
     prompt: TextRenderable | object,
-    title_bg_color: BgColorStyle | None,
+    color: FgColorStyle,
+    compact: bool,
+    indent: int,
     start: str,
     end: str,
     default_color: FgColorStyle | None,
@@ -1389,8 +1460,11 @@ def _log_preset(
 @overload
 def _log_preset(
     title: str,
+    icon: str,
     prompt: TextRenderable | object,
-    title_bg_color: BgColorStyle | None,
+    color: FgColorStyle,
+    compact: bool,
+    indent: int,
     start: str,
     end: str,
     default_color: FgColorStyle | None,
@@ -1401,8 +1475,11 @@ def _log_preset(
 @overload
 def _log_preset(
     title: str,
+    icon: str,
     prompt: TextRenderable | object,
-    title_bg_color: BgColorStyle | None,
+    color: FgColorStyle,
+    compact: bool,
+    indent: int,
     start: str,
     end: str,
     default_color: FgColorStyle | None,
@@ -1414,8 +1491,11 @@ def _log_preset(
 
 def _log_preset(
     title: str,
+    icon: str,
     prompt: TextRenderable | object,
-    title_bg_color: BgColorStyle | None,
+    color: FgColorStyle,
+    compact: bool,
+    indent: int,
     start: str,
     end: str,
     default_color: FgColorStyle | None,
@@ -1423,8 +1503,21 @@ def _log_preset(
     exit_code: int | None = None,
     /,
 ) -> None:
-    log(title, prompt, start=start, end=end, title_bg_color=title_bg_color, default_color=default_color)
-    pause_exit("", pause=pause, exit_code=exit_code)
+    """Internal helper to render a preset log message and optionally pause or exit."""
+
+    log(
+        icon if compact else title,
+        prompt,
+        compact=compact,
+        indent=indent,
+        start=start,
+        end=end,
+        title_bg_color=color.as_bg(),
+        default_color=color if default_color is None else default_color,
+    )
+
+    if pause or exit_code is not None:
+        pause_exit("", pause=pause, exit_code=exit_code)
 
 
 @overload
@@ -1433,6 +1526,8 @@ def debug(
     /,
     *,
     active: Literal[False],
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1445,6 +1540,8 @@ def debug(
     /,
     *,
     active: Literal[True] = ...,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1457,6 +1554,8 @@ def debug(
     /,
     *,
     active: bool = ...,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1469,6 +1568,8 @@ def debug(
     /,
     *,
     active: bool = ...,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1482,24 +1583,28 @@ def debug(
     /,
     *,
     active: bool = True,
+    compact: bool = False,
+    indent: int = 0,
     start: str = "",
     end: str = "\n",
     default_color: FgColorStyle | None = None,
     pause: bool = False,
     exit_code: int | None = None,
 ) -> None:
-    """A preset for `log()`: `DEBUG` log message.\n
+    """A preset for `log()`: `DEBUG` (`›`) log message.\n
     ----------------------------------------------------------------------------------------------------
     *   `prompt` – The log message.
     *   `active` – Whether to execute the debug log, pause, and exit or not.
+    *   `compact` – Whether to render using the compact `›` icon layout instead of the `DEBUG` badge.
+    *   `indent` – The indentation of the log (in chars).
     *   `start` – Something to print before the log is printed.
     *   `end` – Something to print after the log is printed (e.g., `\\n`).
-    *   `default_color` – The default text color of the `prompt` (an `S` foreground style).
+    *   `default_color` – The default text color of the `prompt` (defaults to `S.BR.BLACK`).
     *   `pause` – Whether to pause and wait for a key press after printing the log.
     *   `exit_code` – The exit code to use when exiting the program, or `None` to not exit."""
 
     if active:
-        _log_preset("DEBUG", prompt, S.BG.BR.YELLOW, start, end, default_color, pause, exit_code)
+        _log_preset("DEBUG", "›", prompt, S.BR.BLACK, compact, indent, start, end, default_color, pause, exit_code)  # ruff:ignore[ambiguous-unicode-character-string]
 
 
 @overload
@@ -1507,6 +1612,8 @@ def info(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1518,6 +1625,8 @@ def info(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1529,6 +1638,8 @@ def info(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1541,29 +1652,35 @@ def info(
     prompt: TextRenderable | object = "Program point reached.",
     /,
     *,
+    compact: bool = False,
+    indent: int = 0,
     start: str = "",
     end: str = "\n",
     default_color: FgColorStyle | None = None,
     pause: bool = False,
     exit_code: int | None = None,
 ) -> None:
-    """A preset for `log()`: `INFO` log message.\n
+    """A preset for `log()`: `INFO` (`🛈`) log message.\n
     ----------------------------------------------------------------------------------------------------
     *   `prompt` – The log message.
+    *   `compact` – Whether to render using the compact `🛈` icon layout instead of the `INFO` badge.
+    *   `indent` – The indentation of the log (in chars).
     *   `start` – Something to print before the log is printed.
     *   `end` – Something to print after the log is printed (e.g., `\\n`).
-    *   `default_color` – The default text color of the `prompt` (an `S` foreground style).
+    *   `default_color` – The default text color of the `prompt` (defaults to `S.BR.BLUE`).
     *   `pause` – Whether to pause and wait for a key press after printing the log.
     *   `exit_code` – The exit code to use when exiting the program, or `None` to not exit."""
 
-    _log_preset("INFO", prompt, S.BG.BR.BLUE, start, end, default_color, pause, exit_code)
+    _log_preset("INFO", "🛈", prompt, S.BR.BLUE, compact, indent, start, end, default_color, pause, exit_code)
 
 
 @overload
-def done(
+def success(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1571,10 +1688,12 @@ def done(
     exit_code: None = ...,
 ) -> None: ...
 @overload
-def done(
+def success(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1582,10 +1701,12 @@ def done(
     exit_code: int,
 ) -> NoReturn: ...
 @overload
-def done(
+def success(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1594,26 +1715,30 @@ def done(
 ) -> None: ...
 
 
-def done(
+def success(
     prompt: TextRenderable | object = "Operation completed successfully.",
     /,
     *,
+    compact: bool = False,
+    indent: int = 0,
     start: str = "",
     end: str = "\n",
     default_color: FgColorStyle | None = None,
     pause: bool = False,
     exit_code: int | None = None,
 ) -> None:
-    """A preset for `log()`: `DONE` log message.\n
+    """A preset for `log()`: `OKAY` (`✓`) log message.\n
     ----------------------------------------------------------------------------------------------------
     *   `prompt` – The log message.
+    *   `compact` – Whether to render using the compact `✓` icon layout instead of the `OKAY` badge.
+    *   `indent` – The indentation of the log (in chars).
     *   `start` – Something to print before the log is printed.
     *   `end` – Something to print after the log is printed (e.g., `\\n`).
-    *   `default_color` – The default text color of the `prompt` (an `S` foreground style).
+    *   `default_color` – The default text color of the `prompt` (defaults to `S.BR.GREEN`).
     *   `pause` – Whether to pause and wait for a key press after printing the log.
     *   `exit_code` – The exit code to use when exiting the program, or `None` to not exit."""
 
-    _log_preset("DONE", prompt, S.BG.BR.GREEN, start, end, default_color, pause, exit_code)
+    _log_preset("OKAY", "✓", prompt, S.BR.GREEN, compact, indent, start, end, default_color, pause, exit_code)
 
 
 @overload
@@ -1621,6 +1746,8 @@ def warn(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1632,6 +1759,8 @@ def warn(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1643,6 +1772,8 @@ def warn(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1655,29 +1786,35 @@ def warn(
     prompt: TextRenderable | object = "Warning, unexpected behavior.",
     /,
     *,
+    compact: bool = False,
+    indent: int = 0,
     start: str = "",
     end: str = "\n",
     default_color: FgColorStyle | None = None,
     pause: bool = False,
     exit_code: int | None = None,
 ) -> None:
-    """A preset for `log()`: `WARN` log message.\n
+    """A preset for `log()`: `WARN` (`⚠`) log message.\n
     ----------------------------------------------------------------------------------------------------
     *   `prompt` – The log message.
+    *   `compact` – Whether to render using the compact `⚠` icon layout instead of the `WARN` badge.
+    *   `indent` – The indentation of the log (in chars).
     *   `start` – Something to print before the log is printed.
     *   `end` – Something to print after the log is printed (e.g., `\\n`).
-    *   `default_color` – The default text color of the `prompt` (an `S` foreground style).
+    *   `default_color` – The default text color of the `prompt` (defaults to `S.BR.YELLOW`).
     *   `pause` – Whether to pause and wait for a key press after printing the log.
     *   `exit_code` – The exit code to use when exiting the program, or `None` to not exit."""
 
-    _log_preset("WARN", prompt, S.BG.BR.YELLOW, start, end, default_color, pause, exit_code)
+    _log_preset("WARN", "⚠", prompt, S.BR.YELLOW, compact, indent, start, end, default_color, pause, exit_code)
 
 
 @overload
-def fail(
+def error(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1685,10 +1822,12 @@ def fail(
     exit_code: None = ...,
 ) -> None: ...
 @overload
-def fail(
+def error(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1696,10 +1835,12 @@ def fail(
     exit_code: int,
 ) -> NoReturn: ...
 @overload
-def fail(
+def error(
     prompt: TextRenderable | object = ...,
     /,
     *,
+    compact: bool = ...,
+    indent: int = ...,
     start: str = ...,
     end: str = ...,
     default_color: FgColorStyle | None = ...,
@@ -1708,48 +1849,56 @@ def fail(
 ) -> None: ...
 
 
-def fail(
+def error(
     prompt: TextRenderable | object = "Operation failed, an error occurred.",
     /,
     *,
+    compact: bool = False,
+    indent: int = 0,
     start: str = "",
     end: str = "\n",
     default_color: FgColorStyle | None = None,
     pause: bool = False,
     exit_code: int | None = None,
 ) -> None:
-    """A preset for `log()`: `FAIL` log message.\n
+    """A preset for `log()`: `ERROR` (`✗`) log message.\n
     ----------------------------------------------------------------------------------------------------
     *   `prompt` – The log message.
+    *   `compact` – Whether to render using the compact `✗` icon layout instead of the `ERROR` badge.
+    *   `indent` – The indentation of the log (in chars).
     *   `start` – Something to print before the log is printed.
     *   `end` – Something to print after the log is printed (e.g., `\\n`).
-    *   `default_color` – The default text color of the `prompt` (an `S` foreground style).
+    *   `default_color` – The default text color of the `prompt` (defaults to `S.BR.RED`).
     *   `pause` – Whether to pause and wait for a key press after printing the log.
     *   `exit_code` – The exit code to use when exiting the program, or `None` to not exit."""
 
-    _log_preset("FAIL", prompt, S.BG.BR.RED, start, end, default_color, pause, exit_code)
+    _log_preset("ERROR", "✗", prompt, S.BR.RED, compact, indent, start, end, default_color, pause, exit_code)
 
 
 def exit(
     prompt: TextRenderable | object = "Program ended.",
     /,
     *,
+    compact: bool = False,
+    indent: int = 0,
     start: str = "",
     end: str = "\n",
     default_color: FgColorStyle | None = None,
     pause: bool = False,
     exit_code: int = 0,
 ) -> NoReturn:
-    """A preset for `log()`: `EXIT` log message.\n
+    """A preset for `log()`: `EXIT` (`⯃`) log message.\n
     ----------------------------------------------------------------------------------------------------
     *   `prompt` – The log message.
+    *   `compact` – Whether to render using the compact `⯃` icon layout instead of the `EXIT` badge.
+    *   `indent` – The indentation of the log (in chars).
     *   `start` – Something to print before the log is printed.
     *   `end` – Something to print after the log is printed (e.g., `\\n`).
-    *   `default_color` – The default text color of the `prompt` (an `S` foreground style).
+    *   `default_color` – The default text color of the `prompt` (defaults to `S.BR.MAGENTA`).
     *   `pause` – Whether to pause and wait for a key press after printing the log.
     *   `exit_code` – The exit code to use when exiting the program."""
 
-    _log_preset("EXIT", prompt, S.BG.BR.MAGENTA, start, end, default_color, pause, exit_code)
+    _log_preset("EXIT", "⯃", prompt, S.BR.MAGENTA, compact, indent, start, end, default_color, pause, exit_code)
 
 
 def _resolve_box_border(
@@ -1776,7 +1925,7 @@ def _resolve_box_border(
     else:
         raise ValueError(
             "The 'border_style' parameter must be a valid non-background style "
-            f"(e.g., 'S.DIM | S.BR.BLUE', 'S.hex(\"#A8F\")'), got {border_style!r}"
+            f"(e.g., 'S.DIM | S.BR.BLUE', 'S.hex(\"#67F\")'), got {border_style!r}"
         )
 
     borders = {"standard": "┌─┐│┘─└│├─┤", "rounded": "╭─╮│╯─╰│├─┤", "strong": "┏━┓┃┛━┗┃┣━┫", "double": "╔═╗║╝═╚║╠═╣"}
@@ -1933,6 +2082,299 @@ def _render_plain_box(
         box_lines.append(f"{indent_spaces}{left_pad}{content_open}{ansi_line}{reset}{right_pad}")
 
     return S(start, "\n".join(box_lines))
+
+
+def _resolve_banner_bg(
+    bg: BgColorStyle | Literal[True],
+    default_color: FgColorStyle | None,
+) -> tuple[str, str, str, str]:
+    """Internal helper to validate and resolve banner background, persist, cap, and text sequences."""
+
+    if bg is True:
+        bg_open = (S.RESET_FG | S.INVERSE).ansi
+        persist_open = S.INVERSE.ansi
+        cap_open = S.RESET.ansi
+    elif is_bg_color_style(bg):
+        bg_open = bg.ansi
+        persist_open = bg.ansi
+        cap_open = bg.as_fg().ansi
+    else:
+        raise ValueError(
+            "The 'bg' parameter must be True or a valid background color style "
+            f"(e.g., 'S.BG.RED', 'S.BG.hex(\"#67F\")'), got {bg!r}"
+        )
+
+    if default_color is not None:
+        content_open = _to_fg_color_style(default_color, param_name="default_color").ansi
+    elif is_bg_color_style(bg):
+        content_open = bg.as_text_fg().ansi
+    else:
+        content_open = ""
+
+    return bg_open, persist_open, cap_open, content_open
+
+
+def _prepare_banner_lines(
+    title: TextRenderable | object | None,
+    subtitle: TextRenderable | object | None,
+    inline_subtitle: bool,
+    wrap_width: int,
+) -> list[TextRenderable | object]:
+    """Internal helper to prepare bold title and optional subtitle lines for a banner."""
+
+    title_st = raw_title if title is not None and (raw_title := _to_styled_text(title)) else None
+    sub_st = raw_sub if subtitle is not None and (raw_sub := _to_styled_text(subtitle)) else None
+
+    if title_st is None and sub_st is None:
+        return [""]
+
+    elif (
+        inline_subtitle
+        and title_st is not None
+        and sub_st is not None
+        and "\n" not in title_st.raw
+        and "\n" not in sub_st.raw
+        and not _PATTERNS.hr.search(sub_st.raw)
+        and (len(title_st.raw) + 3 + len(sub_st.raw)) <= wrap_width
+    ):
+        return [S(S.BOLD(title_st), " — ", sub_st)]
+
+    lines: list[TextRenderable | object] = []
+
+    if title_st is not None:
+        lines.extend([S.BOLD(wrapped_line) for wrapped_line in title_st.wrap(wrap_width)])
+
+    if sub_st is not None:
+        if isinstance(subtitle, str):
+            lines.append(subtitle)
+        elif _PATTERNS.hr.search(sub_st.raw):
+            lines.append(sub_st)
+        else:
+            lines.extend(sub_st.wrap(wrap_width))
+
+    return lines
+
+
+def _render_banner(
+    ansi_lines: list[str],
+    plain_lines: list[str],
+    max_line_len: int,
+    bg_open: str,
+    persist_open: str,
+    cap_open: str,
+    content_open: str,
+    padding: int,
+    indent_spaces: str,
+    target_width: int | None,
+    align: Literal["left", "center", "right"],
+    start: str,
+) -> S:
+    """Internal helper to render a filled banner with block caps and side guards."""
+
+    reset = S.RESET.ansi
+    box_w = target_width if target_width is not None else (max_line_len + (2 * padding))
+    inner_w = box_w - 2
+    inner_pad = padding - 1
+    pad_str = " " * inner_pad
+    side_cap = f"{cap_open}█{reset}"
+    hr_line = (
+        f"{indent_spaces}{side_cap}{bg_open}{pad_str}{content_open}{S.DIM.ansi}"
+        f"{'─' * (box_w - (2 * padding))}{reset}{bg_open}{pad_str}{reset}{side_cap}"
+    )
+
+    banner_lines: list[str] = [f"{indent_spaces}{cap_open}{'▄' * box_w}{reset}"]
+
+    for ansi_line, plain_line in zip(ansi_lines, plain_lines, strict=False):
+        if _PATTERNS.hr.match(plain_line):
+            banner_lines.append(hr_line)
+            continue
+
+        left_pad, right_pad = _calc_box_padding(len(plain_line), inner_w, inner_pad, align)
+        banner_lines.append(
+            f"{indent_spaces}{side_cap}{bg_open}{left_pad}{content_open}"
+            f"{_persist_style(ansi_line, persist_open)}{reset}{bg_open}{right_pad}{reset}{side_cap}"
+        )
+
+    banner_lines.append(f"{indent_spaces}{cap_open}{'▀' * box_w}{reset}")
+
+    return S(start, "\n".join(banner_lines))
+
+
+@overload
+def banner(
+    title: TextRenderable | object | None = ...,
+    subtitle: TextRenderable | object | None = ...,
+    /,
+    *,
+    bg: BgColorStyle | Literal[True] = ...,
+    default_color: FgColorStyle | None = ...,
+    inline_subtitle: bool = ...,
+    width: int | Literal["full"] | None = ...,
+    align: Literal["left", "center", "right"] = ...,
+    indent: int = ...,
+    start: str = ...,
+    end: str = ...,
+    print: Literal[True] = ...,
+) -> None: ...
+@overload
+def banner(
+    title: TextRenderable | object | None = ...,
+    subtitle: TextRenderable | object | None = ...,
+    /,
+    *,
+    bg: BgColorStyle | Literal[True] = ...,
+    default_color: FgColorStyle | None = ...,
+    inline_subtitle: bool = ...,
+    width: int | Literal["full"] | None = ...,
+    align: Literal["left", "center", "right"] = ...,
+    indent: int = ...,
+    start: str = ...,
+    end: str = ...,
+    print: Literal[False],
+) -> S: ...
+@overload
+def banner(
+    title: TextRenderable | object | None = ...,
+    subtitle: TextRenderable | object | None = ...,
+    /,
+    *,
+    bg: BgColorStyle | Literal[True] = ...,
+    default_color: FgColorStyle | None = ...,
+    inline_subtitle: bool = ...,
+    width: int | Literal["full"] | None = ...,
+    align: Literal["left", "center", "right"] = ...,
+    indent: int = ...,
+    start: str = ...,
+    end: str = ...,
+    print: bool,
+) -> S | None: ...
+
+
+def banner(
+    title: TextRenderable | object | None = None,
+    subtitle: TextRenderable | object | None = None,
+    /,
+    *,
+    bg: BgColorStyle | Literal[True] = True,
+    default_color: FgColorStyle | None = None,
+    inline_subtitle: bool = False,
+    width: int | Literal["full"] | None = "full",
+    align: Literal["left", "center", "right"] = "left",
+    indent: int = 0,
+    start: str = "",
+    end: str = "\n",
+    print: bool = True,
+) -> S | None:
+    """Formats and prints or returns a filled banner.\n
+    ----------------------------------------------------------------------------------------------------
+    *   `title` – The bold banner title.
+    *   `subtitle` – Optional subtitle or body content.<br>
+        Supports multi-line text and `{hr}` markers to insert horizontal rules.
+    *   `bg` – Background fill: `True` for inverted default console colors,
+        or an `S` background color style (e.g., `S.BG.BR.RED`, `S.BG.hex("#67F")`).
+    *   `default_color` – Explicit text color override (defaults to optimal high-contrast color).
+    *   `inline_subtitle` – Whether to render `title` and `subtitle` on a single line separated by
+        `" — "` when both fit within the banner width without line breaks.
+    *   `width` – Fixed outer banner width (in chars), `"full"` for full terminal width,
+        or `None` to shrinkwrap up to the terminal width.
+    *   `align` – The content alignment (`"left"`, `"center"`, `"right"`).
+    *   `indent` – The indentation of the banner (in chars).
+    *   `start` – Something to print/prepend before the banner (e.g., `\\n`).
+    *   `end` – Something to print after the banner (e.g., `\\n`).
+    *   `print` – Whether to print the banner to stdout (`True`), or return the `S` object (`False`).\n
+    ----------------------------------------------------------------------------------------------------
+    Raises `ValueError` if `bg`, `default_color`, `width`, `align`, or `indent` is invalid.\n
+    ----------------------------------------------------------------------------------------------------
+    #### Example Usage
+
+    **Error banner with custom background color:**
+
+    ```python
+    import xulbux as xx
+    from xulbux import S
+
+    xx.console.banner(
+        "File Processor ERROR",
+        "Unrecognized option: '--foo'",
+        bg=S.BG.BR.RED,
+    )
+    ```
+
+    <!-- DOCS: <TerminalOutput>
+    <span class="br-red">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</span>
+    <span class="br-red">█</span><span class="b #000 bg-br-red"> \
+File Processor ERROR               </span><span class="br-red">█</span>
+    <span class="br-red">█</span><span class="#000 bg-br-red"> \
+Unrecognized option: '--foo'       </span><span class="br-red">█</span>
+    <span class="br-red">▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀</span>
+    </TerminalOutput> -->
+
+    **Inline title and subtitle header:**
+
+    ```python
+    import xulbux as xx
+    from xulbux import S
+
+    xx.console.banner(
+        "CLI Tool",
+        "Fast file processor",
+        bg=S.BG.BR.BLUE,
+        inline_subtitle=True,
+    )
+    ```
+
+    <!-- DOCS: <TerminalOutput>
+    <span class="br-blue">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</span>
+    <span class="br-blue">█</span><span class="#000 bg-br-blue"><span class="b"> \
+CLI Tool</span> — Fast file processor </span><span class="br-blue">█</span>
+    <span class="br-blue">▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀</span>
+    </TerminalOutput> -->"""
+
+    bg_open, persist_open, cap_open, content_open = _resolve_banner_bg(bg, default_color)
+
+    if align not in {"left", "center", "right"}:
+        raise ValueError(f"The 'align' parameter must be one of ['left', 'center', 'right'], got {align!r}")
+    elif indent < 0:
+        raise ValueError(f"The 'indent' parameter must be a non-negative integer, got {indent!r}")
+
+    padding = 2
+    min_box_w = (2 * padding) + 1
+    max_console_w = max(get_width() - indent, min_box_w)
+    target_width: int | None = None
+
+    if width == "full":
+        target_width = max_console_w
+    elif type(width) is int:
+        if width < min_box_w:
+            raise ValueError(f"The 'width' parameter must be an integer >= {min_box_w} or 'full', got {width!r}")
+        target_width = width
+    elif width is not None:
+        raise ValueError(f"The 'width' parameter must be a positive integer or 'full', got {width!r}")
+
+    wrap_width = (target_width - (2 * padding)) if target_width is not None else max(max_console_w - (2 * padding), 1)
+    raw_lines = _prepare_banner_lines(title, subtitle, inline_subtitle, wrap_width)
+    ansi_lines, plain_lines, max_line_len = _prepare_log_box(raw_lines, has_rules=True, wrap_width=wrap_width, align=align)
+
+    rendered_banner = _render_banner(
+        ansi_lines,
+        plain_lines,
+        max_line_len,
+        bg_open,
+        persist_open,
+        cap_open,
+        content_open,
+        padding,
+        " " * indent,
+        target_width,
+        align,
+        start,
+    )
+
+    if print:
+        rendered_banner.print(end=end)
+        return None
+
+    return rendered_banner
 
 
 @overload
@@ -2602,24 +3044,13 @@ def _read_single_key() -> None:
 def _resolve_title_colors(title_bg_color: object, /) -> tuple[BgColorStyle, FgColorStyle]:
     """Resolves the log title's background style and its matching foreground style.\n
     ----------------------------------------------------------------------------------------------------
-    *   `title_bg_color` – An `S` background color style (e.g., `S.BG.BLUE`, `S.BG.hex("#A8F")`)."""
+    *   `title_bg_color` – An `S` background color style (e.g., `S.BG.BLUE`, `S.BG.hex("#67F")`)."""
 
     if (cached := _TITLE_COLORS_CACHE.get(title_bg_color)) is not None:
         return cached
 
     elif is_bg_color_style(title_bg_color):
-        fg_style: FgColorStyle = S.BLACK
-
-        if isinstance(title_bg_color, _ColorStyle):
-            luminance = 0.2126 * title_bg_color._red + 0.7152 * title_bg_color._green + 0.0722 * title_bg_color._blue
-            fg_style = S.rgb(255, 255, 255) if luminance < 128 else S.rgb(0, 0, 0)
-
-        elif isinstance(title_bg_color, _Color256Style) and (code := title_bg_color._code) >= 16:
-            red, green, blue = _ansi256_to_rgb(code)
-            luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue
-            fg_style = S.rgb(255, 255, 255) if luminance < 128 else S.rgb(0, 0, 0)
-
-        result: tuple[BgColorStyle, FgColorStyle] = (title_bg_color, fg_style)
+        result: tuple[BgColorStyle, FgColorStyle] = (title_bg_color, title_bg_color.as_text_fg())
         _TITLE_COLORS_CACHE[title_bg_color] = result
 
         return result
@@ -2637,7 +3068,7 @@ def _to_bg_color_style(color: object, /, *, param_name: str = "box_bg_color") ->
 
     raise ValueError(
         f"The {param_name!r} parameter must be a valid background color style "
-        f"(e.g., 'S.BG.BLUE', 'S.BG.hex(\"#A8F\")'), got {color!r}"
+        f"(e.g., 'S.BG.BLUE', 'S.BG.hex(\"#67F\")'), got {color!r}"
     )
 
 
@@ -2649,7 +3080,7 @@ def _to_fg_color_style(color: object, /, *, param_name: str = "color") -> FgColo
 
     raise ValueError(
         f"The {param_name!r} parameter must be a valid foreground color style "
-        f"(e.g., 'S.RED', 'S.hex(\"#A8F\")'), got {color!r}"
+        f"(e.g., 'S.RED', 'S.hex(\"#67F\")'), got {color!r}"
     )
 
 

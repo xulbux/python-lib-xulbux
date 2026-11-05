@@ -1,0 +1,54 @@
+name: Bug Report
+description: Report a bug in a xulbux module, MyPyC wheel, CLI tool, or the documentation site.
+title: '[Bug]: '
+labels: ['bug']
+body:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected Module / Area
+      description: Which part of `xulbux` is affected?
+      options:
+        - ansi
+        - cli
+        - color
+        - console
+        - data
+        - fs
+        - regex
+        - string
+        - system
+        - MyPyC / Packaging
+        - Documentation / Website
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal Reproduction
+      description: Minimal Python snippet or CLI command that reproduces the issue.
+      placeholder: |
+        import xulbux as xx
+        …
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Actual vs. Expected Behavior
+      description: Full traceback or output observed vs. what you expected instead.
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: '`xulbux` version, Python version, OS, and terminal (if relevant).'
+      placeholder: xulbux 2.0.1, Python 3.13, Windows 11 (Windows Terminal)
+    validations:
+      required: true
+

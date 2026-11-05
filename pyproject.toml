@@ -13,7 +13,7 @@ requires = [
 
 [project]
 name = "xulbux"
-version = "2.0.0"
+version = "2.0.1"
 description = "A modern, high-performance Python library to simplify common tasks."
 readme = "README.md"
 authors = [{ name = "XulbuX", email = "hi@xul.is" }]
@@ -28,10 +28,14 @@ dependencies = [
 ]
 optional-dependencies = { dev = [
   "mutmut>=3.7",
+  "mypy>=1.19.0",
+  "mypy-extensions>=1.1.0",
   "pyright>=1.1.411",
   "pytest>=9.0",
   "pytest-cov>=7.0",
   "ruff>=0.16",
+  "types-regex",
+  "types-setuptools",
 ] }
 classifiers = [
   "Development Status :: 5 - Production/Stable",

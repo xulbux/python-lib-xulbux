@@ -1,9 +1,12 @@
 <template>
   <div class="language-terminal ext-terminal" ref="containerRef">
     <button
+      type="button"
       class="copy"
       :class="{ copied: copied }"
       title="Copy Code"
+      aria-label="Copy Code"
+      data-copied="Copied"
       @click.stop="copyText"></button>
     <span class="lang">terminal</span>
     <slot />

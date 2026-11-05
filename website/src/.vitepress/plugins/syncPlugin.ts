@@ -42,11 +42,15 @@ export function syncPlugin(dirname: string) {
       const pySrcDir = path.resolve(dirname, '../../../src');
       const changelogPath = path.resolve(dirname, '../../../CHANGELOG.md');
       const iconPath = path.resolve(dirname, '../../../assets/icon.png');
+      const isoluxDistDir = path.resolve(dirname, '../../../../vscode-theme-isolux/dist');
 
       server.watcher.add(srcDir);
       server.watcher.add(pySrcDir);
       server.watcher.add(changelogPath);
       server.watcher.add(iconPath);
+      if (fs.existsSync(isoluxDistDir)) {
+        server.watcher.add(isoluxDistDir);
+      }
 
       function runPythonCommand(
         args: string[],
@@ -67,10 +71,10 @@ export function syncPlugin(dirname: string) {
         const dest = filePath.replace(srcDir, path.resolve(dirname, '../'));
         if (eventName === 'add' || eventName === 'change') {
           fs.mkdirSync(path.dirname(dest), { recursive: true });
-          if (filePath.endsWith('.md')) {
+          if (filePath.endsWith('.md') || filePath.endsWith('style.css')) {
             runPythonCommand(
               ['website/build.py', '--process-file', `"${filePath}"`],
-              'Processed MD',
+              filePath.endsWith('.md') ? 'Processed MD' : 'Processed CSS',
               filePath
             );
           } else {
@@ -152,6 +156,18 @@ export function syncPlugin(dirname: string) {
           handleWebsiteSrc(eventName, filePath);
         } else if (filePath.startsWith(pySrcDir) && filePath.endsWith('.py')) {
           handlePySrc(eventName, filePath);
+        } else if (
+          filePath.startsWith(isoluxDistDir) &&
+          (filePath.endsWith('isolux-pro-dark.json') || filePath.endsWith('isolux-pro-light.json'))
+        ) {
+          if (eventName === 'change' || eventName === 'add') {
+            runPythonCommand(
+              ['website/build.py', '--process-file', `"${filePath}"`],
+              'Synced local Isolux theme',
+              filePath,
+              true
+            );
+          }
         }
       });
     },

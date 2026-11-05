@@ -113,14 +113,38 @@ def test_argument_parser_examples_narrow_wrap() -> None:
         examples=[
             (
                 "{cmd} --very-long-option-name-that-does-not-fit-on-single-line",
-                "Very long description comment that triggers multi line wrapping mode",
-            )
+                "Very long description text that triggers multi line stacked wrapping mode",
+            ),
+            ("{cmd} --bare", ""),
         ],
     )
     stream = io.StringIO()
     with patch("sys.stdout", stream), patch("xulbux.console.get_width", return_value=40):
         parser.print_help()
-    assert "Very long description" in stream.getvalue()
+    raw_help = S(stream.getvalue()).raw
+    assert "Very long description" in raw_help
+    assert "# " not in raw_help
+    assert "\n  Very long description" in raw_help
+    assert "\n    " in raw_help
+
+    # Short examples align with max_col_width when terminal is wide:
+    wide_parser = ArgumentParser(
+        title="App",
+        examples=[("{cmd}", "Run default")],
+    )
+    wide_parser.add_opt(["-o", "--some-long-option"], expects_value="VALUE", help="Long option help")
+    wide_stream = io.StringIO()
+    with patch("sys.argv", ["app"]), patch("sys.stdout", wide_stream), patch("xulbux.console.get_width", return_value=100):
+        wide_parser.print_help()
+    opt_col = -1
+    ex_col = -1
+    for line in S(wide_stream.getvalue()).raw.splitlines():
+        if "Long option help" in line:
+            opt_col = line.index("Long option help")
+        elif "Run default" in line:
+            ex_col = line.index("Run default")
+    assert opt_col > 0
+    assert opt_col == ex_col
 
 
 def test_argument_parser_examples_highlighting_non_intermixed() -> None:

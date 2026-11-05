@@ -78,7 +78,11 @@ def resolve_path(
     import xulbux as xx
 
     # Resolve a relative file with fuzzy matching:
-    resolved_path = xx.fs.resolve_path("config.json", search_in="./settings", fuzzy_match=True)
+    resolved_path = xx.fs.resolve_path(
+        "config.json",
+        search_in="./settings",
+        fuzzy_match=True,
+    )
     ```"""
 
     search_dirs: list[Path] = []

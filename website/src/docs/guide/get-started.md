@@ -51,7 +51,8 @@ poetry update xulbux
 The library's modules can be accessed by importing the `xulbux` package.
 
 ::: tip Why alias as `xx`?
-It is highly recommended to alias the package as `xx` (`import xulbux as xx`). This prevents naming collisions with common variable names like `data` (`xx.data`), `fs` (`xx.fs`), or `system` (`xx.system`), while keeping module calls concise.
+It is highly recommended to import the package under the `xx` alias (`import xulbux as xx`) instead of importing its modules directly.
+This prevents naming collisions with common variable names like `data` (`xx.data`), `fs` (`xx.fs`), or `system` (`xx.system`), while keeping module calls concise.
 :::
 
 ```python
@@ -131,14 +132,13 @@ if __name__ == "__main__":
 ```
 
 <TerminalOutput>
-<span class="b">Enter a hex color in any format</span><span class="dim"> > </span>a8f
+<span class="b">Enter a hex color in any format</span><span class="dim"> > </span>67f
 
 <span class="dim">╭───────────────────────────────╮</span>
-<span class="dim">│</span> <span class="#000 bg-#A8F">           Preview           </span> <span class="dim">│</span>
+<span class="dim">│</span> <span class="#000 bg-#67F">           Preview           </span> <span class="dim">│</span>
 <span class="dim">├───────────────────────────────┤</span>
-<span class="dim">│</span> <span class="b">HEXA: </span><span class="i">#AA88FF</span>                 <span class="dim">│</span>
-<span class="dim">│</span> <span class="b">RGBA: </span><span class="i">rgba(170, 136, 255)</span>     <span class="dim">│</span>
-<span class="dim">│</span> <span class="b">HSLA: </span><span class="i">hsla(257°, 100%, 77%)</span>   <span class="dim">│</span>
+<span class="dim">│</span> <span class="b">HEXA: </span><span class="i">#6677FF</span>                 <span class="dim">│</span>
+<span class="dim">│</span> <span class="b">RGBA: </span><span class="i">rgba(102, 119, 255)</span>     <span class="dim">│</span>
+<span class="dim">│</span> <span class="b">HSLA: </span><span class="i">hsla(233°, 100%, 70%)</span>   <span class="dim">│</span>
 <span class="dim">╰───────────────────────────────╯</span>
 </TerminalOutput>
-

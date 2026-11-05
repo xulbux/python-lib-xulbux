@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from typing import Any, Final
 
 __package_name__: Final[str] = "xulbux"
-__version__: Final[str] = "2.0.0"
+__version__: Final[str] = "2.0.1"
 __description__: Final[str] = "A modern, high-performance Python library to simplify common tasks."
 __status__: Final[str] = "Production/Stable"
 

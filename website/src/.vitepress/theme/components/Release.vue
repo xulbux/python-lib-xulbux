@@ -73,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed } from 'vue';
 
 const {
   version,
@@ -172,46 +172,5 @@ const displayDate = computed(() => {
     return 'Unreleased';
   }
   return date?.trim() ?? '';
-});
-
-let observer: MutationObserver | undefined = undefined;
-
-onMounted(() => {
-  if (status) {
-    function syncStatusClass() {
-      for (const link of document.querySelectorAll(`a.outline-link[href="#${anchorId.value}"]`)) {
-        if (!link.classList.contains(`status-${status}`)) {
-          link.classList.add(`status-${status}`);
-        }
-      }
-    }
-
-    // Sync immediately and after brief delays to ensure VitePress has rendered the outline:
-    syncStatusClass();
-    setTimeout(syncStatusClass, 100);
-    setTimeout(syncStatusClass, 500);
-    setTimeout(syncStatusClass, 1000);
-
-    // Watch for dynamically rendered DOM elements (like the mobile outline dropdown):
-    observer = new MutationObserver((mutations) => {
-      let hasNewNodes = false;
-      for (const mut of mutations) {
-        if (mut.addedNodes.length > 0) {
-          hasNewNodes = true;
-          break;
-        }
-      }
-      if (hasNewNodes) {
-        syncStatusClass();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-});
-
-onUnmounted(() => {
-  if (observer) {
-    observer.disconnect();
-  }
 });
 </script>

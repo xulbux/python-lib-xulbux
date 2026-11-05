@@ -10,13 +10,14 @@ from xulbux.console import (
     _split_hr_parts,
     _to_bg_color_style,
     _to_fg_color_style,
+    banner,
     box,
     debug,
-    done,
+    error,
     exit,
-    fail,
     info,
     log,
+    success,
     warn,
 )
 import pytest
@@ -24,37 +25,38 @@ import pytest
 
 def test_log_functions_presets() -> None:
     stream = io.StringIO()
-    with patch("sys.stdout", stream):
+    with patch("sys.stdout", stream), patch("xulbux.console._read_single_key") as mock_read_key:
         # Basic log:
         log("TITLE", "Hello Log", title_bg_color=S.BG.RED, default_color=S.GREEN)
 
         # Presets:
         debug("Debug message", active=True, pause=False, exit_code=None)
         debug("Inactive debug", active=False, exit_code=10)
-        info("Info message", pause=False, exit_code=None)
-        done("Done message", pause=False, exit_code=None)
+        info("Info message", pause=True, exit_code=None)
+        success("Success message", pause=False, exit_code=None)
         warn("Warn message", pause=False, exit_code=None)
-        fail("Fail message", pause=False)
-        fail("Fail message none", pause=False, exit_code=None)
+        error("Error message", pause=False)
+        error("Error message none", pause=False, exit_code=None)
 
+    mock_read_key.assert_called_once()
     output = stream.getvalue()
     assert "TITLE" in output
     assert "DEBUG" in output
     assert "INFO" in output
-    assert "DONE" in output
+    assert "OKAY" in output
     assert "WARN" in output
-    assert "FAIL" in output
+    assert "ERROR" in output
     assert "Inactive debug" not in output
 
 
-def test_log_error_presets_fail_and_exit() -> None:
-    # Fail with system exit (explicit code):
+def test_log_error_presets_error_and_exit() -> None:
+    # Error with system exit (explicit code):
     with pytest.raises(SystemExit) as exc_info:
-        fail("Fatal failure", pause=False, exit_code=3)
+        error("Fatal error", pause=False, exit_code=3)
     assert exc_info.value.code == 3
 
     with pytest.raises(SystemExit) as exc_info_one:
-        fail("Fatal failure code 1", pause=False, exit_code=1)
+        error("Fatal error code 1", pause=False, exit_code=1)
     assert exc_info_one.value.code == 1
 
     # Exit preset with system exit (defaulting code):
@@ -77,7 +79,7 @@ def test_log_error_presets_fail_and_exit() -> None:
     assert exc_info.value.code == 11
 
     with pytest.raises(SystemExit) as exc_info:
-        done("Done exit", pause=False, exit_code=12)
+        success("Success exit", pause=False, exit_code=12)
     assert exc_info.value.code == 12
 
     with pytest.raises(SystemExit) as exc_info:
@@ -99,12 +101,163 @@ def test_log_empty_title_and_colors() -> None:
 
 
 def test_log_invalid_arguments() -> None:
+    with pytest.raises(ValueError, match="indent"):
+        log("TITLE", "Msg", indent=-1)
     with pytest.raises(ValueError, match="tab_size"):
         log("TITLE", "Msg", tab_size=-1)
     with pytest.raises(ValueError, match="title_px"):
         log("TITLE", "Msg", title_px=-1)
     with pytest.raises(ValueError, match="title_mx"):
         log("TITLE", "Msg", title_mx=-1)
+    with pytest.raises(ValueError, match="title_bg_color"):
+        log("★", "Msg", compact=True, title_bg_color="invalid")  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
+    with pytest.raises(ValueError, match="default_color"):
+        log("★", "Msg", compact=True, default_color="invalid")  # type:ignore[arg-type]  # pyright:ignore[reportArgumentType]
+
+
+def test_log_compact_mode_and_presets() -> None:
+    stream = io.StringIO()
+    with patch("sys.stdout", stream), patch("xulbux.console.get_width", return_value=30):
+        # Direct compact log variations:
+        log("⚠", "Line one\nLine two", compact=True, default_color=S.BR.YELLOW)
+        log("WARN", "Multi-char title truncates to one char", compact=True, title_bg_color=S.BG.BR.CYAN)
+        log(None, "Empty title aligns on two spaces", compact=True)
+        log("★", "Uncolored compact icon", compact=True)
+        log("★", "Separate icon and text colors", compact=True, title_bg_color=S.BG.RED, default_color=S.WHITE)
+
+        # Compact presets:
+        debug("Compact debug", compact=True)
+        debug("Inactive compact debug", active=False, compact=True)
+        info("Compact info", compact=True)
+        success("Compact success", compact=True)
+        warn("Compact warn", compact=True)
+        error("Compact error", compact=True)
+        warn("Custom color warn", compact=True, default_color=S.WHITE)
+
+    raw_output = S(stream.getvalue()).raw
+    raw_lines = raw_output.splitlines()
+    raw_lines_set = set(raw_lines)
+    assert raw_lines[0] == "⚠ Line one"
+    assert raw_lines[1] == "  Line two"
+    assert raw_lines[2].startswith("W Multi-char")
+    assert raw_lines[3].startswith("  ")
+    assert "\n  Empty title" in raw_output
+    assert "\n★ Uncolored compact icon" in raw_output
+    assert "› Compact debug" in raw_lines_set  # ruff:ignore[ambiguous-unicode-character-string]
+    assert "🛈 Compact info" in raw_lines_set
+    assert "✓ Compact success" in raw_lines_set
+    assert "⚠ Compact warn" in raw_lines_set
+    assert "✗ Compact error" in raw_lines_set
+    assert "Inactive compact debug" not in raw_output
+
+    # Compact exit preset:
+    exit_stream = io.StringIO()
+    with patch("sys.stdout", exit_stream), pytest.raises(SystemExit) as exc_info:
+        exit("Compact exit", compact=True, exit_code=2)
+    assert exc_info.value.code == 2
+    assert S(exit_stream.getvalue()).raw.strip() == "⯃ Compact exit"
+
+
+def test_log_indentation() -> None:
+    stream = io.StringIO()
+    with patch("sys.stdout", stream), patch("xulbux.console.get_width", return_value=40):
+        success("Deleted item\nSecond line", compact=True, indent=2)
+        warn("Indented warning", compact=True, indent=4, start="\n")
+        log(None, "Indented untitled compact", compact=True, indent=2)
+        log("INFO", "Badge first\nBadge second", indent=3, title_bg_color=S.BG.BR.BLUE)
+        log(None, "Indented untitled badge", indent=3)
+
+    raw_lines = S(stream.getvalue()).raw.splitlines()
+    assert raw_lines[0] == "  ✓ Deleted item"
+    assert raw_lines[1] == "    Second line"
+    assert raw_lines[2] == ""
+    assert raw_lines[3] == "    ⚠ Indented warning"
+    assert raw_lines[4] == "    Indented untitled compact"
+    assert raw_lines[5] == "      INFO         Badge first"
+    assert raw_lines[6] == "                   Badge second"
+    assert raw_lines[7] == "     Indented untitled badge"
+
+
+def test_banner_rendering_and_options() -> None:
+    # Default print=True writes to stdout and returns None:
+    stream = io.StringIO()
+    with patch("sys.stdout", stream), patch("xulbux.console.get_width", return_value=40):
+        ret = banner("App Error", "Invalid flag '--foo'", bg=S.BG.BR.RED)
+    assert ret is None
+    printed_lines = S(stream.getvalue()).raw.splitlines()
+    assert printed_lines[0] == "▄" * 40
+    assert printed_lines[1] == "█ App Error" + " " * 28 + "█"
+    assert printed_lines[2] == "█ Invalid flag '--foo'" + " " * 17 + "█"
+    assert printed_lines[3] == "▀" * 40
+
+    # Inline subtitle when fitting vs wrapping fallback:
+    inline_fit = banner("Tool", "Fast utility", bg=True, inline_subtitle=True, width=40, print=False)
+    fit_lines = inline_fit.raw.split("\n")
+    assert len(fit_lines) == 3
+    assert "Tool — Fast utility" in fit_lines[1]
+
+    inline_overflow = banner(
+        "Long Tool Title",
+        "Long subtitle text that will exceed forty columns",
+        bg=S.BG.hex("#112233"),
+        inline_subtitle=True,
+        width=30,
+        print=False,
+    )
+    assert len(inline_overflow.raw.split("\n")) > 3
+
+    # Shrinkwrap width=None, custom default_color, indent, alignment, and {hr}:
+    shrunk = banner(
+        "Header",
+        "Top\n{hr}\nBottom",
+        bg=S.BG.color256(21),
+        default_color=S.BR.WHITE,
+        width=None,
+        align="center",
+        indent=2,
+        print=False,
+    )
+    shrunk_lines = shrunk.raw.split("\n")
+    assert shrunk_lines[0].startswith("  ▄")
+    assert shrunk_lines[1].startswith("  █ ")
+    assert shrunk_lines[1].endswith(" █")
+    assert shrunk_lines[3] == "  █ ────── █"
+    assert shrunk_lines[-1].startswith("  ▀")
+
+    # Styled S subtitle with {hr} and without {hr}, subtitle-only, and empty banner:
+    styled_hr = banner("Styled", S("Part A\n{hr}\n", S.DIM("Part B")), width=24, print=False)
+    assert "─" in styled_hr.raw
+
+    styled_multiline = banner(None, S.ITALIC("Sub line 1\nSub line 2"), bg=True, default_color=S.CYAN, width=24, print=False)
+    assert "Sub line 1" in styled_multiline.raw
+    assert "Sub line 2" in styled_multiline.raw
+
+    right_aligned = banner("Right", width=20, align="right", print=False)
+    assert right_aligned.raw.split("\n")[1] == "█            Right █"
+
+    empty_banner = banner(None, None, width=10, print=False)
+    assert empty_banner.raw.split("\n") == ["▄" * 10, "▀" * 10]
+
+
+def test_banner_validation() -> None:
+    with pytest.raises(ValueError, match="bg"):
+        banner("Err", bg=False)  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
+    with pytest.raises(ValueError, match="bg"):
+        banner("Err", bg=None)  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
+    with pytest.raises(ValueError, match="bg"):
+        banner("Err", bg=S.RED)  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
+    with pytest.raises(ValueError, match="default_color"):
+        banner("Err", default_color=S.BG.RED)  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
+    with pytest.raises(ValueError, match="align"):
+        banner("Err", align="invalid")  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
+    with pytest.raises(ValueError, match="indent"):
+        banner("Err", indent=-1)
+    with pytest.raises(ValueError, match="width"):
+        banner("Err", width=4)
+    with pytest.raises(ValueError, match="width"):
+        banner("Err", width="invalid")  # type:ignore[call-overload]  # pyright:ignore[reportArgumentType]
+    with pytest.raises(ValueError, match="width"):
+        banner("Err", width=True)  # pyright:ignore[reportArgumentType]
 
 
 def test_box_filled_and_bordered() -> None:
@@ -320,7 +473,8 @@ def test_box_alignment() -> None:
 def test_style_resolution_and_persistence_helpers() -> None:
     # _resolve_title_colors:
     bg_style, fg_style = _resolve_title_colors(S.BG.RED)
-    assert bg_style == S.BG.RED and fg_style == S.BLACK
+    assert bg_style == S.BG.RED and fg_style == S.hex(0x000000)
+    assert _resolve_title_colors(S.BG.BR.BLACK)[1] == S.hex(0xFFFFFF)
 
     bg_color_dark, fg_color_dark = _resolve_title_colors(S.BG.hex("#000000"))
     assert bg_color_dark is not None and fg_color_dark == S.hex(0xFFFFFF)
@@ -329,7 +483,8 @@ def test_style_resolution_and_persistence_helpers() -> None:
     assert bg_color_light is not None and fg_color_light == S.hex(0x000000)
 
     # 256-color testing (base, cube dark/light, grayscale dark/light, and cache hit):
-    assert _resolve_title_colors(S.BG.color256(1))[1] == S.BLACK
+    assert _resolve_title_colors(S.BG.color256(0))[1] == S.hex(0xFFFFFF)
+    assert _resolve_title_colors(S.BG.color256(1))[1] == S.hex(0x000000)
     assert _resolve_title_colors(S.BG.color256(16))[1] == S.hex(0xFFFFFF)
     assert _resolve_title_colors(S.BG.color256(16))[1] == S.hex(0xFFFFFF)  # Cache hit
     assert _resolve_title_colors(S.BG.color256(231))[1] == S.hex(0x000000)

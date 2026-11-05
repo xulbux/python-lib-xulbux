@@ -1,20 +1,82 @@
-# This workflow will install Python dependencies, run tests and lint with all supported Python versions.
-# See: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# Validate `xulbux` across all supported OSes and Python versions, enforce PR base-branch targeting,
+# verify docs/website builds, and run CodeQL security analysis:
 
 name: CI
-permissions:
-  contents: read
-  security-events: write
+permissions: {}
 
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, 'dev/**']
+  workflow_dispatch:
+
+# Cancel superseded validation runs of the same ref. Pushes to `main` are never canceled:
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  branch-target:
+    name: Branch Target
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      ACTOR: ${{ github.actor }}
+      BASE_REF: ${{ github.base_ref }}
+      GH_TOKEN: ${{ github.token }}
+      HEAD_REF: ${{ github.head_ref }}
+      HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Verify PR target branch & release version
+        run: |
+          if [[ "$BASE_REF" != "main" ]]; then
+            echo "Valid PR target branch: '$BASE_REF'."
+            exit 0
+          fi
+          if [[ "$ACTOR" == "dependabot[bot]" ]]; then
+            echo "Allowed Dependabot PR into 'main'."
+            exit 0
+          fi
+          if [[ "$HEAD_REPO" != "$REPO" || "$HEAD_REF" != dev/* ]]; then
+            echo "::error::Pull requests must target the active 'dev/x.y.z' branch instead of 'main'. Click 'Edit' next to the PR title to switch the base branch."
+            exit 1
+          fi
+          TAG="v${HEAD_REF#dev/}"
+          if gh release view "$TAG" >/dev/null 2>&1 || gh api "repos/${REPO}/git/ref/tags/${TAG}" >/dev/null 2>&1; then
+            echo "::error::Release '${TAG}' already exists! Bump the version before merging into 'main'."
+            exit 1
+          fi
+          echo "Release PR from '$HEAD_REF' ('$TAG') is ready to merge into 'main'."
+
+  dependency-review:
+    name: Dependency Review
+    if: github.event_name == 'pull_request' && !github.event.repository.private
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v5
+        with:
+          deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0
+          fail-on-severity: moderate
+
   build:
+    name: Validate (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    permissions:
+      contents: read
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     defaults:
       run:
         shell: bash
@@ -26,19 +88,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Cache pip packages
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          cache: 'pip'
 
       - name: Install project and dependencies
         run: |
@@ -50,24 +107,74 @@ jobs:
           python -m ruff check .
           python -m ruff format --check .
 
-      - name: Type check with PyRight
+      - name: Type check with PyRight & MyPy
         run: |
           python -m pyright
+          python -m mypy .
 
       - name: Test with PyTest
         run: |
           python -m pytest --verbose
 
-  codeql:
-    name: CodeQL Analysis
+  website:
+    name: Validate Docs & Website
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+          cache: 'pip'
+
+      - name: Install xulbux in editable mode
+        run: pip install -e .
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: 'pnpm'
+          cache-dependency-path: website/pnpm-lock.yaml
+
+      - name: Install website dependencies
+        working-directory: ./website
+        run: pnpm install --frozen-lockfile
+
+      - name: Check website formatting, linting, types & Markdown
+        working-directory: ./website
+        run: pnpm run check
+
+      - name: Dry-run website build
+        run: python website/build.py
+
+  codeql:
+    name: CodeQL Analysis
+    permissions:
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
-          languages: python
+          languages: python, actions
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
