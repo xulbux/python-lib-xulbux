@@ -137,7 +137,7 @@ select = [
   "I",   # isort (sorts imports)
   "RUF", # Ruff-specific linting rules
   "SIM", # flake8-simplify (helps simplify code)
-  "TCH", # flake8-type-checking (manages type-checking imports)
+  "TC",  # flake8-type-checking (manages type-checking imports)
   "UP",  # pyupgrade (upgrades syntax for newer Python versions)
   "W",   # pycodestyle warnings (checks PEP 8 style warnings)
 ]
